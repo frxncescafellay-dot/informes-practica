@@ -69,6 +69,33 @@ div[data-testid="stDownloadButton"]>button p { color: #061e1b !important; font-w
 .stButton>button p, div[data-testid="stFormSubmitButton"]>button p { color: #ffffff !important; font-weight: 800 !important; }
 div[data-testid="stDataFrame"], div[data-testid="stDataEditor"], div[data-testid="stDataFrame"] > div, div[data-testid="stDataEditor"] > div { background-color: #89c7c0 !important; border: 2px solid #52948d !important; border-radius: 10px !important; }
 .glide-data-grid, .gdg-container, div[data-testid="stDataFrame"] canvas, div[data-testid="stDataEditor"] canvas { filter: invert(0.85) sepia(0.3) saturate(2.5) hue-rotate(130deg) brightness(1.05) !important; border-radius: 8px !important; }
+
+/* BARRA DE HERRAMIENTAS DE TABLAS Y EXCEL (Search, Zoom, Download) */
+div[data-testid="stElementToolbar"],
+div[data-testid="stElementToolbar"] * {
+    background-color: #a2d2cc !important;
+    color: #061e1b !important;
+    border-color: #52948d !important;
+}
+div[data-testid="stElementToolbar"] button {
+    background-color: #a2d2cc !important;
+    color: #061e1b !important;
+    border: 1px solid #52948d !important;
+    border-radius: 6px !important;
+}
+div[data-testid="stElementToolbar"] button:hover {
+    background-color: #bfe3de !important;
+}
+div[data-testid="stElementToolbar"] svg {
+    fill: #061e1b !important;
+    color: #061e1b !important;
+}
+div[data-testid="stPopoverBody"],
+div[data-testid="stPopoverBody"] * {
+    background-color: #89c7c0 !important;
+    color: #061e1b !important;
+}
+
 table { width: 100% !important; border-collapse: collapse !important; margin: 16px 0 !important; background-color: #89c7c0 !important; border-radius: 8px !important; overflow: hidden !important; border: 2px solid #52948d !important; }
 th { background-color: #63a59e !important; color: #061e1b !important; font-weight: 800 !important; padding: 12px 14px !important; border: 1px solid #52948d !important; text-align: left !important; }
 td { padding: 10px 14px !important; border: 1px solid #52948d !important; color: #061e1b !important; font-size: 0.95rem !important; }
@@ -480,7 +507,7 @@ with pestanas_principales[1]:
 # 3. INFORMES COMPARTIDOS
 # ==========================================
 with pestanas_principales[2]:
-    st.markdown("<div class='modern-card'><h3 style='margin:0;'>📄 Informes Compartidos</h3><p style='margin:0; color:#061e1b;'>Generacion y repositorio colaborativo con exportacion en formato Carta.</p></div>""", unsafe_allow_html=True)
+    st.markdown("<div class='modern-card'><h3 style='margin:0;'>📄 Informes Compartidos</h3><p style='margin:0; color:#061e1b;'>Generacion y repositorio colaborativo con exportacion en formato Carta.</p></div>", unsafe_allow_html=True)
     with st.expander("🤖 Redactar Nuevo Informe con IA", expanded=False):
         nom_i = st.text_input("Titulo del Informe:")
         enf_i = st.selectbox("Enfoque:", ["Resumen Ejecutivo", "Diagnostico Tecnico", "Evaluacion Estrategica"])
@@ -601,4 +628,7 @@ if es_admin:
                             st.success(f"Usuario {u_k} eliminado.")
                             st.rerun()
                     if val_e != u_d.get("permiso_editar") or val_d != u_d.get("permiso_eliminar"):
-                        db
+                        db["usuarios"][u_k]["permiso_editar"] = val_e
+                        db["usuarios"][u_k]["permiso_eliminar"] = val_d
+                        guardar_estado(db)
+            st.markdown("---")
