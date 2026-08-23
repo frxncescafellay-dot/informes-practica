@@ -1,7 +1,6 @@
 import os
 import io
 import json
-import base64
 from datetime import datetime
 import pytz
 import pandas as pd
@@ -17,7 +16,7 @@ from pptx import Presentation
 # --- CONFIGURACIÓN DE PÁGINA ---
 st.set_page_config(
     page_title="Plataforma de Analítica & Intervención IA",
-    page_icon="✨",
+    page_icon="⚡",
     layout="wide",
     initial_sidebar_state="expanded"
 )
@@ -34,66 +33,144 @@ for d in [DIR_BASE, DIR_DATASETS, DIR_INTERVENCION, DIR_AVATARS]:
 
 MODELO_GEMINI = "gemini-3.6-flash"
 
-# --- ESTILOS VISUALES MODERNOS (TEMA CLARO & NEUMÓRFICO) ---
+# --- ESTILOS VISUALES: FONDOS CLAROS CON TEXTO OSCURO DE ALTO CONTRASTE ---
 st.markdown("""
 <style>
-    /* Fondo claro moderno con degradado sutil */
+    /* Fondo general claro de la app */
     .stApp {
-        background: linear-gradient(135deg, #f0f4f8 0%, #e2e8f0 50%, #f8fafc 100%);
-        color: #1e293b;
+        background: linear-gradient(135deg, #f1f5f9 0%, #e2e8f0 50%, #e5edf5 100%);
+        color: #0f172a;
         font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
     }
     
-    /* Encabezados */
-    h1, h2, h3, h4 {
-        color: #0f172a !important;
+    /* Encabezados y títulos en color oscuro profundo */
+    h1, h2, h3, h4, h5, h6 {
+        color: #091e42 !important;
         font-weight: 700;
-        letter-spacing: -0.5px;
+        letter-spacing: -0.3px;
     }
     
-    /* Tarjetas de contenido con efecto Glassmorphism claro */
+    /* Tarjetas de sección */
     .modern-card {
-        background: rgba(255, 255, 255, 0.85);
-        backdrop-filter: blur(12px);
-        border: 1px solid rgba(255, 255, 255, 0.9);
-        border-radius: 16px;
-        padding: 24px;
+        background: #f8fafc;
+        border: 1px solid #cbd5e1;
+        border-radius: 14px;
+        padding: 22px;
         margin-bottom: 20px;
-        box-shadow: 0 10px 25px -5px rgba(148, 163, 184, 0.25), 0 8px 10px -6px rgba(148, 163, 184, 0.2);
+        box-shadow: 0 4px 12px rgba(100, 116, 139, 0.1);
     }
 
-    /* Botones primarios modernos */
+    /* --- BOTONES EN TONO CLARO CON TEXTO OSCURO NÍTIDO --- */
     .stButton>button {
-        background: linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%);
-        color: white !important;
-        border: none;
-        border-radius: 10px;
-        padding: 10px 24px;
-        font-weight: 600;
-        box-shadow: 0 4px 12px rgba(37, 99, 235, 0.3);
-        transition: all 0.2s ease-in-out;
+        background: linear-gradient(180deg, #dbeafe 0%, #bfdbfe 100%) !important;
+        color: #0f2952 !important;
+        border: 1px solid #93c5fd !important;
+        border-radius: 9px !important;
+        padding: 9px 22px !important;
+        font-weight: 700 !important;
+        font-size: 0.95rem !important;
+        box-shadow: 0 2px 6px rgba(147, 197, 253, 0.4) !important;
+        transition: all 0.2s ease-in-out !important;
     }
     .stButton>button:hover {
-        transform: translateY(-2px);
-        box-shadow: 0 6px 18px rgba(37, 99, 235, 0.4);
+        background: linear-gradient(180deg, #bfdbfe 0%, #93c5fd 100%) !important;
+        color: #051937 !important;
+        border-color: #60a5fa !important;
+        box-shadow: 0 4px 10px rgba(96, 165, 250, 0.45) !important;
+        transform: translateY(-1px);
     }
     
-    /* Barra lateral */
-    section[data-testid="stSidebar"] {
-        background-color: rgba(255, 255, 255, 0.92) !important;
-        border-right: 1px solid #e2e8f0;
+    /* Botones secundarios (ej. Eliminar / Borrar) */
+    div[data-testid="stBaseButton-secondary"] button {
+        background: linear-gradient(180deg, #fee2e2 0%, #fecaca 100%) !important;
+        color: #7f1d1d !important;
+        border: 1px solid #fca5a5 !important;
+    }
+    div[data-testid="stBaseButton-secondary"] button:hover {
+        background: linear-gradient(180deg, #fecaca 0%, #fca5a5 100%) !important;
+        color: #450a0a !important;
     }
 
-    /* Insignias de roles */
+    /* --- CUADROS DE TEXTO, TEXTAREAS Y CAMPOS DE ENTRADA --- */
+    input[type="text"], 
+    input[type="password"], 
+    textarea {
+        background-color: #e8edf5 !important;
+        color: #0f172a !important;
+        border: 1.5px solid #cbd5e1 !important;
+        border-radius: 8px !important;
+        font-size: 0.95rem !important;
+        font-weight: 500 !important;
+    }
+    input[type="text"]:focus, 
+    input[type="password"]:focus, 
+    textarea:focus {
+        background-color: #f1f6fc !important;
+        color: #000000 !important;
+        border-color: #3b82f6 !important;
+        box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.2) !important;
+    }
+
+    /* Selectores (Selectbox / Dropdowns) */
+    div[data-baseweb="select"] > div {
+        background-color: #e8edf5 !important;
+        color: #0f172a !important;
+        border: 1.5px solid #cbd5e1 !important;
+        border-radius: 8px !important;
+    }
+    div[data-baseweb="select"] * {
+        color: #0f172a !important;
+        font-weight: 500 !important;
+    }
+
+    /* Cuadro de subida de archivos (File Uploader) */
+    div[data-testid="stFileUploader"] {
+        background-color: #edf2f8;
+        border: 1.5px dashed #94a3b8;
+        border-radius: 12px;
+        padding: 12px;
+    }
+    div[data-testid="stFileUploader"] * {
+        color: #1e293b !important;
+    }
+
+    /* Etiquetas / Labels de campos */
+    label, p, span {
+        color: #1e293b;
+        font-weight: 600;
+    }
+
+    /* Pestañas de navegación */
+    button[data-baseweb="tab"] {
+        background-color: #e2e8f0 !important;
+        color: #334155 !important;
+        border-radius: 8px 8px 0 0 !important;
+        font-weight: 700 !important;
+        margin-right: 4px !important;
+        padding: 10px 18px !important;
+    }
+    button[data-baseweb="tab"][aria-selected="true"] {
+        background-color: #dbeafe !important;
+        color: #03449e !important;
+        border-bottom: 3px solid #2563eb !important;
+    }
+
+    /* Barra lateral */
+    section[data-testid="stSidebar"] {
+        background-color: #f8fafc !important;
+        border-right: 1px solid #cbd5e1;
+    }
+
+    /* Badge de Rol */
     .badge-role {
         display: inline-block;
-        background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
-        color: white;
+        background: #dbeafe;
+        color: #1e40af;
+        border: 1px solid #bfdbfe;
         padding: 4px 14px;
-        border-radius: 20px;
-        font-size: 0.82rem;
-        font-weight: 600;
-        box-shadow: 0 2px 6px rgba(59, 130, 246, 0.3);
+        border-radius: 16px;
+        font-size: 0.85rem;
+        font-weight: 700;
     }
 </style>
 """, unsafe_allow_html=True)
@@ -102,45 +179,43 @@ st.markdown("""
 def renderizar_reloj_chile():
     html_reloj = """
     <div style="
-        background: rgba(255, 255, 255, 0.9);
-        border: 1px solid #e2e8f0;
-        border-radius: 18px;
-        padding: 16px 24px;
+        background: #f8fafc;
+        border: 1px solid #cbd5e1;
+        border-radius: 16px;
+        padding: 14px 20px;
         display: flex;
         align-items: center;
         justify-content: space-between;
-        gap: 20px;
-        box-shadow: 0 8px 20px rgba(148, 163, 184, 0.2);
-        max-width: 520px;
+        gap: 18px;
+        box-shadow: 0 4px 12px rgba(148, 163, 184, 0.2);
+        max-width: 480px;
         margin-left: auto;
-        margin-bottom: 20px;
+        margin-bottom: 15px;
         font-family: 'Segoe UI', system-ui, sans-serif;
     ">
         <!-- Reloj Análogo -->
-        <div style="position: relative; width: 70px; height: 70px;">
-            <svg id="analog-clock" width="70" height="70" viewBox="0 0 100 100">
-                <circle cx="50" cy="50" r="46" fill="#f8fafc" stroke="#3b82f6" stroke-width="4"/>
-                <!-- Marcas horarias principales -->
-                <line x1="50" y1="10" x2="50" y2="16" stroke="#64748b" stroke-width="3" stroke-linecap="round"/>
-                <line x1="90" y1="50" x2="84" y2="50" stroke="#64748b" stroke-width="3" stroke-linecap="round"/>
-                <line x1="50" y1="90" x2="50" y2="84" stroke="#64748b" stroke-width="3" stroke-linecap="round"/>
-                <line x1="10" y1="50" x2="16" y2="50" stroke="#64748b" stroke-width="3" stroke-linecap="round"/>
-                <!-- Agujas -->
-                <line id="hour-hand" x1="50" y1="50" x2="50" y2="28" stroke="#1e293b" stroke-width="4" stroke-linecap="round"/>
-                <line id="min-hand" x1="50" y1="50" x2="50" y2="18" stroke="#3b82f6" stroke-width="3" stroke-linecap="round"/>
-                <line id="sec-hand" x1="50" y1="50" x2="50" y2="14" stroke="#ef4444" stroke-width="1.5" stroke-linecap="round"/>
-                <circle cx="50" cy="50" r="3.5" fill="#1e293b"/>
+        <div style="position: relative; width: 65px; height: 65px;">
+            <svg id="analog-clock" width="65" height="65" viewBox="0 0 100 100">
+                <circle cx="50" cy="50" r="46" fill="#e8edf5" stroke="#3b82f6" stroke-width="4"/>
+                <line x1="50" y1="10" x2="50" y2="16" stroke="#475569" stroke-width="3" stroke-linecap="round"/>
+                <line x1="90" y1="50" x2="84" y2="50" stroke="#475569" stroke-width="3" stroke-linecap="round"/>
+                <line x1="50" y1="90" x2="50" y2="84" stroke="#475569" stroke-width="3" stroke-linecap="round"/>
+                <line x1="10" y1="50" x2="16" y2="50" stroke="#475569" stroke-width="3" stroke-linecap="round"/>
+                <line id="hour-hand" x1="50" y1="50" x2="50" y2="28" stroke="#0f172a" stroke-width="4.5" stroke-linecap="round"/>
+                <line id="min-hand" x1="50" y1="50" x2="50" y2="18" stroke="#2563eb" stroke-width="3" stroke-linecap="round"/>
+                <line id="sec-hand" x1="50" y1="50" x2="50" y2="14" stroke="#dc2626" stroke-width="1.5" stroke-linecap="round"/>
+                <circle cx="50" cy="50" r="3.5" fill="#0f172a"/>
             </svg>
         </div>
         <!-- Reloj Digital y Fecha -->
         <div style="display: flex; flex-direction: column; justify-content: center;">
-            <div style="font-size: 0.8rem; font-weight: 700; color: #3b82f6; text-transform: uppercase; letter-spacing: 0.5px;">
+            <div style="font-size: 0.78rem; font-weight: 700; color: #2563eb; text-transform: uppercase; letter-spacing: 0.5px;">
                 🇨🇱 Hora Oficial de Chile
             </div>
-            <div id="digital-clock" style="font-size: 1.7rem; font-weight: 800; color: #0f172a; line-height: 1.1; letter-spacing: -0.5px;">
+            <div id="digital-clock" style="font-size: 1.6rem; font-weight: 800; color: #0f172a; line-height: 1.1;">
                 --:--:--
             </div>
-            <div id="digital-date" style="font-size: 0.85rem; font-weight: 500; color: #64748b; margin-top: 2px;">
+            <div id="digital-date" style="font-size: 0.82rem; font-weight: 600; color: #475569; margin-top: 2px;">
                 Cargando fecha...
             </div>
         </div>
@@ -163,18 +238,15 @@ def renderizar_reloj_chile():
                 if (p.type === 'second') s = parseInt(p.value);
             });
 
-            // Formato digital
             const hStr = h.toString().padStart(2, '0');
             const mStr = m.toString().padStart(2, '0');
             const sStr = s.toString().padStart(2, '0');
             document.getElementById('digital-clock').textContent = `${hStr}:${mStr}:${sStr}`;
             
-            // Fecha con inicial en mayúscula
             let fechaStr = formateadorFecha.format(ahora);
             fechaStr = fechaStr.charAt(0).toUpperCase() + fechaStr.slice(1);
             document.getElementById('digital-date').textContent = fechaStr;
 
-            // Ángulos para el reloj análogo
             const secDeg = s * 6;
             const minDeg = m * 6 + s * 0.1;
             const hourDeg = (h % 12) * 30 + m * 0.5;
@@ -191,7 +263,7 @@ def renderizar_reloj_chile():
         actualizarReloj();
     </script>
     """
-    components.html(html_reloj, height=115)
+    components.html(html_reloj, height=105)
 
 # --- GESTOR DE PERSISTENCIA (JSON) ---
 def cargar_estado():
@@ -264,9 +336,9 @@ if "autenticado" not in st.session_state:
     st.session_state.usuario_clave = None
 
 if not st.session_state.autenticado:
-    st.markdown("<h1 style='text-align:center; color:#1e293b !important; margin-top:40px;'>🔐 Acceso a la Plataforma</h1>", unsafe_allow_html=True)
-    st.markdown("<p style='text-align:center; color:#64748b;'>Ingrese sus credenciales registradas</p>", unsafe_allow_html=True)
-    c1, c2, c3 = st.columns([1, 1.5, 1])
+    st.markdown("<h1 style='text-align:center; color:#091e42 !important; margin-top:30px;'>🔐 Acceso a la Plataforma</h1>", unsafe_allow_html=True)
+    st.markdown("<p style='text-align:center; color:#475569;'>Ingrese sus credenciales registradas</p>", unsafe_allow_html=True)
+    c1, c2, c3 = st.columns([1, 1.4, 1])
     with c2:
         with st.form("login_form"):
             u_in = st.text_input("Usuario")
@@ -285,16 +357,15 @@ usr_key = st.session_state.usuario_clave
 usr = db["usuarios"].get(usr_key, {"nombre": "Invitado", "rol": "Usuario", "permiso_editar": False, "permiso_eliminar": False, "avatar": ""})
 es_admin = (usr.get("rol") == "Admin") or (usr_key == "admin1")
 
-# --- BARRA LATERAL: PERFIL Y FOTO DE USUARIO ---
+# --- BARRA LATERAL: PERFIL Y FOTO ---
 st.sidebar.markdown("### 👤 Mi Perfil")
 
-# Foto de perfil
 avatar_path = usr.get("avatar", "")
 if avatar_path and os.path.exists(avatar_path):
-    st.sidebar.image(avatar_path, width=110)
+    st.sidebar.image(avatar_path, width=105)
 else:
     st.sidebar.markdown("""
-        <div style='width:90px; height:90px; border-radius:50%; background:#e2e8f0; display:flex; align-items:center; justify-content:center; font-size:2.2rem; color:#64748b; margin-bottom:10px;'>
+        <div style='width:85px; height:85px; border-radius:50%; background:#e2e8f0; border:1px solid #cbd5e1; display:flex; align-items:center; justify-content:center; font-size:2.2rem; color:#64748b; margin-bottom:10px;'>
             👤
         </div>
     """, unsafe_allow_html=True)
@@ -302,7 +373,6 @@ else:
 st.sidebar.markdown(f"**{usr.get('nombre')}**")
 st.sidebar.markdown(f"<span class='badge-role'>{usr.get('rol')}</span>", unsafe_allow_html=True)
 
-# Actualizar foto de perfil
 with st.sidebar.expander("📷 Cambiar foto de perfil"):
     nueva_foto = st.file_uploader("Subir imagen (JPG, PNG):", type=["jpg", "jpeg", "png"], key="upload_avatar")
     if nueva_foto is not None:
@@ -342,8 +412,8 @@ pestanas_principales = st.tabs(titulos_pestanas)
 with pestanas_principales[0]:
     st.markdown("""
         <div class='modern-card'>
-            <h3 style='margin:0; color:#0f172a;'>📊 Repositorio de Datasets</h3>
-            <p style='margin:0; color:#64748b;'>Suba, visualice y edite hojas de cálculo en ventanas independientes.</p>
+            <h3 style='margin:0;'>📊 Repositorio de Datasets</h3>
+            <p style='margin:0; color:#475569;'>Suba, visualice y edite hojas de cálculo en ventanas independientes.</p>
         </div>
     """, unsafe_allow_html=True)
     
@@ -419,8 +489,8 @@ with pestanas_principales[0]:
 with pestanas_principales[1]:
     st.markdown("""
         <div class='modern-card'>
-            <h3 style='margin:0; color:#0f172a;'>📂 Módulo de Intervención</h3>
-            <p style='margin:0; color:#64748b;'>Soporte y resúmenes automáticos para Documentos, Imágenes y Audios (M4A/MP3/WAV).</p>
+            <h3 style='margin:0;'>📂 Módulo de Intervención</h3>
+            <p style='margin:0; color:#475569;'>Soporte y resúmenes automáticos para Documentos, Imágenes y Audios (M4A/MP3/WAV).</p>
         </div>
     """, unsafe_allow_html=True)
     
@@ -446,7 +516,7 @@ with pestanas_principales[1]:
                     
                     resumen_txt = "Archivo guardado."
                     if client:
-                        with st.spinner(f"Analizando {a.name} con Gemini..."):
+                        with st.spinner(f"Analizando {a.name} con Gemini 3.6 Flash..."):
                             try:
                                 if ext in ["m4a", "mp3", "wav"]:
                                     mime_map = {"m4a": "audio/mp4", "mp3": "audio/mp3", "wav": "audio/wav"}
@@ -514,7 +584,7 @@ with pestanas_principales[1]:
                     st.caption(f"Autor: **{autor_arc}** | Fecha: {fecha_arc} | Formato: **{tipo_arc.upper()}**")
                 with col_del_btn:
                     if usr.get("permiso_eliminar") or es_admin:
-                        if st.button("🗑️ Borrar", key=f"del_int_{idx}"):
+                        if st.button("🗑️ Borrar", key=f"del_int_{idx}", type="secondary"):
                             if ruta_arc and os.path.exists(ruta_arc):
                                 os.remove(ruta_arc)
                             db["intervencion"].pop(idx)
@@ -546,8 +616,8 @@ with pestanas_principales[1]:
 with pestanas_principales[2]:
     st.markdown("""
         <div class='modern-card'>
-            <h3 style='margin:0; color:#0f172a;'>📄 Informes Compartidos</h3>
-            <p style='margin:0; color:#64748b;'>Generación y repositorio colaborativo con exportación en formato Carta.</p>
+            <h3 style='margin:0;'>📄 Informes Compartidos</h3>
+            <p style='margin:0; color:#475569;'>Generación y repositorio colaborativo con exportación en formato Carta.</p>
         </div>
     """, unsafe_allow_html=True)
     
@@ -563,7 +633,7 @@ with pestanas_principales[2]:
             elif not client:
                 st.error("API Key de Gemini no configurada.")
             else:
-                with st.spinner("Redactando informe consolidado..."):
+                with st.spinner("Redactando informe consolidado con Gemini 3.6 Flash..."):
                     resumenes_int = "\n".join([f"- {x.get('nombre_original', 'Archivo')}: {x.get('resumen', '')}" for x in db["intervencion"]])
                     
                     prompt = f"""
@@ -615,7 +685,7 @@ with pestanas_principales[2]:
                     st.caption(f"Generado el: {fecha_inf}")
                 with c_inf_del:
                     if usr.get("permiso_eliminar") or es_admin:
-                        if st.button("🗑️ Borrar", key=f"del_inf_{idx_inf}"):
+                        if st.button("🗑️ Borrar", key=f"del_inf_{idx_inf}", type="secondary"):
                             db["informes"].pop(idx_inf)
                             guardar_estado(db)
                             st.success("Informe eliminado.")
@@ -677,8 +747,8 @@ if es_admin:
     with pestanas_principales[3]:
         st.markdown("""
             <div class='modern-card'>
-                <h3 style='margin:0; color:#0f172a;'>👥 Gestión de Usuarios y Permisos</h3>
-                <p style='margin:0; color:#64748b;'>Control centralizado de cuentas accesible exclusivamente por Administradores.</p>
+                <h3 style='margin:0;'>👥 Gestión de Usuarios y Permisos</h3>
+                <p style='margin:0; color:#475569;'>Control centralizado de cuentas accesible exclusivamente por Administradores.</p>
             </div>
         """, unsafe_allow_html=True)
         
@@ -731,7 +801,7 @@ if es_admin:
                     with col_u_d:
                         val_d = st.checkbox("Eliminar", value=u_d.get("permiso_eliminar", False), key=f"pd_{u_k}")
                     with col_u_del:
-                        if st.button("🗑️ Eliminar", key=f"del_user_{u_k}"):
+                        if st.button("🗑️ Eliminar", key=f"del_user_{u_k}", type="secondary"):
                             del db["usuarios"][u_k]
                             guardar_estado(db)
                             st.success(f"Usuario {u_k} eliminado.")
