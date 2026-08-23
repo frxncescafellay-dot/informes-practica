@@ -33,385 +33,115 @@ for d in [DIR_BASE, DIR_DATASETS, DIR_INTERVENCION, DIR_AVATARS]:
 
 MODELO_GEMINI = "gemini-3.6-flash"
 
-# --- PALETA TEAL + NARANJA TERRACOTA (CERO ELEMENTOS NEGROS) ---
-st.markdown("""
-<style>
-    /* Tipografia uniforme */
-    html, body, [class*="css"], .stApp {
-        font-family: 'Segoe UI', system-ui, -apple-system, sans-serif !important;
-    }
-
-    /* Fondo principal */
-    .stApp {
-        background: #73b5ae !important;
-        color: #061e1b;
-    }
-    
-    /* Encabezados y titulos */
-    h1, h2, h3, h4, h5, h6 {
-        color: #061e1b !important;
-        font-weight: 800;
-        letter-spacing: -0.5px;
-        font-family: 'Segoe UI', system-ui, -apple-system, sans-serif !important;
-    }
-    
-    /* Barra lateral */
-    section[data-testid="stSidebar"] {
-        background-color: #63a59e !important;
-        border-right: 2px solid #52948d !important;
-    }
-    section[data-testid="stSidebar"] * {
-        color: #061e1b !important;
-        font-weight: 600;
-    }
-
-    /* Tarjetas y Contenedores */
-    .modern-card {
-        background: #89c7c0 !important;
-        border: 2px solid #63a59e !important;
-        border-radius: 14px;
-        padding: 22px;
-        margin-bottom: 20px;
-        box-shadow: 0 4px 12px rgba(13, 44, 41, 0.12);
-    }
-
-    /* Desplegables (Expanders) */
-    div[data-testid="stExpander"] {
-        background-color: #89c7c0 !important;
-        border: 2px solid #63a59e !important;
-        border-radius: 10px !important;
-    }
-    div[data-testid="stExpander"] summary {
-        background-color: #7ab8b1 !important;
-        color: #061e1b !important;
-        border-radius: 8px !important;
-        font-weight: 750 !important;
-    }
-    div[data-testid="stExpander"] summary * {
-        color: #061e1b !important;
-        font-weight: 750 !important;
-    }
-    div[data-testid="stExpander"] div[role="region"] {
-        background-color: #89c7c0 !important;
-        color: #061e1b !important;
-    }
-
-    /* Cuadros de texto */
-    input[type="text"], 
-    input[type="password"], 
-    textarea {
-        background-color: #a2d2cc !important;
-        color: #061e1b !important;
-        border: 2px solid #52948d !important;
-        border-radius: 8px !important;
-        font-size: 0.95rem !important;
-        font-weight: 600 !important;
-    }
-    input[type="text"]:focus, 
-    input[type="password"]:focus, 
-    textarea:focus {
-        background-color: #bfe3de !important;
-        color: #000000 !important;
-        border-color: #c84b1e !important;
-        box-shadow: 0 0 0 3px rgba(200, 75, 30, 0.25) !important;
-    }
-
-    /* Quitar fondo negro del boton de ver contrasena en input password */
-    div[data-baseweb="input"] button,
-    div[data-baseweb="input"] div {
-        background-color: #a2d2cc !important;
-        border: none !important;
-        color: #061e1b !important;
-    }
-    div[data-baseweb="input"] svg {
-        fill: #061e1b !important;
-        color: #061e1b !important;
-    }
-
-    /* Selectores desplegables (Selectbox) */
-    div[data-baseweb="select"] > div {
-        background-color: #a2d2cc !important;
-        color: #061e1b !important;
-        border: 2px solid #52948d !important;
-        border-radius: 8px !important;
-    }
-    div[data-baseweb="select"] * {
-        background-color: #a2d2cc !important;
-        color: #061e1b !important;
-        font-weight: 600 !important;
-    }
-    div[data-baseweb="select"] svg {
-        fill: #061e1b !important;
-        color: #061e1b !important;
-    }
-
-    /* CUADROS PARA MARCAR (Checkboxes) */
-    div[data-testid="stCheckbox"] span[role="checkbox"] {
-        background-color: #a2d2cc !important;
-        border: 2px solid #52948d !important;
-        border-radius: 5px !important;
-    }
-    div[data-testid="stCheckbox"] span[role="checkbox"][aria-checked="true"] {
-        background-color: #c84b1e !important;
-        border-color: #9e3610 !important;
-    }
-    div[data-testid="stCheckbox"] svg {
-        color: #ffffff !important;
-        fill: #ffffff !important;
-    }
-    div[data-testid="stCheckbox"] label span {
-        color: #061e1b !important;
-        font-weight: 600 !important;
-    }
-
-    /* Zona de carga de archivos (Uploader) */
-    div[data-testid="stFileUploader"] {
-        background-color: #89c7c0 !important;
-        border: 2px dashed #c84b1e !important;
-        border-radius: 12px !important;
-        padding: 14px !important;
-    }
-    div[data-testid="stFileUploader"] section {
-        background-color: #89c7c0 !important;
-    }
-    div[data-testid="stFileUploader"] section * {
-        color: #061e1b !important;
-    }
-    div[data-testid="stFileUploader"] button {
-        background-color: #c84b1e !important;
-        border: 2px solid #9e3610 !important;
-        border-radius: 8px !important;
-        font-weight: 750 !important;
-    }
-    div[data-testid="stFileUploader"] button p {
-        color: #ffffff !important;
-    }
-
-    /* BOTONES DE DESCARGA */
-    div[data-testid="stDownloadButton"]>button {
-        background: #a2d2cc !important;
-        color: #061e1b !important;
-        border: 2px solid #52948d !important;
-        border-radius: 9px !important;
-        padding: 9px 20px !important;
-        font-weight: 800 !important;
-        font-size: 0.95rem !important;
-        box-shadow: 0 3px 8px rgba(13, 44, 41, 0.15) !important;
-        transition: all 0.2s ease !important;
-    }
-    div[data-testid="stDownloadButton"]>button:hover {
-        background: #bfe3de !important;
-        color: #000000 !important;
-        border-color: #061e1b !important;
-        transform: translateY(-1px);
-    }
-    div[data-testid="stDownloadButton"]>button p {
-        color: #061e1b !important;
-        font-weight: 800 !important;
-    }
-
-    /* BOTONES PRINCIPALES Y FORMULARIOS */
-    .stButton>button, 
-    div[data-testid="stFormSubmitButton"]>button {
-        background: linear-gradient(135deg, #c84b1e 0%, #b23b14 100%) !important;
-        color: #ffffff !important;
-        border: 2px solid #9e3610 !important;
-        border-radius: 9px !important;
-        padding: 9px 22px !important;
-        font-weight: 800 !important;
-        font-size: 0.95rem !important;
-        box-shadow: 0 4px 12px rgba(178, 59, 20, 0.35) !important;
-        transition: all 0.2s ease !important;
-    }
-    .stButton>button:hover, 
-    div[data-testid="stFormSubmitButton"]>button:hover {
-        background: linear-gradient(135deg, #db5928 0%, #c84b1e 100%) !important;
-        border-color: #db5928 !important;
-        box-shadow: 0 6px 16px rgba(219, 89, 40, 0.45) !important;
-        transform: translateY(-1px);
-    }
-    .stButton>button p, 
-    div[data-testid="stFormSubmitButton"]>button p {
-        color: #ffffff !important;
-        font-weight: 800 !important;
-    }
-
-    /* Tablas de datos Excel */
-    div[data-testid="stDataFrame"], 
-    div[data-testid="stDataEditor"],
-    div[data-testid="stDataFrame"] > div,
-    div[data-testid="stDataEditor"] > div {
-        background-color: #89c7c0 !important;
-        border: 2px solid #52948d !important;
-        border-radius: 10px !important;
-    }
-    
-    .glide-data-grid,
-    .gdg-container,
-    div[data-testid="stDataFrame"] canvas,
-    div[data-testid="stDataEditor"] canvas {
-        filter: invert(0.85) sepia(0.3) saturate(2.5) hue-rotate(130deg) brightness(1.05) !important;
-        border-radius: 8px !important;
-    }
-
-    /* TABLAS MARKDOWN EN INFORMES */
-    table {
-        width: 100% !important;
-        border-collapse: collapse !important;
-        margin: 16px 0 !important;
-        background-color: #89c7c0 !important;
-        border-radius: 8px !important;
-        overflow: hidden !important;
-        border: 2px solid #52948d !important;
-    }
-    th {
-        background-color: #63a59e !important;
-        color: #061e1b !important;
-        font-weight: 800 !important;
-        padding: 12px 14px !important;
-        border: 1px solid #52948d !important;
-        text-align: left !important;
-    }
-    td {
-        padding: 10px 14px !important;
-        border: 1px solid #52948d !important;
-        color: #061e1b !important;
-        font-size: 0.95rem !important;
-    }
-    tr:nth-child(even) {
-        background-color: #7ab8b1 !important;
-    }
-
-    /* Textos con fondo destacado */
-    .highlight-tag {
-        background: #a2d2cc;
-        border: 1.5px solid #52948d;
-        padding: 3px 10px;
-        border-radius: 6px;
-        font-weight: 700;
-        color: #061e1b;
-        font-size: 0.92rem;
-        display: inline-block;
-        font-family: 'Segoe UI', system-ui, -apple-system, sans-serif !important;
-    }
-
-    code, pre {
-        background-color: #a2d2cc !important;
-        color: #061e1b !important;
-        border: 1.5px solid #52948d !important;
-        border-radius: 6px !important;
-        padding: 3px 8px !important;
-        font-family: 'Segoe UI', system-ui, -apple-system, sans-serif !important;
-        font-size: 0.92rem !important;
-        font-weight: 700 !important;
-    }
-    
-    /* Botones de eliminacion */
-    div[data-testid="stBaseButton-secondary"] button {
-        background: #e29b9b !important;
-        border: 2px solid #c96b6b !important;
-        box-shadow: none !important;
-    }
-    div[data-testid="stBaseButton-secondary"] button:hover {
-        background: #d67a7a !important;
-    }
-    div[data-testid="stBaseButton-secondary"] button p {
-        color: #5c0f0f !important;
-    }
-
-    /* Pestanas de navegacion */
-    button[data-baseweb="tab"] {
-        background-color: #63a59e !important;
-        color: #061e1b !important;
-        border-radius: 8px 8px 0 0 !important;
-        font-weight: 750 !important;
-        margin-right: 4px !important;
-        padding: 9px 18px !important;
-        border: 1px solid #52948d !important;
-    }
-    button[data-baseweb="tab"][aria-selected="true"] {
-        background-color: #89c7c0 !important;
-        color: #061e1b !important;
-        border-bottom: 3.5px solid #c84b1e !important;
-    }
-
-    label, p, span {
-        color: #061e1b;
-        font-weight: 600;
-    }
-
-    .badge-role {
-        display: inline-block;
-        background: #c84b1e;
-        color: #ffffff !important;
-        padding: 4px 12px;
-        border-radius: 14px;
-        font-size: 0.82rem;
-        font-weight: 800;
-        border: 1.5px solid #9e3610;
-    }
-</style>
-""", unsafe_allow_html=True)
+# --- ESTILOS CSS ---
+css_code = """<style>
+html, body, [class*="css"], .stApp { font-family: 'Segoe UI', system-ui, -apple-system, sans-serif !important; }
+.stApp { background: #73b5ae !important; color: #061e1b; }
+h1, h2, h3, h4, h5, h6 { color: #061e1b !important; font-weight: 800; letter-spacing: -0.5px; font-family: 'Segoe UI', system-ui, -apple-system, sans-serif !important; }
+section[data-testid="stSidebar"] { background-color: #63a59e !important; border-right: 2px solid #52948d !important; }
+section[data-testid="stSidebar"] * { color: #061e1b !important; font-weight: 600; }
+.modern-card { background: #89c7c0 !important; border: 2px solid #63a59e !important; border-radius: 14px; padding: 22px; margin-bottom: 20px; box-shadow: 0 4px 12px rgba(13, 44, 41, 0.12); }
+div[data-testid="stExpander"] { background-color: #89c7c0 !important; border: 2px solid #63a59e !important; border-radius: 10px !important; }
+div[data-testid="stExpander"] summary { background-color: #7ab8b1 !important; color: #061e1b !important; border-radius: 8px !important; font-weight: 750 !important; }
+div[data-testid="stExpander"] summary * { color: #061e1b !important; font-weight: 750 !important; }
+div[data-testid="stExpander"] div[role="region"] { background-color: #89c7c0 !important; color: #061e1b !important; }
+input[type="text"], input[type="password"], textarea { background-color: #a2d2cc !important; color: #061e1b !important; border: 2px solid #52948d !important; border-radius: 8px !important; font-size: 0.95rem !important; font-weight: 600 !important; }
+input[type="text"]:focus, input[type="password"]:focus, textarea:focus { background-color: #bfe3de !important; color: #000000 !important; border-color: #c84b1e !important; box-shadow: 0 0 0 3px rgba(200, 75, 30, 0.25) !important; }
+div[data-baseweb="input"] button, div[data-baseweb="input"] div { background-color: #a2d2cc !important; border: none !important; color: #061e1b !important; }
+div[data-baseweb="input"] svg { fill: #061e1b !important; color: #061e1b !important; }
+div[data-baseweb="select"] > div { background-color: #a2d2cc !important; color: #061e1b !important; border: 2px solid #52948d !important; border-radius: 8px !important; }
+div[data-baseweb="select"] * { background-color: #a2d2cc !important; color: #061e1b !important; font-weight: 600 !important; }
+div[data-baseweb="select"] svg { fill: #061e1b !important; color: #061e1b !important; }
+div[data-testid="stCheckbox"] span[role="checkbox"] { background-color: #a2d2cc !important; border: 2px solid #52948d !important; border-radius: 5px !important; }
+div[data-testid="stCheckbox"] span[role="checkbox"][aria-checked="true"] { background-color: #c84b1e !important; border-color: #9e3610 !important; }
+div[data-testid="stCheckbox"] svg { color: #ffffff !important; fill: #ffffff !important; }
+div[data-testid="stCheckbox"] label span { color: #061e1b !important; font-weight: 600 !important; }
+div[data-testid="stFileUploader"] { background-color: #89c7c0 !important; border: 2px dashed #c84b1e !important; border-radius: 12px !important; padding: 14px !important; }
+div[data-testid="stFileUploader"] section { background-color: #89c7c0 !important; }
+div[data-testid="stFileUploader"] section * { color: #061e1b !important; }
+div[data-testid="stFileUploader"] button { background-color: #c84b1e !important; border: 2px solid #9e3610 !important; border-radius: 8px !important; font-weight: 750 !important; }
+div[data-testid="stFileUploader"] button p { color: #ffffff !important; }
+div[data-testid="stDownloadButton"]>button { background: #a2d2cc !important; color: #061e1b !important; border: 2px solid #52948d !important; border-radius: 9px !important; padding: 9px 20px !important; font-weight: 800 !important; font-size: 0.95rem !important; box-shadow: 0 3px 8px rgba(13, 44, 41, 0.15) !important; transition: all 0.2s ease !important; }
+div[data-testid="stDownloadButton"]>button:hover { background: #bfe3de !important; color: #000000 !important; border-color: #061e1b !important; transform: translateY(-1px); }
+div[data-testid="stDownloadButton"]>button p { color: #061e1b !important; font-weight: 800 !important; }
+.stButton>button, div[data-testid="stFormSubmitButton"]>button { background: linear-gradient(135deg, #c84b1e 0%, #b23b14 100%) !important; color: #ffffff !important; border: 2px solid #9e3610 !important; border-radius: 9px !important; padding: 9px 22px !important; font-weight: 800 !important; font-size: 0.95rem !important; box-shadow: 0 4px 12px rgba(178, 59, 20, 0.35) !important; transition: all 0.2s ease !important; }
+.stButton>button:hover, div[data-testid="stFormSubmitButton"]>button:hover { background: linear-gradient(135deg, #db5928 0%, #c84b1e 100%) !important; border-color: #db5928 !important; box-shadow: 0 6px 16px rgba(219, 89, 40, 0.45) !important; transform: translateY(-1px); }
+.stButton>button p, div[data-testid="stFormSubmitButton"]>button p { color: #ffffff !important; font-weight: 800 !important; }
+div[data-testid="stDataFrame"], div[data-testid="stDataEditor"], div[data-testid="stDataFrame"] > div, div[data-testid="stDataEditor"] > div { background-color: #89c7c0 !important; border: 2px solid #52948d !important; border-radius: 10px !important; }
+.glide-data-grid, .gdg-container, div[data-testid="stDataFrame"] canvas, div[data-testid="stDataEditor"] canvas { filter: invert(0.85) sepia(0.3) saturate(2.5) hue-rotate(130deg) brightness(1.05) !important; border-radius: 8px !important; }
+table { width: 100% !important; border-collapse: collapse !important; margin: 16px 0 !important; background-color: #89c7c0 !important; border-radius: 8px !important; overflow: hidden !important; border: 2px solid #52948d !important; }
+th { background-color: #63a59e !important; color: #061e1b !important; font-weight: 800 !important; padding: 12px 14px !important; border: 1px solid #52948d !important; text-align: left !important; }
+td { padding: 10px 14px !important; border: 1px solid #52948d !important; color: #061e1b !important; font-size: 0.95rem !important; }
+tr:nth-child(even) { background-color: #7ab8b1 !important; }
+.highlight-tag { background: #a2d2cc; border: 1.5px solid #52948d; padding: 3px 10px; border-radius: 6px; font-weight: 700; color: #061e1b; font-size: 0.92rem; display: inline-block; font-family: 'Segoe UI', system-ui, -apple-system, sans-serif !important; }
+code, pre { background-color: #a2d2cc !important; color: #061e1b !important; border: 1.5px solid #52948d !important; border-radius: 6px !important; padding: 3px 8px !important; font-family: 'Segoe UI', system-ui, -apple-system, sans-serif !important; font-size: 0.92rem !important; font-weight: 700 !important; }
+div[data-testid="stBaseButton-secondary"] button { background: #e29b9b !important; border: 2px solid #c96b6b !important; box-shadow: none !important; }
+div[data-testid="stBaseButton-secondary"] button:hover { background: #d67a7a !important; }
+div[data-testid="stBaseButton-secondary"] button p { color: #5c0f0f !important; }
+button[data-baseweb="tab"] { background-color: #63a59e !important; color: #061e1b !important; border-radius: 8px 8px 0 0 !important; font-weight: 750 !important; margin-right: 4px !important; padding: 9px 18px !important; border: 1px solid #52948d !important; }
+button[data-baseweb="tab"][aria-selected="true"] { background-color: #89c7c0 !important; color: #061e1b !important; border-bottom: 3.5px solid #c84b1e !important; }
+label, p, span { color: #061e1b; font-weight: 600; }
+.badge-role { display: inline-block; background: #c84b1e; color: #ffffff !important; padding: 4px 12px; border-radius: 14px; font-size: 0.82rem; font-weight: 800; border: 1.5px solid #9e3610; }
+</style>"""
+st.markdown(css_code, unsafe_allow_html=True)
 
 # --- RELOJ DUAL NARANJA ---
 def renderizar_reloj_chile():
-    html_reloj = """
-    <div style="background: linear-gradient(135deg, #c84b1e 0%, #b23b14 100%); border: 2px solid #9e3610; border-radius: 16px; padding: 12px 20px; display: flex; align-items: center; justify-content: space-between; gap: 16px; box-shadow: 0 6px 18px rgba(178, 59, 20, 0.35); max-width: 480px; margin-left: auto; margin-bottom: 15px; font-family: 'Segoe UI', system-ui, sans-serif;">
-        <div style="position: relative; width: 60px; height: 60px;">
-            <svg id="analog-clock" width="60" height="60" viewBox="0 0 100 100">
-                <circle cx="50" cy="50" r="46" fill="#fbe8e1" stroke="#782307" stroke-width="4"/>
-                <line x1="50" y1="10" x2="50" y2="16" stroke="#4a1503" stroke-width="3" stroke-linecap="round"/>
-                <line x1="90" y1="50" x2="84" y2="50" stroke="#4a1503" stroke-width="3" stroke-linecap="round"/>
-                <line x1="50" y1="90" x2="50" y2="84" stroke="#4a1503" stroke-width="3" stroke-linecap="round"/>
-                <line x1="10" y1="50" x2="16" y2="50" stroke="#4a1503" stroke-width="3" stroke-linecap="round"/>
-                <line id="hour-hand" x1="50" y1="50" x2="50" y2="28" stroke="#260900" stroke-width="5" stroke-linecap="round"/>
-                <line id="min-hand" x1="50" y1="50" x2="50" y2="18" stroke="#591905" stroke-width="3.5" stroke-linecap="round"/>
-                <line id="sec-hand" x1="50" y1="50" x2="50" y2="14" stroke="#b23b14" stroke-width="2" stroke-linecap="round"/>
-                <circle cx="50" cy="50" r="4" fill="#260900"/>
-            </svg>
-        </div>
-        <div style="display: flex; flex-direction: column; justify-content: center;">
-            <div style="font-size: 0.76rem; font-weight: 800; color: #fbe8e1; text-transform: uppercase; letter-spacing: 0.8px;">🇨🇱 Hora Oficial de Chile</div>
-            <div id="digital-clock" style="font-size: 1.65rem; font-weight: 900; color: #ffffff; line-height: 1.1; text-shadow: 0 2px 4px rgba(0,0,0,0.2);">--:--:--</div>
-            <div id="digital-date" style="font-size: 0.82rem; font-weight: 700; color: #fbe8e1; margin-top: 2px;">Cargando fecha...</div>
-        </div>
-    </div>
-    <script>
-        function actualizarReloj() {
-            const opciones = { timeZone: 'America/Santiago', hour12: false, hour: '2-digit', minute: '2-digit', second: '2-digit' };
-            const opcionesFecha = { timeZone: 'America/Santiago', weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
-            const ahora = new Date();
-            const formateadorHora = new Intl.DateTimeFormat('es-CL', opciones);
-            const formateadorFecha = new Intl.DateTimeFormat('es-CL', opcionesFecha);
-            const partesHora = formateadorHora.formatToParts(ahora);
-            let h = 0, m = 0, s = 0;
-            partesHora.forEach(p => {
-                if (p.type === 'hour') h = parseInt(p.value);
-                if (p.type === 'minute') m = parseInt(p.value);
-                if (p.type === 'second') s = parseInt(p.value);
-            });
-            const hStr = h.toString().padStart(2, '0');
-            const mStr = m.toString().padStart(2, '0');
-            const sStr = s.toString().padStart(2, '0');
-            document.getElementById('digital-clock').textContent = `${hStr}:${mStr}:${sStr}`;
-            let fechaStr = formateadorFecha.format(ahora);
-            fechaStr = fechaStr.charAt(0).toUpperCase() + fechaStr.slice(1);
-            document.getElementById('digital-date').textContent = fechaStr;
-            const secDeg = s * 6;
-            const minDeg = m * 6 + s * 0.1;
-            const hourDeg = (h % 12) * 30 + m * 0.5;
-            function rotar(elemId, deg) {
-                const el = document.getElementById(elemId);
-                if (el) el.setAttribute('transform', `rotate(${deg} 50 50)`);
-            }
-            rotar('sec-hand', secDeg);
-            rotar('min-hand', minDeg);
-            rotar('hour-hand', hourDeg);
-        }
-        setInterval(actualizarReloj, 1000);
-        actualizarReloj();
-    </script>
-    """
+    html_reloj = """<div style="background: linear-gradient(135deg, #c84b1e 0%, #b23b14 100%); border: 2px solid #9e3610; border-radius: 16px; padding: 12px 20px; display: flex; align-items: center; justify-content: space-between; gap: 16px; box-shadow: 0 6px 18px rgba(178, 59, 20, 0.35); max-width: 480px; margin-left: auto; margin-bottom: 15px; font-family: 'Segoe UI', system-ui, sans-serif;">
+<div style="position: relative; width: 60px; height: 60px;">
+    <svg id="analog-clock" width="60" height="60" viewBox="0 0 100 100">
+        <circle cx="50" cy="50" r="46" fill="#fbe8e1" stroke="#782307" stroke-width="4"/>
+        <line x1="50" y1="10" x2="50" y2="16" stroke="#4a1503" stroke-width="3" stroke-linecap="round"/>
+        <line x1="90" y1="50" x2="84" y2="50" stroke="#4a1503" stroke-width="3" stroke-linecap="round"/>
+        <line x1="50" y1="90" x2="50" y2="84" stroke="#4a1503" stroke-width="3" stroke-linecap="round"/>
+        <line x1="10" y1="50" x2="16" y2="50" stroke="#4a1503" stroke-width="3" stroke-linecap="round"/>
+        <line id="hour-hand" x1="50" y1="50" x2="50" y2="28" stroke="#260900" stroke-width="5" stroke-linecap="round"/>
+        <line id="min-hand" x1="50" y1="50" x2="50" y2="18" stroke="#591905" stroke-width="3.5" stroke-linecap="round"/>
+        <line id="sec-hand" x1="50" y1="50" x2="50" y2="14" stroke="#b23b14" stroke-width="2" stroke-linecap="round"/>
+        <circle cx="50" cy="50" r="4" fill="#260900"/>
+    </svg>
+</div>
+<div style="display: flex; flex-direction: column; justify-content: center;">
+    <div style="font-size: 0.76rem; font-weight: 800; color: #fbe8e1; text-transform: uppercase; letter-spacing: 0.8px;">🇨🇱 Hora Oficial de Chile</div>
+    <div id="digital-clock" style="font-size: 1.65rem; font-weight: 900; color: #ffffff; line-height: 1.1; text-shadow: 0 2px 4px rgba(0,0,0,0.2);">--:--:--</div>
+    <div id="digital-date" style="font-size: 0.82rem; font-weight: 700; color: #fbe8e1; margin-top: 2px;">Cargando fecha...</div>
+</div>
+</div>
+<script>
+function actualizarReloj() {
+    const opciones = { timeZone: 'America/Santiago', hour12: false, hour: '2-digit', minute: '2-digit', second: '2-digit' };
+    const opcionesFecha = { timeZone: 'America/Santiago', weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
+    const ahora = new Date();
+    const formateadorHora = new Intl.DateTimeFormat('es-CL', opciones);
+    const formateadorFecha = new Intl.DateTimeFormat('es-CL', opcionesFecha);
+    const partesHora = formateadorHora.formatToParts(ahora);
+    let h = 0, m = 0, s = 0;
+    partesHora.forEach(p => {
+        if (p.type === 'hour') h = parseInt(p.value);
+        if (p.type === 'minute') m = parseInt(p.value);
+        if (p.type === 'second') s = parseInt(p.value);
+    });
+    const hStr = h.toString().padStart(2, '0');
+    const mStr = m.toString().padStart(2, '0');
+    const sStr = s.toString().padStart(2, '0');
+    document.getElementById('digital-clock').textContent = `${hStr}:${mStr}:${sStr}`;
+    let fechaStr = formateadorFecha.format(ahora);
+    fechaStr = fechaStr.charAt(0).toUpperCase() + fechaStr.slice(1);
+    document.getElementById('digital-date').textContent = fechaStr;
+    const secDeg = s * 6;
+    const minDeg = m * 6 + s * 0.1;
+    const hourDeg = (h % 12) * 30 + m * 0.5;
+    function rotar(elemId, deg) {
+        const el = document.getElementById(elemId);
+        if (el) el.setAttribute('transform', `rotate(${deg} 50 50)`);
+    }
+    rotar('sec-hand', secDeg);
+    rotar('min-hand', minDeg);
+    rotar('hour-hand', hourDeg);
+}
+setInterval(actualizarReloj, 1000);
+actualizarReloj();
+</script>"""
     components.html(html_reloj, height=105)
 
 # --- GESTOR DE PERSISTENCIA ---
@@ -447,10 +177,8 @@ def cargar_estado():
             data = json.load(f)
         except Exception:
             data = {"usuarios": {}, "datasets": {}, "intervencion": [], "informes": []}
-    
     if "usuarios" not in data:
         data["usuarios"] = {}
-    
     if "admin1" in data["usuarios"]:
         data["usuarios"]["admin1"]["nombre"] = "Francesca Fellay"
     else:
@@ -462,7 +190,6 @@ def cargar_estado():
             "permiso_eliminar": True,
             "avatar": ""
         }
-        
     data["usuarios"]["gerente"] = {
         "nombre": "Gerencia General",
         "rol": "Admin",
@@ -543,13 +270,11 @@ es_admin = (usr.get("rol") == "Admin") or (usr_key in ["admin1", "gerente"])
 
 # --- BARRA LATERAL ---
 st.sidebar.markdown("### 👤 Mi Perfil")
-
 avatar_path = usr.get("avatar", "")
 if avatar_path and os.path.exists(avatar_path):
     st.sidebar.image(avatar_path, width=105)
 else:
-    st.sidebar.markdown("""<div style='width:80px; height:80px; border-radius:50%; background:#a2d2cc; border:2px solid #52948d; display:flex; align-items:center; justify-content:center; font-size:2.2rem; color:#061e1b; margin-bottom:10px;'>👤</div>""", unsafe_allow_html=True)
-
+    st.sidebar.markdown("<div style='width:80px; height:80px; border-radius:50%; background:#a2d2cc; border:2px solid #52948d; display:flex; align-items:center; justify-content:center; font-size:2.2rem; color:#061e1b; margin-bottom:10px;'>👤</div>", unsafe_allow_html=True)
 st.sidebar.markdown(f"**{usr.get('nombre')}**")
 st.sidebar.markdown(f"<span class='badge-role'>{usr.get('rol')}</span>", unsafe_allow_html=True)
 
@@ -590,15 +315,13 @@ pestanas_principales = st.tabs(titulos_pestanas)
 # 1. DATASETS EXCEL
 # ==========================================
 with pestanas_principales[0]:
-    st.markdown("""<div class='modern-card'><h3 style='margin:0;'>📊 Repositorio de Datasets</h3><p style='margin:0; color:#061e1b;'>Suba, visualice y edite hojas de calculo en ventanas independientes.</p></div>""", unsafe_allow_html=True)
-    
+    st.markdown("<div class='modern-card'><h3 style='margin:0;'>📊 Repositorio de Datasets</h3><p style='margin:0; color:#061e1b;'>Suba, visualice y edite hojas de calculo en ventanas independientes.</p></div>", unsafe_allow_html=True)
     with st.expander("➕ Cargar Nuevo Dataset Excel", expanded=True):
         c_tit, c_arc = st.columns([1, 1])
         with c_tit:
             t_data = st.text_input("Titulo del dataset:")
         with c_arc:
             f_data = st.file_uploader("Archivo Excel (.xlsx, .xls):", type=["xlsx", "xls"])
-            
         if st.button("Guardar Dataset"):
             if not t_data.strip() or f_data is None:
                 st.error("Complete el titulo y seleccione un archivo.")
@@ -607,7 +330,6 @@ with pestanas_principales[0]:
                 ruta_dest = os.path.join(DIR_DATASETS, nom_arc)
                 with open(ruta_dest, "wb") as f:
                     f.write(f_data.getbuffer())
-                
                 db["datasets"][t_data] = {
                     "titulo": t_data,
                     "autor": usr["nombre"],
@@ -617,25 +339,20 @@ with pestanas_principales[0]:
                 guardar_estado(db)
                 st.success("Dataset guardado con exito.")
                 st.rerun()
-
     st.markdown("---")
     if not db["datasets"]:
         st.info("No hay datasets subidos actualmente.")
     else:
         titulos_ds = list(db["datasets"].keys())
         pestanas_ds = st.tabs(titulos_ds)
-        
         for idx_ds, tab_ds in enumerate(pestanas_ds):
             t_act = titulos_ds[idx_ds]
             info_ds = db["datasets"][t_act]
-            
             with tab_ds:
                 st.markdown(f"### 📋 {info_ds['titulo']}")
                 st.caption(f"Subido por: **{info_ds['autor']}** | Fecha: {info_ds['fecha']}")
-                
                 if os.path.exists(info_ds["ruta"]):
                     df_actual = pd.read_excel(info_ds["ruta"])
-                    
                     if usr.get("permiso_editar") or es_admin:
                         st.markdown("**✏️ Editor de Datos en Vivo:**")
                         df_edit = st.data_editor(df_actual, key=f"d_edit_{t_act}", use_container_width=True)
@@ -645,7 +362,6 @@ with pestanas_principales[0]:
                             st.rerun()
                     else:
                         st.dataframe(df_actual, use_container_width=True)
-                    
                     if usr.get("permiso_eliminar") or es_admin:
                         st.markdown("---")
                         if st.button("🗑️ Eliminar Dataset", key=f"del_ds_{t_act}", type="secondary"):
@@ -662,15 +378,10 @@ with pestanas_principales[0]:
 # 2. INTERVENCION MULTI-FORMATO
 # ==========================================
 with pestanas_principales[1]:
-    st.markdown("""<div class='modern-card'><h3 style='margin:0;'>📂 Modulo de Intervencion</h3><p style='margin:0; color:#061e1b;'>Soporte y resumenes automaticos para Documentos, Imagenes y Audios (M4A/MP3/WAV).</p></div>""", unsafe_allow_html=True)
-    
+    st.markdown("<div class='modern-card'><h3 style='margin:0;'>📂 Modulo de Intervencion</h3><p style='margin:0; color:#061e1b;'>Soporte y resumenes automaticos para Documentos, Imagenes y Audios (M4A/MP3/WAV).</p></div>", unsafe_allow_html=True)
     with st.form("form_intervencion"):
         tit_int = st.text_input("Titulo descriptivo del material:")
-        archivos = st.file_uploader(
-            "Cargar archivos:",
-            type=["xlsx", "xls", "docx", "pdf", "pptx", "jpg", "jpeg", "png", "mp4", "m4a", "mp3", "wav"],
-            accept_multiple_files=True
-        )
+        archivos = st.file_uploader("Cargar archivos:", type=["xlsx", "xls", "docx", "pdf", "pptx", "jpg", "jpeg", "png", "mp4", "m4a", "mp3", "wav"], accept_multiple_files=True)
         if st.form_submit_button("Subir y Procesar"):
             if not tit_int.strip() or not archivos:
                 st.error("Complete el titulo y cargue al menos un archivo.")
@@ -680,10 +391,8 @@ with pestanas_principales[1]:
                     ext = a.name.split(".")[-1].lower()
                     nom_dest = f"{datetime.now().strftime('%Y%m%d_%H%M%S')}_{a.name}"
                     ruta_guardada = os.path.join(DIR_INTERVENCION, nom_dest)
-                    
                     with open(ruta_guardada, "wb") as f:
                         f.write(a.getbuffer())
-                    
                     resumen_txt = "Archivo guardado."
                     if client:
                         with st.spinner(f"Analizando {a.name} con Gemini 3.6 Flash..."):
@@ -694,31 +403,21 @@ with pestanas_principales[1]:
                                         audio_bytes = f_aud.read()
                                     resp = client.models.generate_content(
                                         model=MODELO_GEMINI,
-                                        contents=[
-                                            types.Part.from_bytes(data=audio_bytes, mime_type=mime_map.get(ext, "audio/mp4")),
-                                            "Sintetiza los puntos clave tratados en este audio, acuerdos y diagnostico para intervencion. Usa parrafos claros o vinetas Markdown estandar, nunca bloques de codigo o diagramas ASCII."
-                                        ]
+                                        contents=[types.Part.from_bytes(data=audio_bytes, mime_type=mime_map.get(ext, "audio/mp4")), "Sintetiza los puntos clave tratados en este audio, acuerdos y diagnostico para intervencion. Usa parrafos claros o vinetas Markdown estandar, nunca bloques de codigo o diagramas ASCII."]
                                     )
                                     resumen_txt = resp.text
                                 elif ext in ["jpg", "jpeg", "png"]:
                                     img = Image.open(ruta_guardada)
-                                    resp = client.models.generate_content(
-                                        model=MODELO_GEMINI,
-                                        contents=["Describe y resume los elementos clave de esta imagen para un informe de intervencion:", img]
-                                    )
+                                    resp = client.models.generate_content(model=MODELO_GEMINI, contents=["Describe y resume los elementos clave de esta imagen para un informe de intervencion:", img])
                                     resumen_txt = resp.text
                                 elif ext in ["pdf", "docx", "pptx", "xlsx", "xls"]:
                                     t_doc = extraer_texto_archivo(ruta_guardada, ext)
-                                    resp = client.models.generate_content(
-                                        model=MODELO_GEMINI,
-                                        contents=f"Elabora un resumen y diagnostico clave de este documento ({a.name}):\n\n{t_doc}\n\nUsa vinetas Markdown estandar."
-                                    )
+                                    resp = client.models.generate_content(model=MODELO_GEMINI, contents=f"Elabora un resumen y diagnostico clave de este documento ({a.name}):\n\n{t_doc}\n\nUsa vinetas Markdown estandar.")
                                     resumen_txt = resp.text
                                 elif ext == "mp4":
                                     resumen_txt = "Video registrado (reproduccion multimedia disponible)."
                             except Exception as e:
                                 resumen_txt = f"Archivo guardado. Diagnostico no generado: {e}"
-                    
                     db["intervencion"].append({
                         "titulo": tit_int,
                         "nombre_original": a.name,
@@ -731,10 +430,8 @@ with pestanas_principales[1]:
                 guardar_estado(db)
                 st.success("Materiales integrados correctamente.")
                 st.rerun()
-
     st.markdown("---")
     st.subheader("📚 Materiales Guardados")
-    
     if not db["intervencion"]:
         st.info("No hay registros en intervencion.")
     else:
@@ -746,7 +443,6 @@ with pestanas_principales[1]:
             fecha_arc = item.get("fecha", "")
             resumen_arc = item.get("resumen", "Sin resumen disponible.")
             ruta_arc = item.get("ruta", "")
-            
             with st.container():
                 col_head, col_del_btn = st.columns([5, 1])
                 with col_head:
@@ -761,7 +457,6 @@ with pestanas_principales[1]:
                             guardar_estado(db)
                             st.success("Archivo eliminado.")
                             st.rerun()
-                
                 t_vis, t_res = st.tabs(["👁️ Multimedia / Descarga", "📝 Diagnostico y Resumen"])
                 with t_vis:
                     if ruta_arc and os.path.exists(ruta_arc):
@@ -784,13 +479,11 @@ with pestanas_principales[1]:
 # 3. INFORMES COMPARTIDOS
 # ==========================================
 with pestanas_principales[2]:
-    st.markdown("""<div class='modern-card'><h3 style='margin:0;'>📄 Informes Compartidos</h3><p style='margin:0; color:#061e1b;'>Generacion y repositorio colaborativo con exportacion en formato Carta.</p></div>""", unsafe_allow_html=True)
-    
+    st.markdown("<div class='modern-card'><h3 style='margin:0;'>📄 Informes Compartidos</h3><p style='margin:0; color:#061e1b;'>Generacion y repositorio colaborativo con exportacion en formato Carta.</p></div>", unsafe_allow_html=True)
     with st.expander("🤖 Redactar Nuevo Informe con IA", expanded=False):
         nom_i = st.text_input("Titulo del Informe:")
         enf_i = st.selectbox("Enfoque:", ["Resumen Ejecutivo", "Diagnostico Tecnico", "Evaluacion Estrategica"])
         ins_i = st.text_area("Instrucciones complementarias:")
-        
         if st.button("🚀 Generar Informe"):
             client = obtener_cliente_ia()
             if not nom_i.strip():
@@ -800,27 +493,9 @@ with pestanas_principales[2]:
             else:
                 with st.spinner("Redactando informe consolidado con Gemini 3.6 Flash..."):
                     resumenes_int = "\n".join([f"- {x.get('nombre_original', 'Archivo')}: {x.get('resumen', '')}" for x in db["intervencion"]])
-                    
-                    prompt = f"""Actua como especialista analitico senior.
-Genera un informe estructurado profesional con enfoque '{enf_i}'.
-Titulo: {nom_i}
-Autor solicitante: {usr['nombre']}
-Instrucciones: {ins_i}
-Materiales analizados: {resumenes_int if resumenes_int else 'Sin materiales adjuntos.'}
-
-ESTRUCTURA REQUERIDA:
-1. Diagnostico y Vision Global
-2. Hallazgos Analiticos Relevantes (Si incluyes tablas comparativas o sintesis, hazlo OBLIGATORIAMENTE usando sintaxis estandar de tablas Markdown con '|' y encabezados separados por '|---|---|', NUNCA uses arte ASCII ni bloques de codigo con ``` para tablas).
-3. Conclusiones y Plan de Accion
-
-REGLA OBLIGATORIA DE FORMATO:
-- Las tablas deben ser tablas Markdown renderizables reales.
-- Todo el texto analitico debe fluir con negritas y vinetas claras."""
+                    prompt = f"Actua como especialista analitico senior.\nGenera un informe estructurado profesional con enfoque '{enf_i}'.\nTitulo: {nom_i}\nAutor solicitante: {usr['nombre']}\nInstrucciones: {ins_i}\nMateriales analizados: {resumenes_int if resumenes_int else 'Sin materiales adjuntos.'}\n\nESTRUCTURA REQUERIDA:\n1. Diagnostico y Vision Global\n2. Hallazgos Analiticos Relevantes (Si incluyes tablas comparativas, hazlo OBLIGATORIAMENTE usando tablas Markdown con '|' y encabezados separados por '|---|---|', NUNCA uses bloques de codigo con ``` para tablas).\n3. Conclusiones y Plan de Accion\n\nREGLA OBLIGATORIA: Las tablas deben ser tablas Markdown renderizables."
                     try:
-                        resp = client.models.generate_content(
-                            model=MODELO_GEMINI,
-                            contents=prompt
-                        )
+                        resp = client.models.generate_content(model=MODELO_GEMINI, contents=prompt)
                         db["informes"].append({
                             "titulo": nom_i,
                             "autor": usr["nombre"],
@@ -832,10 +507,8 @@ REGLA OBLIGATORIA DE FORMATO:
                         st.rerun()
                     except Exception as err:
                         st.error(f"Error al generar informe: {err}")
-
     st.markdown("---")
     st.subheader("📚 Repositorio de Informes")
-    
     if not db["informes"]:
         st.info("No hay informes registrados.")
     else:
@@ -844,7 +517,6 @@ REGLA OBLIGATORIA DE FORMATO:
             autor_inf = inf.get("autor", "Desconocido")
             fecha_inf = inf.get("fecha", "")
             contenido_inf = inf.get("contenido", "")
-            
             with st.container():
                 c_inf_t, c_inf_del = st.columns([5, 1])
                 with c_inf_t:
@@ -857,33 +529,78 @@ REGLA OBLIGATORIA DE FORMATO:
                             guardar_estado(db)
                             st.success("Informe eliminado.")
                             st.rerun()
-                
                 st.markdown(contenido_inf)
-                
                 cd1, cd2 = st.columns([1, 1])
                 with cd1:
                     df_out = pd.DataFrame([{"Autor": autor_inf, "Titulo": titulo_inf, "Fecha": fecha_inf, "Contenido": contenido_inf}])
                     buf = io.BytesIO()
                     with pd.ExcelWriter(buf, engine="openpyxl") as writer:
                         df_out.to_excel(writer, index=False)
-                    st.download_button(
-                        label="📥 Descargar Excel (.xlsx)",
-                        data=buf.getvalue(),
-                        file_name=f"[{autor_inf}] - {titulo_inf}.xlsx",
-                        mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
-                        key=f"xls_dl_{idx_inf}"
-                    )
+                    st.download_button(label="📥 Descargar Excel (.xlsx)", data=buf.getvalue(), file_name=f"[{autor_inf}] - {titulo_inf}.xlsx", mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", key=f"xls_dl_{idx_inf}")
                 with cd2:
-                    html_carta = f"""<!DOCTYPE html>
-<html>
-<head>
-    <meta charset="utf-8">
-    <title>{titulo_inf}</title>
-    <style>
-        @page {{ size: letter portrait; margin: 25mm; }}
-        body {{ font-family: 'Segoe UI', Arial, sans-serif; color: #061e1b; padding: 20px; background-color: #89c7c0; }}
-        .header {{ border-bottom: 2px solid #52948d; padding-bottom: 8px; margin-bottom: 20px; }}
-        .title {{ font-size: 20pt; font-weight: bold; color: #061e1b; }}
-        .meta {{ font-size: 10pt; color: #061e1b; margin-top: 4px; }}
-        .body {{ font-size: 11pt; line-height: 1.6; white-space: pre-wrap; }}
-        table
+                    html_carta = f"<!DOCTYPE html><html><head><meta charset='utf-8'><title>{titulo_inf}</title><style>@page {{ size: letter portrait; margin: 25mm; }} body {{ font-family: 'Segoe UI', Arial, sans-serif; color: #061e1b; padding: 20px; background-color: #89c7c0; }} .header {{ border-bottom: 2px solid #52948d; padding-bottom: 8px; margin-bottom: 20px; }} .title {{ font-size: 20pt; font-weight: bold; color: #061e1b; }} .meta {{ font-size: 10pt; color: #061e1b; margin-top: 4px; }} .body {{ font-size: 11pt; line-height: 1.6; white-space: pre-wrap; }} table {{ width: 100%; border-collapse: collapse; margin: 15px 0; }} th, td {{ border: 1px solid #52948d; padding: 8px 12px; text-align: left; }} th {{ background-color: #63a59e; }}</style></head><body><div class='header'><div class='title'>{titulo_inf}</div><div class='meta'>Autor: {autor_inf} | Fecha: {fecha_inf}</div></div><div class='body'>{contenido_inf}</div></body></html>"
+                    st.download_button(label="🖼️ Descargar Formato Carta (HTML / PDF)", data=html_carta, file_name=f"[{autor_inf}] - {titulo_inf}_Carta.html", mime="text/html", key=f"doc_dl_{idx_inf}")
+                st.markdown("---")
+
+# ==========================================
+# 4. GESTION DE USUARIOS (SOLO ADMIN)
+# ==========================================
+if es_admin:
+    with pestanas_principales[3]:
+        st.markdown("<div class='modern-card'><h3 style='margin:0;'>👥 Gestion de Usuarios y Permisos</h3><p style='margin:0; color:#061e1b;'>Control centralizado de cuentas accesible exclusivamente por Administradores.</p></div>", unsafe_allow_html=True)
+        with st.expander("➕ Registrar Nuevo Usuario", expanded=True):
+            cu1, cu2, cu3 = st.columns([1, 1, 1])
+            with cu1:
+                n_u = st.text_input("Usuario (Login):")
+                n_nom = st.text_input("Nombre Completo:")
+            with cu2:
+                n_pin = st.text_input("PIN / Clave:", type="password")
+                n_rol = st.selectbox("Rol:", ["Usuario", "Analista", "Especialista", "Gerencia", "Admin"])
+            with cu3:
+                st.markdown("**Permisos Iniciales:**")
+                p_e = st.checkbox("Permiso para Editar Datasets")
+                p_d = st.checkbox("Permiso para Eliminar Datasets / Archivos")
+            if st.button("Crear Usuario"):
+                if not n_u or not n_pin or not n_nom:
+                    st.error("Todos los campos son obligatorios.")
+                elif n_u in db["usuarios"]:
+                    st.error("El nombre de usuario ya existe.")
+                else:
+                    db["usuarios"][n_u] = {
+                        "nombre": n_nom,
+                        "rol": n_rol,
+                        "pin": n_pin,
+                        "permiso_editar": p_e,
+                        "permiso_eliminar": p_d,
+                        "avatar": ""
+                    }
+                    guardar_estado(db)
+                    st.success(f"Usuario '{n_u}' registrado correctamente.")
+                    st.rerun()
+        st.markdown("---")
+        st.subheader("📜 Cuentas Registradas")
+        usuarios_visibles = [k for k in list(db["usuarios"].keys()) if k != "gerente"]
+        for u_k in usuarios_visibles:
+            u_d = db["usuarios"][u_k]
+            with st.container():
+                col_u_inf, col_u_e, col_u_d, col_u_del = st.columns([2, 1, 1, 1])
+                with col_u_inf:
+                    st.markdown(f"**{u_d.get('nombre', '')}** (<span class='highlight-tag'>{u_k}</span>) — Rol: *{u_d.get('rol', '')}*", unsafe_allow_html=True)
+                if u_k == "admin1":
+                    st.caption("Administrador Principal (Cuenta protegida)")
+                else:
+                    with col_u_e:
+                        val_e = st.checkbox("Editar", value=u_d.get("permiso_editar", False), key=f"pe_{u_k}")
+                    with col_u_d:
+                        val_d = st.checkbox("Eliminar", value=u_d.get("permiso_eliminar", False), key=f"pd_{u_k}")
+                    with col_u_del:
+                        if st.button("🗑️ Eliminar", key=f"del_user_{u_k}", type="secondary"):
+                            del db["usuarios"][u_k]
+                            guardar_estado(db)
+                            st.success(f"Usuario {u_k} eliminado.")
+                            st.rerun()
+                    if val_e != u_d.get("permiso_editar") or val_d != u_d.get("permiso_eliminar"):
+                        db["usuarios"][u_k]["permiso_editar"] = val_e
+                        db["usuarios"][u_k]["permiso_eliminar"] = val_d
+                        guardar_estado(db)
+            st.markdown("---")
