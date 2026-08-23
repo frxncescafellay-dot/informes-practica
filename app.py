@@ -7,6 +7,7 @@ import pandas as pd
 import streamlit as st
 from PIL import Image
 from google import genai
+from google.genai import types
 import pypdf
 from docx import Document
 from pptx import Presentation
@@ -40,7 +41,6 @@ st.markdown("""
         font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
     }
     
-    /* Header con fecha y hora Chile */
     .top-bar {
         display: flex;
         justify-content: flex-end;
@@ -54,7 +54,6 @@ st.markdown("""
         color: #38bdf8;
     }
     
-    /* Banner con ilustraciones */
     .header-card {
         background: linear-gradient(135deg, rgba(14, 116, 144, 0.25) 0%, rgba(3, 105, 161, 0.15) 100%);
         border: 1px solid rgba(56, 189, 248, 0.3);
@@ -71,7 +70,6 @@ st.markdown("""
         filter: drop-shadow(0 0 8px rgba(56, 189, 248, 0.6));
     }
     
-    /* Botones primarios */
     .stButton>button {
         background: linear-gradient(135deg, #0284c7 0%, #0369a1 100%);
         color: white;
@@ -86,7 +84,6 @@ st.markdown("""
         box-shadow: 0 0 14px rgba(56, 189, 248, 0.5);
     }
     
-    /* Menú lateral */
     section[data-testid="stSidebar"] {
         background-color: #030712 !important;
         border-right: 1px solid #1e293b;
@@ -141,7 +138,7 @@ def obtener_cliente_ia():
         return None
     return genai.Client(api_key=API_KEY_GEMINI)
 
-# --- EXTRACCIÓN DE TEXTO PARA RESÚMENES ---
+# --- EXTRACCIÓN DE TEXTO PARA DOCUMENTOS ---
 def extraer_texto_archivo(ruta, extension):
     texto = ""
     try:
@@ -287,7 +284,7 @@ if opcion == "📊 Datasets & Archivos":
                     st.error("Archivo físico no encontrado.")
 
 # ==========================================
-# 2. INTERVENCIÓN MULTI-FORMATO
+# 2. INTERVENCIÓN MULTI-FORMATO (CON AUDIO)
 # ==========================================
 elif opcion == "📂 Intervención":
     st.markdown("""
@@ -295,7 +292,7 @@ elif opcion == "📂 Intervención":
         <img class='header-img' src='https://cdn-icons-png.flaticon.com/512/3135/3135715.png'>
         <div>
             <h2 style='margin:0;'>Módulo de Intervención Multi-Formato</h2>
-            <p style='margin:0; color:#94a3b8;'>Soporte para Excel, Word, PDF, PPT, Imágenes, Audio (M4A) y Video (MP4).</p>
+            <p style='margin:0; color:#94a3b8;'>Soporte y resúmenes automáticos para Documentos, Imágenes y Audios (M4A/MP3/WAV).</p>
         </div>
     </div>
     """, unsafe_allow_html=True)
@@ -304,7 +301,7 @@ elif opcion == "📂 Intervención":
         tit_int = st.text_input("Título descriptivo del material:")
         archivos = st.file_uploader(
             "Cargar archivos:",
-            type=["xlsx", "xls", "docx", "pdf", "pptx", "jpg", "jpeg", "png", "mp4", "m4a"],
+            type=["xlsx", "xls", "docx", "pdf", "pptx", "jpg", "jpeg", "png", "mp4", "m4a", "mp3", "wav"],
             accept_multiple_files=True
         )
         if st.form_submit_button("Subir y Procesar"):
@@ -320,24 +317,50 @@ elif opcion == "📂 Intervención":
                     with open(ruta_guardada, "wb") as f:
                         f.write(a.getbuffer())
                     
-                    resumen_txt = "Archivo multimedia (audio/video)."
-                    if ext not in ["mp4", "m4a"] and client:
-                        with st.spinner(f"Analizando {a.name} con Gemini 3.6 Flash..."):
+                    resumen_txt = "Archivo guardado."
+                    
+                    if client:
+                        with st.spinner(f"Analizando y resumiendo {a.name} con Gemini..."):
                             try:
-                                if ext in ["jpg", "jpeg", "png"]:
+                                # 1. Audio (M4A, MP3, WAV)
+                                if ext in ["m4a", "mp3", "wav"]:
+                                    mime_map = {"m4a": "audio/mp4", "mp3": "audio/mp3", "wav": "audio/wav"}
+                                    mime_type = mime_map.get(ext, "audio/mp4")
+                                    
+                                    with open(ruta_guardada, "rb") as f_aud:
+                                        audio_bytes = f_aud.read()
+                                        
+                                    resp = client.models.generate_content(
+                                        model=MODELO_GEMINI,
+                                        contents=[
+                                            types.Part.from_bytes(data=audio_bytes, mime_type=mime_type),
+                                            "Escucha con atención este archivo de audio. Realiza una transcripción sintetizada de los puntos clave tratados, detallando acuerdos, situaciones descritas y un diagnóstico para el informe de intervención."
+                                        ]
+                                    )
+                                    resumen_txt = resp.text
+                                
+                                # 2. Imágenes (JPG, PNG)
+                                elif ext in ["jpg", "jpeg", "png"]:
                                     img = Image.open(ruta_guardada)
                                     resp = client.models.generate_content(
                                         model=MODELO_GEMINI,
                                         contents=["Describe y resume detalladamente los elementos clave de esta imagen para un informe de intervención:", img]
                                     )
                                     resumen_txt = resp.text
-                                else:
+                                
+                                # 3. Documentos (PDF, DOCX, PPTX, XLSX)
+                                elif ext in ["pdf", "docx", "pptx", "xlsx", "xls"]:
                                     t_doc = extraer_texto_archivo(ruta_guardada, ext)
                                     resp = client.models.generate_content(
                                         model=MODELO_GEMINI,
                                         contents=f"Elabora un resumen y diagnóstico clave de este documento ({a.name}):\n\n{t_doc}"
                                     )
                                     resumen_txt = resp.text
+                                    
+                                # 4. Video (MP4)
+                                elif ext == "mp4":
+                                    resumen_txt = "Archivo de video registrado (reproducción disponible en visor)."
+                                    
                             except Exception as e:
                                 resumen_txt = f"Archivo guardado. Diagnóstico no generado: {e}"
                     
@@ -351,7 +374,7 @@ elif opcion == "📂 Intervención":
                         "resumen": resumen_txt
                     })
                 guardar_estado(db)
-                st.success("Materiales integrados correctamente.")
+                st.success("Materiales integrados y analizados correctamente.")
                 st.rerun()
 
     st.markdown("---")
@@ -361,7 +384,6 @@ elif opcion == "📂 Intervención":
         st.info("No hay materiales en el módulo de intervención.")
     else:
         for idx, item in enumerate(db["intervencion"]):
-            # Control seguro de campos con .get()
             titulo_item = item.get("titulo") or item.get("titulo_registro") or "Sin Título"
             nombre_arc = item.get("nombre_original") or item.get("filename") or "Archivo"
             tipo_arc = item.get("tipo", "").lower()
@@ -391,7 +413,7 @@ elif opcion == "📂 Intervención":
                     if ruta_arc and os.path.exists(ruta_arc):
                         if tipo_arc == "mp4":
                             st.video(ruta_arc)
-                        elif tipo_arc == "m4a":
+                        elif tipo_arc in ["m4a", "mp3", "wav"]:
                             st.audio(ruta_arc)
                         elif tipo_arc in ["jpg", "jpeg", "png"]:
                             st.image(ruta_arc, use_container_width=True)
@@ -414,7 +436,7 @@ elif opcion == "📄 Informes Compartidos":
         <img class='header-img' src='https://cdn-icons-png.flaticon.com/512/2991/2991108.png'>
         <div>
             <h2 style='margin:0;'>Repositorio de Informes Compartidos</h2>
-            <p style='margin:0; color:#94a3b8;'>Generación analítica con Gemini 3.6 Flash y exportación en formato Carta.</p>
+            <p style='margin:0; color:#94a3b8;'>Generación analítica integral y exportación en formato Carta.</p>
         </div>
     </div>
     """, unsafe_allow_html=True)
@@ -431,7 +453,7 @@ elif opcion == "📄 Informes Compartidos":
             elif not client:
                 st.error("API Key de Gemini no configurada.")
             else:
-                with st.spinner("Redactando informe con Gemini 3.6 Flash..."):
+                with st.spinner("Redactando informe consolidado con Gemini..."):
                     resumenes_int = "\n".join([f"- {x.get('nombre_original', 'Archivo')}: {x.get('resumen', '')}" for x in db["intervencion"]])
                     
                     prompt = f"""
@@ -442,7 +464,7 @@ elif opcion == "📄 Informes Compartidos":
                     
                     Instrucciones adicionales: {ins_i}
                     
-                    Materiales de Intervención analizados:
+                    Materiales de Intervención analizados (audios, documentos e imágenes):
                     {resumenes_int if resumenes_int else 'Sin materiales adjuntos.'}
                     
                     Estructura:
@@ -494,7 +516,6 @@ elif opcion == "📄 Informes Compartidos":
                 
                 st.markdown(contenido_inf)
                 
-                # Descargas
                 cd1, cd2 = st.columns([1, 1])
                 with cd1:
                     df_out = pd.DataFrame([{"Autor": autor_inf, "Título": titulo_inf, "Fecha": fecha_inf, "Contenido": contenido_inf}])
