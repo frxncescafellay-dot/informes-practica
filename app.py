@@ -33,48 +33,50 @@ for d in [DIR_BASE, DIR_DATASETS, DIR_INTERVENCION, DIR_AVATARS]:
 
 MODELO_GEMINI = "gemini-3.6-flash"
 
-# --- PALETA FORMAL: GRIS PIZARRA / ACERO MEDIO SOBRE AZUL CERÚLEO ---
+# --- PALETA INSPIRADA EN NEURO (DEEP TEAL + SOFT AQUA + ACCENT CORAL - ZERO WHITE) ---
 st.markdown("""
 <style>
-    /* Fondo principal: Azul Cerúleo */
+    /* Fondo principal: Teal Profundo / Verde Azulado de Neuro */
     .stApp {
-        background: radial-gradient(circle at 50% 30%, #1ba4ea 0%, #0c8fd8 55%, #0570b5 100%) !important;
-        color: #031726;
+        background: radial-gradient(circle at 50% 30%, #007f8c 0%, #005f69 55%, #003e45 100%) !important;
+        color: #001e28;
         font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
     }
     
     /* Encabezados y títulos */
     h1, h2, h3, h4, h5, h6 {
-        color: #04192b !important;
-        font-weight: 750;
+        color: #001e28 !important;
+        font-weight: 800;
+        letter-spacing: -0.5px;
     }
     
-    /* Barra lateral más oscura (Gris Pizarra / Acero medio) */
+    /* Barra lateral en Teal Medio */
     section[data-testid="stSidebar"] {
-        background-color: #94a3b8 !important;
-        border-right: 1.5px solid #64748b !important;
+        background-color: #5c9e9b !important;
+        border-right: 2px solid #3d7976 !important;
     }
     section[data-testid="stSidebar"] * {
-        color: #031726 !important;
+        color: #001e28 !important;
+        font-weight: 600;
     }
 
-    /* Contenedores y Tarjetas en Gris Acero */
+    /* Contenedores y Tarjetas en Aqua Glaciar Suave */
     .modern-card {
-        background: #94a3b8 !important;
-        border: 1px solid #64748b !important;
-        border-radius: 12px;
+        background: #83c5be !important;
+        border: 1.5px solid #63a9a2 !important;
+        border-radius: 14px;
         padding: 22px;
         margin-bottom: 20px;
-        box-shadow: 0 8px 20px rgba(5, 70, 115, 0.25);
+        box-shadow: 0 8px 20px rgba(0, 30, 40, 0.25);
     }
 
     /* Cuadros de entrada de datos (Inputs, TextAreas, PIN) */
     input[type="text"], 
     input[type="password"], 
     textarea {
-        background-color: #cbd5e1 !important;
-        color: #031726 !important;
-        border: 1.5px solid #64748b !important;
+        background-color: #a5d8d3 !important;
+        color: #001e28 !important;
+        border: 1.5px solid #63a9a2 !important;
         border-radius: 8px !important;
         font-size: 0.95rem !important;
         font-weight: 600 !important;
@@ -82,117 +84,119 @@ st.markdown("""
     input[type="text"]:focus, 
     input[type="password"]:focus, 
     textarea:focus {
-        background-color: #e2e8f0 !important;
-        color: #000000 !important;
-        border-color: #0284c7 !important;
-        box-shadow: 0 0 0 3px rgba(2, 132, 199, 0.3) !important;
+        background-color: #c4ece8 !important;
+        color: #00141a !important;
+        border-color: #e76f51 !important;
+        box-shadow: 0 0 0 3px rgba(231, 111, 81, 0.3) !important;
     }
 
     /* Selectores desplegables */
     div[data-baseweb="select"] > div {
-        background-color: #cbd5e1 !important;
-        color: #031726 !important;
-        border: 1.5px solid #64748b !important;
+        background-color: #a5d8d3 !important;
+        color: #001e28 !important;
+        border: 1.5px solid #63a9a2 !important;
         border-radius: 8px !important;
     }
     div[data-baseweb="select"] * {
-        color: #031726 !important;
+        color: #001e28 !important;
         font-weight: 600 !important;
     }
 
     /* Zona de carga de archivos (Uploader) */
     div[data-testid="stFileUploader"] {
-        background-color: #94a3b8 !important;
-        border: 2px dashed #475569 !important;
-        border-radius: 10px !important;
+        background-color: #83c5be !important;
+        border: 2px dashed #005f69 !important;
+        border-radius: 12px !important;
         padding: 12px !important;
     }
     div[data-testid="stFileUploader"] * {
-        color: #031726 !important;
+        color: #001e28 !important;
     }
     div[data-testid="stFileUploader"] section {
-        background-color: #94a3b8 !important;
+        background-color: #83c5be !important;
     }
 
     /* Tablas de datos Excel y Editor de Datos */
     div[data-testid="stDataFrame"], 
     div[data-testid="stDataEditor"] {
-        background-color: #94a3b8 !important;
-        border: 1.5px solid #64748b !important;
+        background-color: #83c5be !important;
+        border: 1.5px solid #3d7976 !important;
         border-radius: 10px !important;
         padding: 6px !important;
-        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.12) !important;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15) !important;
     }
     div[data-testid="stDataFrame"] *, 
     div[data-testid="stDataEditor"] * {
-        color: #031726 !important;
+        color: #001e28 !important;
     }
 
-    /* Botones primarios */
+    /* Botones primarios (Tono Coral Neuro) */
     .stButton>button {
-        background: #64748b !important;
-        color: #ffffff !important;
-        border: 1.5px solid #475569 !important;
+        background: #e76f51 !important;
+        color: #001e28 !important;
+        border: 1.5px solid #cf5436 !important;
         border-radius: 8px !important;
         padding: 8px 20px !important;
-        font-weight: 750 !important;
+        font-weight: 800 !important;
         font-size: 0.95rem !important;
-        box-shadow: 0 3px 8px rgba(0, 0, 0, 0.15) !important;
+        box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2) !important;
         transition: all 0.2s ease !important;
     }
     .stButton>button:hover {
-        background: #475569 !important;
-        color: #f8fafc !important;
-        border-color: #334155 !important;
+        background: #f4a261 !important;
+        color: #00141a !important;
+        border-color: #e76f51 !important;
+        transform: translateY(-1px);
     }
     
     /* Botones de eliminación / secundarios */
     div[data-testid="stBaseButton-secondary"] button {
-        background: #fca5a5 !important;
-        color: #7f1d1d !important;
-        border: 1.5px solid #ef4444 !important;
+        background: #e63946 !important;
+        color: #ffffff !important;
+        border: 1.5px solid #ba181b !important;
     }
     div[data-testid="stBaseButton-secondary"] button:hover {
-        background: #ef4444 !important;
+        background: #ba181b !important;
         color: #ffffff !important;
     }
 
     /* Pestañas de navegación superiores */
     button[data-baseweb="tab"] {
-        background-color: #64748b !important;
-        color: #f1f5f9 !important;
+        background-color: #5c9e9b !important;
+        color: #001e28 !important;
         border-radius: 8px 8px 0 0 !important;
-        font-weight: 700 !important;
+        font-weight: 750 !important;
         margin-right: 4px !important;
-        padding: 8px 18px !important;
-        border: 1px solid #475569 !important;
+        padding: 9px 18px !important;
+        border: 1px solid #3d7976 !important;
     }
     button[data-baseweb="tab"][aria-selected="true"] {
-        background-color: #94a3b8 !important;
-        color: #031726 !important;
-        border-bottom: 3.5px solid #0284c7 !important;
+        background-color: #83c5be !important;
+        color: #001e28 !important;
+        border-bottom: 3.5px solid #e76f51 !important;
     }
 
     /* Expanders */
     div[data-testid="stExpander"] {
-        background-color: #94a3b8 !important;
-        border: 1px solid #64748b !important;
+        background-color: #83c5be !important;
+        border: 1.5px solid #63a9a2 !important;
         border-radius: 10px !important;
     }
 
     label, p, span {
-        color: #031726;
+        color: #001e28;
         font-weight: 600;
     }
 
     .badge-role {
         display: inline-block;
-        background: #0284c7;
-        color: #ffffff !important;
+        background: #e76f51;
+        color: #001e28 !important;
         padding: 4px 12px;
         border-radius: 14px;
-        font-size: 0.8rem;
-        font-weight: 700;
+        font-size: 0.82rem;
+        font-weight: 800;
+        border: 1px solid #cf5436;
     }
 </style>
 """, unsafe_allow_html=True)
@@ -201,15 +205,15 @@ st.markdown("""
 def renderizar_reloj_chile():
     html_reloj = """
     <div style="
-        background: #94a3b8;
-        border: 1.5px solid #64748b;
+        background: #83c5be;
+        border: 1.5px solid #63a9a2;
         border-radius: 14px;
         padding: 10px 18px;
         display: flex;
         align-items: center;
         justify-content: space-between;
         gap: 16px;
-        box-shadow: 0 4px 14px rgba(5, 70, 115, 0.2);
+        box-shadow: 0 4px 14px rgba(0, 30, 40, 0.25);
         max-width: 480px;
         margin-left: auto;
         margin-bottom: 15px;
@@ -218,26 +222,26 @@ def renderizar_reloj_chile():
         <!-- Reloj Análogo -->
         <div style="position: relative; width: 58px; height: 58px;">
             <svg id="analog-clock" width="58" height="58" viewBox="0 0 100 100">
-                <circle cx="50" cy="50" r="46" fill="#cbd5e1" stroke="#0284c7" stroke-width="4"/>
-                <line x1="50" y1="10" x2="50" y2="16" stroke="#475569" stroke-width="3" stroke-linecap="round"/>
-                <line x1="90" y1="50" x2="84" y2="50" stroke="#475569" stroke-width="3" stroke-linecap="round"/>
-                <line x1="50" y1="90" x2="50" y2="84" stroke="#475569" stroke-width="3" stroke-linecap="round"/>
-                <line x1="10" y1="50" x2="16" y2="50" stroke="#475569" stroke-width="3" stroke-linecap="round"/>
-                <line id="hour-hand" x1="50" y1="50" x2="50" y2="28" stroke="#0f2942" stroke-width="4.5" stroke-linecap="round"/>
-                <line id="min-hand" x1="50" y1="50" x2="50" y2="18" stroke="#0284c7" stroke-width="3" stroke-linecap="round"/>
-                <line id="sec-hand" x1="50" y1="50" x2="50" y2="14" stroke="#dc2626" stroke-width="1.5" stroke-linecap="round"/>
-                <circle cx="50" cy="50" r="3.5" fill="#0f2942"/>
+                <circle cx="50" cy="50" r="46" fill="#a5d8d3" stroke="#005f69" stroke-width="4"/>
+                <line x1="50" y1="10" x2="50" y2="16" stroke="#003e45" stroke-width="3" stroke-linecap="round"/>
+                <line x1="90" y1="50" x2="84" y2="50" stroke="#003e45" stroke-width="3" stroke-linecap="round"/>
+                <line x1="50" y1="90" x2="50" y2="84" stroke="#003e45" stroke-width="3" stroke-linecap="round"/>
+                <line x1="10" y1="50" x2="16" y2="50" stroke="#003e45" stroke-width="3" stroke-linecap="round"/>
+                <line id="hour-hand" x1="50" y1="50" x2="50" y2="28" stroke="#001e28" stroke-width="4.5" stroke-linecap="round"/>
+                <line id="min-hand" x1="50" y1="50" x2="50" y2="18" stroke="#005f69" stroke-width="3" stroke-linecap="round"/>
+                <line id="sec-hand" x1="50" y1="50" x2="50" y2="14" stroke="#e76f51" stroke-width="2" stroke-linecap="round"/>
+                <circle cx="50" cy="50" r="3.5" fill="#001e28"/>
             </svg>
         </div>
         <!-- Reloj Digital y Fecha -->
         <div style="display: flex; flex-direction: column; justify-content: center;">
-            <div style="font-size: 0.75rem; font-weight: 750; color: #0284c7; text-transform: uppercase; letter-spacing: 0.5px;">
+            <div style="font-size: 0.75rem; font-weight: 800; color: #003e45; text-transform: uppercase; letter-spacing: 0.5px;">
                 🇨🇱 Hora Oficial de Chile
             </div>
-            <div id="digital-clock" style="font-size: 1.5rem; font-weight: 800; color: #04192b; line-height: 1.1;">
+            <div id="digital-clock" style="font-size: 1.5rem; font-weight: 900; color: #001e28; line-height: 1.1;">
                 --:--:--
             </div>
-            <div id="digital-date" style="font-size: 0.78rem; font-weight: 600; color: #1e293b; margin-top: 2px;">
+            <div id="digital-date" style="font-size: 0.78rem; font-weight: 700; color: #003e45; margin-top: 2px;">
                 Cargando fecha...
             </div>
         </div>
@@ -358,8 +362,8 @@ if "autenticado" not in st.session_state:
     st.session_state.usuario_clave = None
 
 if not st.session_state.autenticado:
-    st.markdown("<h1 style='text-align:center; color:#04192b !important; margin-top:35px;'>🔐 Acceso a la Plataforma</h1>", unsafe_allow_html=True)
-    st.markdown("<p style='text-align:center; color:#031726;'>Ingrese sus credenciales registradas</p>", unsafe_allow_html=True)
+    st.markdown("<h1 style='text-align:center; color:#83c5be !important; margin-top:35px;'>🔐 Acceso a la Plataforma</h1>", unsafe_allow_html=True)
+    st.markdown("<p style='text-align:center; color:#a5d8d3;'>Ingrese sus credenciales registradas</p>", unsafe_allow_html=True)
     c1, c2, c3 = st.columns([1, 1.4, 1])
     with c2:
         with st.form("login_form"):
@@ -387,7 +391,7 @@ if avatar_path and os.path.exists(avatar_path):
     st.sidebar.image(avatar_path, width=105)
 else:
     st.sidebar.markdown("""
-        <div style='width:80px; height:80px; border-radius:50%; background:#cbd5e1; border:2px solid #64748b; display:flex; align-items:center; justify-content:center; font-size:2.2rem; color:#0284c7; margin-bottom:10px;'>
+        <div style='width:80px; height:80px; border-radius:50%; background:#a5d8d3; border:2px solid #005f69; display:flex; align-items:center; justify-content:center; font-size:2.2rem; color:#001e28; margin-bottom:10px;'>
             👤
         </div>
     """, unsafe_allow_html=True)
@@ -416,8 +420,8 @@ if st.sidebar.button("🚪 Cerrar Sesión", use_container_width=True):
 # --- ENCABEZADO SUPERIOR CON RELOJ ---
 col_head_title, col_head_clock = st.columns([1.2, 1])
 with col_head_title:
-    st.markdown("<h1 style='color:#04192b !important; margin:0;'>⚡ Centro de Gestión & Analítica</h1>", unsafe_allow_html=True)
-    st.markdown("<p style='color:#031726; margin-top:4px;'>Plataforma colaborativa multi-formato con procesamiento inteligente.</p>", unsafe_allow_html=True)
+    st.markdown("<h1 style='color:#83c5be !important; margin:0;'>⚡ Centro de Gestión & Analítica</h1>", unsafe_allow_html=True)
+    st.markdown("<p style='color:#a5d8d3; margin-top:4px;'>Plataforma colaborativa multi-formato con procesamiento inteligente.</p>", unsafe_allow_html=True)
 with col_head_clock:
     renderizar_reloj_chile()
 
@@ -435,7 +439,7 @@ with pestanas_principales[0]:
     st.markdown("""
         <div class='modern-card'>
             <h3 style='margin:0;'>📊 Repositorio de Datasets</h3>
-            <p style='margin:0; color:#031726;'>Suba, visualice y edite hojas de cálculo en ventanas independientes.</p>
+            <p style='margin:0; color:#001e28;'>Suba, visualice y edite hojas de cálculo en ventanas independientes.</p>
         </div>
     """, unsafe_allow_html=True)
     
@@ -512,7 +516,7 @@ with pestanas_principales[1]:
     st.markdown("""
         <div class='modern-card'>
             <h3 style='margin:0;'>📂 Módulo de Intervención</h3>
-            <p style='margin:0; color:#031726;'>Soporte y resúmenes automáticos para Documentos, Imágenes y Audios (M4A/MP3/WAV).</p>
+            <p style='margin:0; color:#001e28;'>Soporte y resúmenes automáticos para Documentos, Imágenes y Audios (M4A/MP3/WAV).</p>
         </div>
     """, unsafe_allow_html=True)
     
@@ -639,7 +643,7 @@ with pestanas_principales[2]:
     st.markdown("""
         <div class='modern-card'>
             <h3 style='margin:0;'>📄 Informes Compartidos</h3>
-            <p style='margin:0; color:#031726;'>Generación y repositorio colaborativo con exportación en formato Carta.</p>
+            <p style='margin:0; color:#001e28;'>Generación y repositorio colaborativo con exportación en formato Carta.</p>
         </div>
     """, unsafe_allow_html=True)
     
@@ -737,10 +741,10 @@ with pestanas_principales[2]:
                         <title>{titulo_inf}</title>
                         <style>
                             @page {{ size: letter portrait; margin: 25mm; }}
-                            body {{ font-family: 'Segoe UI', Arial, sans-serif; color: #0f2942; padding: 20px; }}
-                            .header {{ border-bottom: 2px solid #0284c7; padding-bottom: 8px; margin-bottom: 20px; }}
-                            .title {{ font-size: 20pt; font-weight: bold; color: #0369a1; }}
-                            .meta {{ font-size: 10pt; color: #64748b; margin-top: 4px; }}
+                            body {{ font-family: 'Segoe UI', Arial, sans-serif; color: #001e28; padding: 20px; background-color: #83c5be; }}
+                            .header {{ border-bottom: 2px solid #005f69; padding-bottom: 8px; margin-bottom: 20px; }}
+                            .title {{ font-size: 20pt; font-weight: bold; color: #003e45; }}
+                            .meta {{ font-size: 10pt; color: #005f69; margin-top: 4px; }}
                             .body {{ font-size: 11pt; line-height: 1.6; white-space: pre-wrap; }}
                         </style>
                     </head>
@@ -770,7 +774,7 @@ if es_admin:
         st.markdown("""
             <div class='modern-card'>
                 <h3 style='margin:0;'>👥 Gestión de Usuarios y Permisos</h3>
-                <p style='margin:0; color:#031726;'>Control centralizado de cuentas accesible exclusivamente por Administradores.</p>
+                <p style='margin:0; color:#001e28;'>Control centralizado de cuentas accesible exclusivamente por Administradores.</p>
             </div>
         """, unsafe_allow_html=True)
         
