@@ -152,7 +152,7 @@ def cargar_estado():
                 "admin1": {
                     "nombre": "Francesca Fellay",
                     "rol": "Admin",
-                    "pin": "1234",
+                    "pin": "1953",
                     "permiso_editar": True,
                     "permiso_eliminar": True,
                     "avatar": ""
@@ -181,11 +181,12 @@ def cargar_estado():
         data["usuarios"] = {}
     if "admin1" in data["usuarios"]:
         data["usuarios"]["admin1"]["nombre"] = "Francesca Fellay"
+        data["usuarios"]["admin1"]["pin"] = "1953"
     else:
         data["usuarios"]["admin1"] = {
             "nombre": "Francesca Fellay",
             "rol": "Admin",
-            "pin": "1234",
+            "pin": "1953",
             "permiso_editar": True,
             "permiso_eliminar": True,
             "avatar": ""
@@ -479,7 +480,7 @@ with pestanas_principales[1]:
 # 3. INFORMES COMPARTIDOS
 # ==========================================
 with pestanas_principales[2]:
-    st.markdown("<div class='modern-card'><h3 style='margin:0;'>📄 Informes Compartidos</h3><p style='margin:0; color:#061e1b;'>Generacion y repositorio colaborativo con exportacion en formato Carta.</p></div>", unsafe_allow_html=True)
+    st.markdown("<div class='modern-card'><h3 style='margin:0;'>📄 Informes Compartidos</h3><p style='margin:0; color:#061e1b;'>Generacion y repositorio colaborativo con exportacion en formato Carta.</p></div>""", unsafe_allow_html=True)
     with st.expander("🤖 Redactar Nuevo Informe con IA", expanded=False):
         nom_i = st.text_input("Titulo del Informe:")
         enf_i = st.selectbox("Enfoque:", ["Resumen Ejecutivo", "Diagnostico Tecnico", "Evaluacion Estrategica"])
@@ -600,7 +601,4 @@ if es_admin:
                             st.success(f"Usuario {u_k} eliminado.")
                             st.rerun()
                     if val_e != u_d.get("permiso_editar") or val_d != u_d.get("permiso_eliminar"):
-                        db["usuarios"][u_k]["permiso_editar"] = val_e
-                        db["usuarios"][u_k]["permiso_eliminar"] = val_d
-                        guardar_estado(db)
-            st.markdown("---")
+                        db
