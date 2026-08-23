@@ -33,12 +33,12 @@ for d in [DIR_BASE, DIR_DATASETS, DIR_INTERVENCION, DIR_AVATARS]:
 
 MODELO_GEMINI = "gemini-3.6-flash"
 
-# --- PALETA EXACTA NEURO: TEAL + CORAL ENERGY (#ff5436) SIN NEGRO ---
+# --- PALETA TEAL + NARANJA QUEMADO / TERRACOTA (#c84b1e / #b23b14) ---
 st.markdown("""
 <style>
-    /* Tipografía uniforme para toda la aplicación */
-    * {
-        font-family: 'Segoe UI', system-ui, -apple-system, sans-serif !important;
+    /* Tipografía sin forzar pseudoelementos de Streamlit */
+    html, body, [class*="css"], .stApp {
+        font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
     }
 
     /* Fondo principal: Teal Suave */
@@ -64,24 +64,24 @@ st.markdown("""
         font-weight: 600;
     }
 
-    /* Tarjetas y Contenedores */
+    /* Cuadros de título de cada módulo (Más claros que el fondo: #89c7c0) */
     .modern-card {
-        background: #73b5ae !important;
-        border: 2px solid #52948d !important;
+        background: #89c7c0 !important;
+        border: 2px solid #63a59e !important;
         border-radius: 14px;
         padding: 22px;
         margin-bottom: 20px;
-        box-shadow: 0 4px 12px rgba(13, 44, 41, 0.15);
+        box-shadow: 0 4px 12px rgba(13, 44, 41, 0.12);
     }
 
     /* Desplegables (Expanders) */
     div[data-testid="stExpander"] {
-        background-color: #73b5ae !important;
-        border: 2px solid #52948d !important;
+        background-color: #89c7c0 !important;
+        border: 2px solid #63a59e !important;
         border-radius: 10px !important;
     }
     div[data-testid="stExpander"] summary {
-        background-color: #63a59e !important;
+        background-color: #7ab8b1 !important;
         color: #061e1b !important;
         border-radius: 8px !important;
         font-weight: 750 !important;
@@ -91,11 +91,11 @@ st.markdown("""
         font-weight: 750 !important;
     }
     div[data-testid="stExpander"] div[role="region"] {
-        background-color: #73b5ae !important;
+        background-color: #89c7c0 !important;
         color: #061e1b !important;
     }
 
-    /* Cuadros de texto */
+    /* Cuadros de entrada de texto */
     input[type="text"], 
     input[type="password"], 
     textarea {
@@ -111,8 +111,8 @@ st.markdown("""
     textarea:focus {
         background-color: #bfe3de !important;
         color: #000000 !important;
-        border-color: #ff5436 !important;
-        box-shadow: 0 0 0 3px rgba(255, 84, 54, 0.25) !important;
+        border-color: #c84b1e !important;
+        box-shadow: 0 0 0 3px rgba(200, 75, 30, 0.25) !important;
     }
 
     /* Selectores desplegables */
@@ -129,34 +129,36 @@ st.markdown("""
 
     /* Zona de carga de archivos (Uploader) */
     div[data-testid="stFileUploader"] {
-        background-color: #73b5ae !important;
-        border: 2px dashed #ff5436 !important;
+        background-color: #89c7c0 !important;
+        border: 2px dashed #c84b1e !important;
         border-radius: 12px !important;
         padding: 14px !important;
     }
     div[data-testid="stFileUploader"] section {
-        background-color: #73b5ae !important;
+        background-color: #89c7c0 !important;
     }
     div[data-testid="stFileUploader"] section * {
         color: #061e1b !important;
     }
+    
+    /* Botón interno Browse files / Upload */
     div[data-testid="stFileUploader"] button {
-        background-color: #ff5436 !important;
-        color: #ffffff !important;
-        border: 2px solid #d9381e !important;
+        background-color: #c84b1e !important;
+        border: 2px solid #9e3610 !important;
+        border-radius: 8px !important;
         font-weight: 750 !important;
     }
-    div[data-testid="stFileUploader"] button * {
+    div[data-testid="stFileUploader"] button p {
         color: #ffffff !important;
     }
 
-    /* Contenedor del Excel y visualización de datos */
+    /* Tablas de datos Excel */
     div[data-testid="stDataFrame"], 
     div[data-testid="stDataEditor"],
     div[data-testid="stDataFrame"] > div,
     div[data-testid="stDataEditor"] > div {
-        background-color: #73b5ae !important;
-        border: 2px solid #3d7973 !important;
+        background-color: #89c7c0 !important;
+        border: 2px solid #52948d !important;
         border-radius: 10px !important;
     }
     
@@ -168,61 +170,58 @@ st.markdown("""
         border-radius: 8px !important;
     }
 
-    /* TODOS LOS BOTONES PRIMARIOS Y FORMULARIOS: NARANJA CORAL NEURO (#ff5436) */
+    /* BOTONES PRINCIPALES: NARANJA OSCURO / TERRACOTA (#c84b1e) */
     .stButton>button, 
     div[data-testid="stFormSubmitButton"]>button {
-        background: linear-gradient(135deg, #ff5436 0%, #e6391d 100%) !important;
+        background: linear-gradient(135deg, #c84b1e 0%, #b23b14 100%) !important;
         color: #ffffff !important;
-        border: 2px solid #d9381e !important;
+        border: 2px solid #9e3610 !important;
         border-radius: 9px !important;
         padding: 9px 22px !important;
         font-weight: 800 !important;
         font-size: 0.95rem !important;
-        box-shadow: 0 4px 12px rgba(230, 57, 29, 0.35) !important;
+        box-shadow: 0 4px 12px rgba(178, 59, 20, 0.35) !important;
         transition: all 0.2s ease !important;
     }
     .stButton>button:hover, 
     div[data-testid="stFormSubmitButton"]>button:hover {
-        background: linear-gradient(135deg, #ff6b52 0%, #ff5436 100%) !important;
-        color: #ffffff !important;
-        border-color: #ff6b52 !important;
-        box-shadow: 0 6px 16px rgba(255, 107, 82, 0.45) !important;
+        background: linear-gradient(135deg, #db5928 0%, #c84b1e 100%) !important;
+        border-color: #db5928 !important;
+        box-shadow: 0 6px 16px rgba(219, 89, 40, 0.45) !important;
         transform: translateY(-1px);
     }
-    .stButton>button *, 
-    div[data-testid="stFormSubmitButton"]>button * {
+    .stButton>button p,
+    div[data-testid="stFormSubmitButton"]>button p {
         color: #ffffff !important;
         font-weight: 800 !important;
     }
 
-    /* ELIMINACIÓN DE FONDO NEGRO Y TIPOGRAFÍA MONOESPACIADA EN CÓDIGO/TEXTO */
-    code, pre {
-        background-color: #a2d2cc !important;
-        color: #061e1b !important;
-        border: 1.5px solid #52948d !important;
-        border-radius: 6px !important;
-        padding: 3px 8px !important;
-        font-family: 'Segoe UI', system-ui, -apple-system, sans-serif !important;
-        font-size: 0.92rem !important;
-        font-weight: 700 !important;
+    /* Textos con fondo destacado (sin cajas negras) */
+    .highlight-tag {
+        background: #a2d2cc;
+        border: 1.5px solid #52948d;
+        padding: 3px 10px;
+        border-radius: 6px;
+        font-weight: 700;
+        color: #061e1b;
+        font-size: 0.92rem;
+        display: inline-block;
     }
     
     /* Botones de eliminación / secundarios */
     div[data-testid="stBaseButton-secondary"] button {
         background: #e29b9b !important;
-        color: #5c0f0f !important;
         border: 2px solid #c96b6b !important;
         box-shadow: none !important;
     }
     div[data-testid="stBaseButton-secondary"] button:hover {
         background: #d67a7a !important;
-        color: #3b0505 !important;
     }
-    div[data-testid="stBaseButton-secondary"] button * {
+    div[data-testid="stBaseButton-secondary"] button p {
         color: #5c0f0f !important;
     }
 
-    /* Pestañas de navegación superiores */
+    /* Pestañas de navegación */
     button[data-baseweb="tab"] {
         background-color: #63a59e !important;
         color: #061e1b !important;
@@ -233,9 +232,9 @@ st.markdown("""
         border: 1px solid #52948d !important;
     }
     button[data-baseweb="tab"][aria-selected="true"] {
-        background-color: #73b5ae !important;
+        background-color: #89c7c0 !important;
         color: #061e1b !important;
-        border-bottom: 3.5px solid #ff5436 !important;
+        border-bottom: 3.5px solid #c84b1e !important;
     }
 
     label, p, span {
@@ -245,30 +244,30 @@ st.markdown("""
 
     .badge-role {
         display: inline-block;
-        background: #ff5436;
+        background: #c84b1e;
         color: #ffffff !important;
         padding: 4px 12px;
         border-radius: 14px;
         font-size: 0.82rem;
         font-weight: 800;
-        border: 1.5px solid #d9381e;
+        border: 1.5px solid #9e3610;
     }
 </style>
 """, unsafe_allow_html=True)
 
-# --- RELOJ DUAL NARANJA CORAL NEURO ---
+# --- RELOJ DUAL NARANJA OSCURO / TERRACOTA ---
 def renderizar_reloj_chile():
     html_reloj = """
     <div style="
-        background: linear-gradient(135deg, #ff5436 0%, #e6391d 100%);
-        border: 2px solid #d9381e;
+        background: linear-gradient(135deg, #c84b1e 0%, #b23b14 100%);
+        border: 2px solid #9e3610;
         border-radius: 16px;
         padding: 12px 20px;
         display: flex;
         align-items: center;
         justify-content: space-between;
         gap: 16px;
-        box-shadow: 0 6px 18px rgba(230, 57, 29, 0.35);
+        box-shadow: 0 6px 18px rgba(178, 59, 20, 0.35);
         max-width: 480px;
         margin-left: auto;
         margin-bottom: 15px;
@@ -277,26 +276,26 @@ def renderizar_reloj_chile():
         <!-- Reloj Análogo -->
         <div style="position: relative; width: 60px; height: 60px;">
             <svg id="analog-clock" width="60" height="60" viewBox="0 0 100 100">
-                <circle cx="50" cy="50" r="46" fill="#ffeae6" stroke="#8a1a09" stroke-width="4"/>
-                <line x1="50" y1="10" x2="50" y2="16" stroke="#4a0b02" stroke-width="3" stroke-linecap="round"/>
-                <line x1="90" y1="50" x2="84" y2="50" stroke="#4a0b02" stroke-width="3" stroke-linecap="round"/>
-                <line x1="50" y1="90" x2="50" y2="84" stroke="#4a0b02" stroke-width="3" stroke-linecap="round"/>
-                <line x1="10" y1="50" x2="16" y2="50" stroke="#4a0b02" stroke-width="3" stroke-linecap="round"/>
-                <line id="hour-hand" x1="50" y1="50" x2="50" y2="28" stroke="#260400" stroke-width="5" stroke-linecap="round"/>
-                <line id="min-hand" x1="50" y1="50" x2="50" y2="18" stroke="#590d02" stroke-width="3.5" stroke-linecap="round"/>
-                <line id="sec-hand" x1="50" y1="50" x2="50" y2="14" stroke="#e6391d" stroke-width="2" stroke-linecap="round"/>
-                <circle cx="50" cy="50" r="4" fill="#260400"/>
+                <circle cx="50" cy="50" r="46" fill="#fbe8e1" stroke="#782307" stroke-width="4"/>
+                <line x1="50" y1="10" x2="50" y2="16" stroke="#4a1503" stroke-width="3" stroke-linecap="round"/>
+                <line x1="90" y1="50" x2="84" y2="50" stroke="#4a1503" stroke-width="3" stroke-linecap="round"/>
+                <line x1="50" y1="90" x2="50" y2="84" stroke="#4a1503" stroke-width="3" stroke-linecap="round"/>
+                <line x1="10" y1="50" x2="16" y2="50" stroke="#4a1503" stroke-width="3" stroke-linecap="round"/>
+                <line id="hour-hand" x1="50" y1="50" x2="50" y2="28" stroke="#260900" stroke-width="5" stroke-linecap="round"/>
+                <line id="min-hand" x1="50" y1="50" x2="50" y2="18" stroke="#591905" stroke-width="3.5" stroke-linecap="round"/>
+                <line id="sec-hand" x1="50" y1="50" x2="50" y2="14" stroke="#b23b14" stroke-width="2" stroke-linecap="round"/>
+                <circle cx="50" cy="50" r="4" fill="#260900"/>
             </svg>
         </div>
         <!-- Reloj Digital y Fecha -->
         <div style="display: flex; flex-direction: column; justify-content: center;">
-            <div style="font-size: 0.76rem; font-weight: 800; color: #ffeae6; text-transform: uppercase; letter-spacing: 0.8px;">
+            <div style="font-size: 0.76rem; font-weight: 800; color: #fbe8e1; text-transform: uppercase; letter-spacing: 0.8px;">
                 🇨🇱 Hora Oficial de Chile
             </div>
             <div id="digital-clock" style="font-size: 1.65rem; font-weight: 900; color: #ffffff; line-height: 1.1; text-shadow: 0 2px 4px rgba(0,0,0,0.2);">
                 --:--:--
             </div>
-            <div id="digital-date" style="font-size: 0.82rem; font-weight: 700; color: #ffeae6; margin-top: 2px;">
+            <div id="digital-date" style="font-size: 0.82rem; font-weight: 700; color: #fbe8e1; margin-top: 2px;">
                 Cargando fecha...
             </div>
         </div>
@@ -661,8 +660,7 @@ with pestanas_principales[1]:
             with st.container():
                 col_head, col_del_btn = st.columns([5, 1])
                 with col_head:
-                    # Título y nombre de archivo con tipografía normal y caja teal suave (sin fondo negro)
-                    st.markdown(f"### 📁 {titulo_item} — <span style='background:#a2d2cc; border:1.5px solid #52948d; padding:3px 10px; border-radius:6px; font-weight:700; color:#061e1b;'>{nombre_arc}</span>", unsafe_allow_html=True)
+                    st.markdown(f"### 📁 {titulo_item} — <span class='highlight-tag'>{nombre_arc}</span>", unsafe_allow_html=True)
                     st.caption(f"Autor: **{autor_arc}** | Fecha: {fecha_arc} | Formato: **{tipo_arc.upper()}**")
                 with col_del_btn:
                     if usr.get("permiso_eliminar") or es_admin:
@@ -797,8 +795,8 @@ with pestanas_principales[2]:
                         <title>{titulo_inf}</title>
                         <style>
                             @page {{ size: letter portrait; margin: 25mm; }}
-                            body {{ font-family: 'Segoe UI', Arial, sans-serif; color: #061e1b; padding: 20px; background-color: #73b5ae; }}
-                            .header {{ border-bottom: 2px solid #3d7973; padding-bottom: 8px; margin-bottom: 20px; }}
+                            body {{ font-family: 'Segoe UI', Arial, sans-serif; color: #061e1b; padding: 20px; background-color: #89c7c0; }}
+                            .header {{ border-bottom: 2px solid #52948d; padding-bottom: 8px; margin-bottom: 20px; }}
                             .title {{ font-size: 20pt; font-weight: bold; color: #061e1b; }}
                             .meta {{ font-size: 10pt; color: #061e1b; margin-top: 4px; }}
                             .body {{ font-size: 11pt; line-height: 1.6; white-space: pre-wrap; }}
