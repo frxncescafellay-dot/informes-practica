@@ -16,7 +16,7 @@ API_KEY_GEMINI = os.environ.get("GEMINI_API_KEY", "")
 # --- DEFINICIÓN DE PERFILES Y USUARIOS ---
 USUARIOS = {
     "admin1": {"nombre": "Francesca Fellay", "rol": "Practicante", "pin": "1234"},
-    "admin21": {"nombre": "Karol Medina", "rol": "Practicante", "pin": "5678"},
+    "admin2": {"nombre": "Karol Medina", "rol": "Practicante", "pin": "5678"},
     "admin3": {"nombre": "Lukas Núñez", "rol": "Practicante", "pin": "9999"},
     "admin4": {"nombre": "Francisca Guerra", "rol": "Practicante", "pin": "0000"}
 }
