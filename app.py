@@ -1,10 +1,10 @@
 import os
 import io
 import json
-import pandas as pd
-import streamlit as st
 from datetime import datetime
 import pytz
+import pandas as pd
+import streamlit as st
 from PIL import Image
 from google import genai
 import pypdf
@@ -71,15 +71,6 @@ st.markdown("""
         filter: drop-shadow(0 0 8px rgba(56, 189, 248, 0.6));
     }
     
-    /* Contenedores de contenido */
-    .custom-container {
-        background: rgba(15, 23, 42, 0.7);
-        border: 1px solid #1e293b;
-        border-radius: 12px;
-        padding: 18px;
-        margin-bottom: 16px;
-    }
-    
     /* Botones primarios */
     .stButton>button {
         background: linear-gradient(135deg, #0284c7 0%, #0369a1 100%);
@@ -131,7 +122,10 @@ def cargar_estado():
         guardar_estado(data_inicial)
         return data_inicial
     with open(FILE_DB, "r", encoding="utf-8") as f:
-        return json.load(f)
+        try:
+            return json.load(f)
+        except Exception:
+            return {"usuarios": {"admin1": {"nombre": "Administrador Principal", "rol": "Admin", "pin": "1234", "permiso_editar": True, "permiso_eliminar": True}}, "datasets": {}, "intervencion": [], "informes": []}
 
 def guardar_estado(data):
     with open(FILE_DB, "w", encoding="utf-8") as f:
@@ -348,7 +342,6 @@ elif opcion == "📂 Intervención":
                                 resumen_txt = f"Archivo guardado. Diagnóstico no generado: {e}"
                     
                     db["intervencion"].append({
-                        "id": f"{datetime.now().strftime('%Y%m%d%H%M%S')}_{a.name}",
                         "titulo": tit_int,
                         "nombre_original": a.name,
                         "tipo": ext,
@@ -368,16 +361,25 @@ elif opcion == "📂 Intervención":
         st.info("No hay materiales en el módulo de intervención.")
     else:
         for idx, item in enumerate(db["intervencion"]):
+            # Control seguro de campos con .get()
+            titulo_item = item.get("titulo") or item.get("titulo_registro") or "Sin Título"
+            nombre_arc = item.get("nombre_original") or item.get("filename") or "Archivo"
+            tipo_arc = item.get("tipo", "").lower()
+            autor_arc = item.get("autor", "Desconocido")
+            fecha_arc = item.get("fecha", "")
+            resumen_arc = item.get("resumen", "Sin resumen disponible.")
+            ruta_arc = item.get("ruta", "")
+            
             with st.container():
                 col_head, col_del_btn = st.columns([5, 1])
                 with col_head:
-                    st.markdown(f"### 📁 {item['titulo']} — `{item['nombre_original']}`")
-                    st.caption(f"Autor: **{item['autor']}** | Fecha: {item['fecha']} | Formato: **{item['tipo'].upper()}**")
+                    st.markdown(f"### 📁 {titulo_item} — `{nombre_arc}`")
+                    st.caption(f"Autor: **{autor_arc}** | Fecha: {fecha_arc} | Formato: **{tipo_arc.upper()}**")
                 with col_del_btn:
                     if usr.get("permiso_eliminar") or usr_key == "admin1":
                         if st.button("🗑️ Borrar", key=f"del_int_{idx}"):
-                            if os.path.exists(item["ruta"]):
-                                os.remove(item["ruta"])
+                            if ruta_arc and os.path.exists(ruta_arc):
+                                os.remove(ruta_arc)
                             db["intervencion"].pop(idx)
                             guardar_estado(db)
                             st.success("Archivo eliminado.")
@@ -386,21 +388,21 @@ elif opcion == "📂 Intervención":
                 t_vis, t_res = st.tabs(["👁️ Visualizador Multimedia / Descarga", "📝 Diagnóstico y Resumen Visual"])
                 
                 with t_vis:
-                    if os.path.exists(item["ruta"]):
-                        if item["tipo"] == "mp4":
-                            st.video(item["ruta"])
-                        elif item["tipo"] == "m4a":
-                            st.audio(item["ruta"])
-                        elif item["tipo"] in ["jpg", "jpeg", "png"]:
-                            st.image(item["ruta"], use_container_width=True)
+                    if ruta_arc and os.path.exists(ruta_arc):
+                        if tipo_arc == "mp4":
+                            st.video(ruta_arc)
+                        elif tipo_arc == "m4a":
+                            st.audio(ruta_arc)
+                        elif tipo_arc in ["jpg", "jpeg", "png"]:
+                            st.image(ruta_arc, use_container_width=True)
                         else:
-                            with open(item["ruta"], "rb") as fl:
-                                st.download_button("📥 Descargar Archivo", data=fl.read(), file_name=item["nombre_original"], key=f"dl_a_{idx}")
+                            with open(ruta_arc, "rb") as fl:
+                                st.download_button("📥 Descargar Archivo", data=fl.read(), file_name=nombre_arc, key=f"dl_a_{idx}")
                     else:
-                        st.error("Archivo no encontrado en el servidor.")
+                        st.error("Archivo físico no encontrado en el servidor.")
                         
                 with t_res:
-                    st.info(item["resumen"])
+                    st.info(resumen_arc)
                 st.markdown("---")
 
 # ==========================================
@@ -430,7 +432,7 @@ elif opcion == "📄 Informes Compartidos":
                 st.error("API Key de Gemini no configurada.")
             else:
                 with st.spinner("Redactando informe con Gemini 3.6 Flash..."):
-                    resumenes_int = "\n".join([f"- {x['nombre_original']}: {x['resumen']}" for x in db["intervencion"]])
+                    resumenes_int = "\n".join([f"- {x.get('nombre_original', 'Archivo')}: {x.get('resumen', '')}" for x in db["intervencion"]])
                     
                     prompt = f"""
                     Actúa como un especialista y analista de datos senior.
@@ -472,11 +474,16 @@ elif opcion == "📄 Informes Compartidos":
         st.info("No hay informes registrados.")
     else:
         for idx, inf in enumerate(db["informes"]):
+            titulo_inf = inf.get("titulo") or inf.get("titulo_informe") or "Sin Título"
+            autor_inf = inf.get("autor", "Desconocido")
+            fecha_inf = inf.get("fecha", "")
+            contenido_inf = inf.get("contenido", "")
+            
             with st.container():
                 c_inf_t, c_inf_del = st.columns([5, 1])
                 with c_inf_t:
-                    st.markdown(f"### 📄 [{inf['autor']}] - {inf['titulo']}")
-                    st.caption(f"Generado el: {inf['fecha']}")
+                    st.markdown(f"### 📄 [{autor_inf}] - {titulo_inf}")
+                    st.caption(f"Generado el: {fecha_inf}")
                 with c_inf_del:
                     if usr.get("permiso_eliminar") or usr_key == "admin1":
                         if st.button("🗑️ Borrar", key=f"del_inf_{idx}"):
@@ -485,19 +492,19 @@ elif opcion == "📄 Informes Compartidos":
                             st.success("Informe eliminado.")
                             st.rerun()
                 
-                st.markdown(inf["contenido"])
+                st.markdown(contenido_inf)
                 
                 # Descargas
                 cd1, cd2 = st.columns([1, 1])
                 with cd1:
-                    df_out = pd.DataFrame([{"Autor": inf["autor"], "Título": inf["titulo"], "Fecha": inf["fecha"], "Contenido": inf["contenido"]}])
+                    df_out = pd.DataFrame([{"Autor": autor_inf, "Título": titulo_inf, "Fecha": fecha_inf, "Contenido": contenido_inf}])
                     buf = io.BytesIO()
                     with pd.ExcelWriter(buf, engine="openpyxl") as writer:
                         df_out.to_excel(writer, index=False)
                     st.download_button(
                         label="📥 Descargar Excel (.xlsx)",
                         data=buf.getvalue(),
-                        file_name=f"[{inf['autor']}] - {inf['titulo']}.xlsx",
+                        file_name=f"[{autor_inf}] - {titulo_inf}.xlsx",
                         mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
                         key=f"xls_dl_{idx}"
                     )
@@ -507,7 +514,7 @@ elif opcion == "📄 Informes Compartidos":
                     <html>
                     <head>
                         <meta charset="utf-8">
-                        <title>{inf['titulo']}</title>
+                        <title>{titulo_inf}</title>
                         <style>
                             @page {{ size: letter portrait; margin: 25mm; }}
                             body {{ font-family: 'Segoe UI', Arial, sans-serif; color: #0f172a; padding: 20px; }}
@@ -519,17 +526,17 @@ elif opcion == "📄 Informes Compartidos":
                     </head>
                     <body>
                         <div class="header">
-                            <div class="title">{inf['titulo']}</div>
-                            <div class="meta">Autor: {inf['autor']} | Fecha: {inf['fecha']}</div>
+                            <div class="title">{titulo_inf}</div>
+                            <div class="meta">Autor: {autor_inf} | Fecha: {fecha_inf}</div>
                         </div>
-                        <div class="body">{inf['contenido']}</div>
+                        <div class="body">{contenido_inf}</div>
                     </body>
                     </html>
                     """
                     st.download_button(
                         label="🖼️ Descargar Formato Carta (Imprimible / PDF)",
                         data=html_carta,
-                        file_name=f"[{inf['autor']}] - {inf['titulo']}_Carta.html",
+                        file_name=f"[{autor_inf}] - {titulo_inf}_Carta.html",
                         mime="text/html",
                         key=f"doc_dl_{idx}"
                     )
@@ -587,7 +594,7 @@ elif opcion == "👥 Gestión de Usuarios":
         with st.container():
             col_u_inf, col_u_e, col_u_d, col_u_del = st.columns([2, 1, 1, 1])
             with col_u_inf:
-                st.markdown(f"**{u_d['nombre']}** (`{u_k}`) — Rol: *{u_d['rol']}*")
+                st.markdown(f"**{u_d.get('nombre', '')}** (`{u_k}`) — Rol: *{u_d.get('rol', '')}*")
             
             if u_k == "admin1":
                 st.caption("Administrador Principal (Protegido)")
