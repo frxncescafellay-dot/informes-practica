@@ -33,71 +33,40 @@ for d in [DIR_BASE, DIR_DATASETS, DIR_INTERVENCION, DIR_AVATARS]:
 
 MODELO_GEMINI = "gemini-3.6-flash"
 
-# --- ESTILOS VISUALES: FONDOS CLAROS CON TEXTO OSCURO DE ALTO CONTRASTE ---
+# --- PALETA FORMAL BASADA EN AZUL CERÚLEO ---
 st.markdown("""
 <style>
-    /* Fondo general claro de la app */
+    /* Fondo principal: Azul Cerúleo vibrante y formal */
     .stApp {
-        background: linear-gradient(135deg, #f1f5f9 0%, #e2e8f0 50%, #e5edf5 100%);
+        background: radial-gradient(circle at 50% 30%, #1ba4ea 0%, #0c8fd8 55%, #0570b5 100%) !important;
         color: #0f172a;
         font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
     }
     
-    /* Encabezados y títulos en color oscuro profundo */
-    h1, h2, h3, h4, h5, h6 {
-        color: #091e42 !important;
-        font-weight: 700;
+    /* Encabezados y títulos */
+    h1, h2, h3, h4 {
+        color: #0c2d48 !important;
+        font-weight: 750;
         letter-spacing: -0.3px;
     }
     
-    /* Tarjetas de sección */
+    /* Contenedores y Tarjetas Formales */
     .modern-card {
-        background: #f8fafc;
-        border: 1px solid #cbd5e1;
+        background: rgba(255, 255, 255, 0.94);
+        border: 1px solid rgba(255, 255, 255, 0.8);
         border-radius: 14px;
         padding: 22px;
         margin-bottom: 20px;
-        box-shadow: 0 4px 12px rgba(100, 116, 139, 0.1);
+        box-shadow: 0 10px 25px -3px rgba(5, 70, 115, 0.25);
     }
 
-    /* --- BOTONES EN TONO CLARO CON TEXTO OSCURO NÍTIDO --- */
-    .stButton>button {
-        background: linear-gradient(180deg, #dbeafe 0%, #bfdbfe 100%) !important;
-        color: #0f2952 !important;
-        border: 1px solid #93c5fd !important;
-        border-radius: 9px !important;
-        padding: 9px 22px !important;
-        font-weight: 700 !important;
-        font-size: 0.95rem !important;
-        box-shadow: 0 2px 6px rgba(147, 197, 253, 0.4) !important;
-        transition: all 0.2s ease-in-out !important;
-    }
-    .stButton>button:hover {
-        background: linear-gradient(180deg, #bfdbfe 0%, #93c5fd 100%) !important;
-        color: #051937 !important;
-        border-color: #60a5fa !important;
-        box-shadow: 0 4px 10px rgba(96, 165, 250, 0.45) !important;
-        transform: translateY(-1px);
-    }
-    
-    /* Botones secundarios (ej. Eliminar / Borrar) */
-    div[data-testid="stBaseButton-secondary"] button {
-        background: linear-gradient(180deg, #fee2e2 0%, #fecaca 100%) !important;
-        color: #7f1d1d !important;
-        border: 1px solid #fca5a5 !important;
-    }
-    div[data-testid="stBaseButton-secondary"] button:hover {
-        background: linear-gradient(180deg, #fecaca 0%, #fca5a5 100%) !important;
-        color: #450a0a !important;
-    }
-
-    /* --- CUADROS DE TEXTO, TEXTAREAS Y CAMPOS DE ENTRADA --- */
+    /* Cuadros de entrada de datos (Inputs, TextAreas, PIN) */
     input[type="text"], 
     input[type="password"], 
     textarea {
-        background-color: #e8edf5 !important;
+        background-color: #ffffff !important;
         color: #0f172a !important;
-        border: 1.5px solid #cbd5e1 !important;
+        border: 1.5px solid #94a3b8 !important;
         border-radius: 8px !important;
         font-size: 0.95rem !important;
         font-weight: 500 !important;
@@ -105,17 +74,17 @@ st.markdown("""
     input[type="text"]:focus, 
     input[type="password"]:focus, 
     textarea:focus {
-        background-color: #f1f6fc !important;
+        background-color: #ffffff !important;
         color: #000000 !important;
-        border-color: #3b82f6 !important;
-        box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.2) !important;
+        border-color: #0c8fd8 !important;
+        box-shadow: 0 0 0 3px rgba(12, 143, 216, 0.25) !important;
     }
 
-    /* Selectores (Selectbox / Dropdowns) */
+    /* Selectores desplegables */
     div[data-baseweb="select"] > div {
-        background-color: #e8edf5 !important;
+        background-color: #ffffff !important;
         color: #0f172a !important;
-        border: 1.5px solid #cbd5e1 !important;
+        border: 1.5px solid #94a3b8 !important;
         border-radius: 8px !important;
     }
     div[data-baseweb="select"] * {
@@ -123,53 +92,101 @@ st.markdown("""
         font-weight: 500 !important;
     }
 
-    /* Cuadro de subida de archivos (File Uploader) */
+    /* Zona de carga de archivos (Uploader) */
     div[data-testid="stFileUploader"] {
-        background-color: #edf2f8;
-        border: 1.5px dashed #94a3b8;
-        border-radius: 12px;
-        padding: 12px;
+        background-color: rgba(255, 255, 255, 0.92) !important;
+        border: 2px dashed #0284c7 !important;
+        border-radius: 12px !important;
+        padding: 15px !important;
+        box-shadow: 0 4px 10px rgba(0, 0, 0, 0.05);
     }
     div[data-testid="stFileUploader"] * {
-        color: #1e293b !important;
+        color: #0f172a !important;
     }
 
-    /* Etiquetas / Labels de campos */
-    label, p, span {
-        color: #1e293b;
-        font-weight: 600;
-    }
-
-    /* Pestañas de navegación */
-    button[data-baseweb="tab"] {
-        background-color: #e2e8f0 !important;
-        color: #334155 !important;
-        border-radius: 8px 8px 0 0 !important;
+    /* Botones primarios formales */
+    .stButton>button {
+        background: linear-gradient(180deg, #ffffff 0%, #f1f5f9 100%) !important;
+        color: #075985 !important;
+        border: 1.5px solid #bae6fd !important;
+        border-radius: 8px !important;
+        padding: 9px 22px !important;
         font-weight: 700 !important;
-        margin-right: 4px !important;
-        padding: 10px 18px !important;
+        font-size: 0.95rem !important;
+        box-shadow: 0 4px 12px rgba(2, 132, 199, 0.2) !important;
+        transition: all 0.2s ease-in-out !important;
+    }
+    .stButton>button:hover {
+        background: linear-gradient(180deg, #f0f9ff 0%, #e0f2fe 100%) !important;
+        color: #0369a1 !important;
+        border-color: #38bdf8 !important;
+        transform: translateY(-1px);
+    }
+    
+    /* Botones secundarios (Eliminar/Borrar) */
+    div[data-testid="stBaseButton-secondary"] button {
+        background: linear-gradient(180deg, #ffffff 0%, #fef2f2 100%) !important;
+        color: #b91c1c !important;
+        border: 1.5px solid #fecaca !important;
+    }
+    div[data-testid="stBaseButton-secondary"] button:hover {
+        background: linear-gradient(180deg, #fee2e2 0%, #fecaca 100%) !important;
+        color: #991b1b !important;
+    }
+
+    /* Tablas de datos Excel / Data Editor */
+    div[data-testid="stDataFrame"], 
+    div[data-testid="stDataEditor"] {
+        background-color: #ffffff !important;
+        border: 1px solid #cbd5e1 !important;
+        border-radius: 10px !important;
+        padding: 8px !important;
+        box-shadow: 0 6px 15px rgba(0, 0, 0, 0.06) !important;
+    }
+
+    /* Pestañas de navegación superiores */
+    button[data-baseweb="tab"] {
+        background-color: rgba(255, 255, 255, 0.6) !important;
+        color: #0f2952 !important;
+        border-radius: 10px 10px 0 0 !important;
+        font-weight: 750 !important;
+        margin-right: 6px !important;
+        padding: 10px 22px !important;
+        border: 1px solid rgba(255, 255, 255, 0.4) !important;
     }
     button[data-baseweb="tab"][aria-selected="true"] {
-        background-color: #dbeafe !important;
-        color: #03449e !important;
-        border-bottom: 3px solid #2563eb !important;
+        background-color: #ffffff !important;
+        color: #0284c7 !important;
+        border-bottom: 3.5px solid #0284c7 !important;
+        box-shadow: 0 -4px 10px rgba(0, 0, 0, 0.05) !important;
     }
 
     /* Barra lateral */
     section[data-testid="stSidebar"] {
-        background-color: #f8fafc !important;
-        border-right: 1px solid #cbd5e1;
+        background-color: rgba(255, 255, 255, 0.94) !important;
+        border-right: 1px solid rgba(255, 255, 255, 0.8) !important;
     }
 
-    /* Badge de Rol */
+    /* Expanders */
+    div[data-testid="stExpander"] {
+        background-color: rgba(255, 255, 255, 0.9) !important;
+        border: 1px solid #bae6fd !important;
+        border-radius: 12px !important;
+    }
+
+    /* Etiquetas de texto general */
+    label, p, span {
+        color: #0f172a;
+        font-weight: 600;
+    }
+
     .badge-role {
         display: inline-block;
-        background: #dbeafe;
-        color: #1e40af;
-        border: 1px solid #bfdbfe;
+        background: #0284c7;
+        color: #ffffff !important;
         padding: 4px 14px;
         border-radius: 16px;
-        font-size: 0.85rem;
+        font-size: 0.82rem;
         font-weight: 700;
     }
 </style>
@@ -179,43 +196,43 @@ st.markdown("""
 def renderizar_reloj_chile():
     html_reloj = """
     <div style="
-        background: #f8fafc;
-        border: 1px solid #cbd5e1;
+        background: rgba(255, 255, 255, 0.94);
+        border: 1px solid #bae6fd;
         border-radius: 16px;
-        padding: 14px 20px;
+        padding: 12px 20px;
         display: flex;
         align-items: center;
         justify-content: space-between;
-        gap: 18px;
-        box-shadow: 0 4px 12px rgba(148, 163, 184, 0.2);
+        gap: 16px;
+        box-shadow: 0 6px 18px rgba(5, 70, 115, 0.15);
         max-width: 480px;
         margin-left: auto;
         margin-bottom: 15px;
         font-family: 'Segoe UI', system-ui, sans-serif;
     ">
         <!-- Reloj Análogo -->
-        <div style="position: relative; width: 65px; height: 65px;">
-            <svg id="analog-clock" width="65" height="65" viewBox="0 0 100 100">
-                <circle cx="50" cy="50" r="46" fill="#e8edf5" stroke="#3b82f6" stroke-width="4"/>
+        <div style="position: relative; width: 62px; height: 62px;">
+            <svg id="analog-clock" width="62" height="62" viewBox="0 0 100 100">
+                <circle cx="50" cy="50" r="46" fill="#f0f9ff" stroke="#0284c7" stroke-width="4"/>
                 <line x1="50" y1="10" x2="50" y2="16" stroke="#475569" stroke-width="3" stroke-linecap="round"/>
                 <line x1="90" y1="50" x2="84" y2="50" stroke="#475569" stroke-width="3" stroke-linecap="round"/>
                 <line x1="50" y1="90" x2="50" y2="84" stroke="#475569" stroke-width="3" stroke-linecap="round"/>
                 <line x1="10" y1="50" x2="16" y2="50" stroke="#475569" stroke-width="3" stroke-linecap="round"/>
                 <line id="hour-hand" x1="50" y1="50" x2="50" y2="28" stroke="#0f172a" stroke-width="4.5" stroke-linecap="round"/>
-                <line id="min-hand" x1="50" y1="50" x2="50" y2="18" stroke="#2563eb" stroke-width="3" stroke-linecap="round"/>
-                <line id="sec-hand" x1="50" y1="50" x2="50" y2="14" stroke="#dc2626" stroke-width="1.5" stroke-linecap="round"/>
+                <line id="min-hand" x1="50" y1="50" x2="50" y2="18" stroke="#0284c7" stroke-width="3" stroke-linecap="round"/>
+                <line id="sec-hand" x1="50" y1="50" x2="50" y2="14" stroke="#e11d48" stroke-width="1.5" stroke-linecap="round"/>
                 <circle cx="50" cy="50" r="3.5" fill="#0f172a"/>
             </svg>
         </div>
         <!-- Reloj Digital y Fecha -->
         <div style="display: flex; flex-direction: column; justify-content: center;">
-            <div style="font-size: 0.78rem; font-weight: 700; color: #2563eb; text-transform: uppercase; letter-spacing: 0.5px;">
+            <div style="font-size: 0.76rem; font-weight: 750; color: #0284c7; text-transform: uppercase; letter-spacing: 0.5px;">
                 🇨🇱 Hora Oficial de Chile
             </div>
-            <div id="digital-clock" style="font-size: 1.6rem; font-weight: 800; color: #0f172a; line-height: 1.1;">
+            <div id="digital-clock" style="font-size: 1.55rem; font-weight: 800; color: #0c2d48; line-height: 1.1;">
                 --:--:--
             </div>
-            <div id="digital-date" style="font-size: 0.82rem; font-weight: 600; color: #475569; margin-top: 2px;">
+            <div id="digital-date" style="font-size: 0.8rem; font-weight: 600; color: #475569; margin-top: 2px;">
                 Cargando fecha...
             </div>
         </div>
@@ -263,7 +280,7 @@ def renderizar_reloj_chile():
         actualizarReloj();
     </script>
     """
-    components.html(html_reloj, height=105)
+    components.html(html_reloj, height=100)
 
 # --- GESTOR DE PERSISTENCIA (JSON) ---
 def cargar_estado():
@@ -336,8 +353,8 @@ if "autenticado" not in st.session_state:
     st.session_state.usuario_clave = None
 
 if not st.session_state.autenticado:
-    st.markdown("<h1 style='text-align:center; color:#091e42 !important; margin-top:30px;'>🔐 Acceso a la Plataforma</h1>", unsafe_allow_html=True)
-    st.markdown("<p style='text-align:center; color:#475569;'>Ingrese sus credenciales registradas</p>", unsafe_allow_html=True)
+    st.markdown("<h1 style='text-align:center; color:#ffffff !important; margin-top:40px;'>🔐 Acceso a la Plataforma</h1>", unsafe_allow_html=True)
+    st.markdown("<p style='text-align:center; color:#e0f2fe;'>Ingrese sus credenciales para ingresar al sistema</p>", unsafe_allow_html=True)
     c1, c2, c3 = st.columns([1, 1.4, 1])
     with c2:
         with st.form("login_form"):
@@ -365,7 +382,7 @@ if avatar_path and os.path.exists(avatar_path):
     st.sidebar.image(avatar_path, width=105)
 else:
     st.sidebar.markdown("""
-        <div style='width:85px; height:85px; border-radius:50%; background:#e2e8f0; border:1px solid #cbd5e1; display:flex; align-items:center; justify-content:center; font-size:2.2rem; color:#64748b; margin-bottom:10px;'>
+        <div style='width:85px; height:85px; border-radius:50%; background:#e0f2fe; border:2px solid #bae6fd; display:flex; align-items:center; justify-content:center; font-size:2.2rem; color:#0284c7; margin-bottom:10px;'>
             👤
         </div>
     """, unsafe_allow_html=True)
@@ -394,8 +411,8 @@ if st.sidebar.button("🚪 Cerrar Sesión", use_container_width=True):
 # --- ENCABEZADO SUPERIOR CON RELOJ ---
 col_head_title, col_head_clock = st.columns([1.2, 1])
 with col_head_title:
-    st.title("⚡ Centro de Gestión & Analítica")
-    st.markdown("Plataforma colaborativa multi-formato con procesamiento inteligente.")
+    st.markdown("<h1 style='color:#ffffff !important; margin:0;'>⚡ Centro de Gestión & Analítica</h1>", unsafe_allow_html=True)
+    st.markdown("<p style='color:#e0f2fe; margin-top:4px;'>Plataforma multi-formato con procesamiento inteligente e informes consolidados.</p>", unsafe_allow_html=True)
 with col_head_clock:
     renderizar_reloj_chile()
 
@@ -716,8 +733,8 @@ with pestanas_principales[2]:
                         <style>
                             @page {{ size: letter portrait; margin: 25mm; }}
                             body {{ font-family: 'Segoe UI', Arial, sans-serif; color: #0f172a; padding: 20px; }}
-                            .header {{ border-bottom: 2px solid #3b82f6; padding-bottom: 8px; margin-bottom: 20px; }}
-                            .title {{ font-size: 20pt; font-weight: bold; color: #1d4ed8; }}
+                            .header {{ border-bottom: 2px solid #0284c7; padding-bottom: 8px; margin-bottom: 20px; }}
+                            .title {{ font-size: 20pt; font-weight: bold; color: #0369a1; }}
                             .meta {{ font-size: 10pt; color: #64748b; margin-top: 4px; }}
                             .body {{ font-size: 11pt; line-height: 1.6; white-space: pre-wrap; }}
                         </style>
