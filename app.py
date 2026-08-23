@@ -33,30 +33,39 @@ for d in [DIR_BASE, DIR_DATASETS, DIR_INTERVENCION, DIR_AVATARS]:
 
 MODELO_GEMINI = "gemini-3.6-flash"
 
-# --- PALETA FORMAL: GRIS NIEBLA / ACERO SUAVE SOBRE AZUL CERÚLEO ---
+# --- PALETA FORMAL: GRIS PIZARRA / ACERO MEDIO SOBRE AZUL CERÚLEO ---
 st.markdown("""
 <style>
     /* Fondo principal: Azul Cerúleo */
     .stApp {
         background: radial-gradient(circle at 50% 30%, #1ba4ea 0%, #0c8fd8 55%, #0570b5 100%) !important;
-        color: #0f2942;
+        color: #031726;
         font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
     }
     
     /* Encabezados y títulos */
     h1, h2, h3, h4, h5, h6 {
-        color: #09233b !important;
+        color: #04192b !important;
         font-weight: 750;
     }
     
-    /* Contenedores y Tarjetas en Gris Claro Suave */
+    /* Barra lateral más oscura (Gris Pizarra / Acero medio) */
+    section[data-testid="stSidebar"] {
+        background-color: #94a3b8 !important;
+        border-right: 1.5px solid #64748b !important;
+    }
+    section[data-testid="stSidebar"] * {
+        color: #031726 !important;
+    }
+
+    /* Contenedores y Tarjetas en Gris Acero */
     .modern-card {
-        background: #e2e8f0 !important;
-        border: 1px solid #cbd5e1 !important;
+        background: #94a3b8 !important;
+        border: 1px solid #64748b !important;
         border-radius: 12px;
         padding: 22px;
         margin-bottom: 20px;
-        box-shadow: 0 8px 20px rgba(5, 70, 115, 0.18);
+        box-shadow: 0 8px 20px rgba(5, 70, 115, 0.25);
     }
 
     /* Cuadros de entrada de datos (Inputs, TextAreas, PIN) */
@@ -64,8 +73,8 @@ st.markdown("""
     input[type="password"], 
     textarea {
         background-color: #cbd5e1 !important;
-        color: #0f2942 !important;
-        border: 1.5px solid #94a3b8 !important;
+        color: #031726 !important;
+        border: 1.5px solid #64748b !important;
         border-radius: 8px !important;
         font-size: 0.95rem !important;
         font-weight: 600 !important;
@@ -74,113 +83,105 @@ st.markdown("""
     input[type="password"]:focus, 
     textarea:focus {
         background-color: #e2e8f0 !important;
-        color: #051a2e !important;
+        color: #000000 !important;
         border-color: #0284c7 !important;
-        box-shadow: 0 0 0 3px rgba(2, 132, 199, 0.25) !important;
+        box-shadow: 0 0 0 3px rgba(2, 132, 199, 0.3) !important;
     }
 
     /* Selectores desplegables */
     div[data-baseweb="select"] > div {
         background-color: #cbd5e1 !important;
-        color: #0f2942 !important;
-        border: 1.5px solid #94a3b8 !important;
+        color: #031726 !important;
+        border: 1.5px solid #64748b !important;
         border-radius: 8px !important;
     }
     div[data-baseweb="select"] * {
-        color: #0f2942 !important;
+        color: #031726 !important;
         font-weight: 600 !important;
     }
 
-    /* Zona de carga de archivos (Uploader) en Gris Suave */
+    /* Zona de carga de archivos (Uploader) */
     div[data-testid="stFileUploader"] {
-        background-color: #cbd5e1 !important;
-        border: 2px dashed #64748b !important;
+        background-color: #94a3b8 !important;
+        border: 2px dashed #475569 !important;
         border-radius: 10px !important;
         padding: 12px !important;
     }
     div[data-testid="stFileUploader"] * {
-        color: #0f2942 !important;
+        color: #031726 !important;
     }
     div[data-testid="stFileUploader"] section {
-        background-color: #cbd5e1 !important;
+        background-color: #94a3b8 !important;
     }
 
-    /* Tablas de datos Excel y Editor de Datos en Gris Suave */
+    /* Tablas de datos Excel y Editor de Datos */
     div[data-testid="stDataFrame"], 
     div[data-testid="stDataEditor"] {
-        background-color: #e2e8f0 !important;
-        border: 1.5px solid #94a3b8 !important;
+        background-color: #94a3b8 !important;
+        border: 1.5px solid #64748b !important;
         border-radius: 10px !important;
         padding: 6px !important;
-        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08) !important;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.12) !important;
     }
-    
-    /* Celdas y encabezados de tablas */
     div[data-testid="stDataFrame"] *, 
     div[data-testid="stDataEditor"] * {
-        color: #0f2942 !important;
+        color: #031726 !important;
     }
 
     /* Botones primarios */
     .stButton>button {
-        background: #cbd5e1 !important;
-        color: #075985 !important;
-        border: 1.5px solid #94a3b8 !important;
+        background: #64748b !important;
+        color: #ffffff !important;
+        border: 1.5px solid #475569 !important;
         border-radius: 8px !important;
         padding: 8px 20px !important;
         font-weight: 750 !important;
         font-size: 0.95rem !important;
-        box-shadow: 0 3px 8px rgba(0, 0, 0, 0.1) !important;
+        box-shadow: 0 3px 8px rgba(0, 0, 0, 0.15) !important;
         transition: all 0.2s ease !important;
     }
     .stButton>button:hover {
-        background: #94a3b8 !important;
-        color: #042f4b !important;
-        border-color: #64748b !important;
+        background: #475569 !important;
+        color: #f8fafc !important;
+        border-color: #334155 !important;
     }
     
-    /* Botones de eliminación */
+    /* Botones de eliminación / secundarios */
     div[data-testid="stBaseButton-secondary"] button {
-        background: #e2e8f0 !important;
-        color: #991b1b !important;
-        border: 1.5px solid #fca5a5 !important;
+        background: #fca5a5 !important;
+        color: #7f1d1d !important;
+        border: 1.5px solid #ef4444 !important;
     }
     div[data-testid="stBaseButton-secondary"] button:hover {
-        background: #fecaca !important;
-        color: #7f1d1d !important;
+        background: #ef4444 !important;
+        color: #ffffff !important;
     }
 
     /* Pestañas de navegación superiores */
     button[data-baseweb="tab"] {
-        background-color: #cbd5e1 !important;
-        color: #1e3a5f !important;
+        background-color: #64748b !important;
+        color: #f1f5f9 !important;
         border-radius: 8px 8px 0 0 !important;
         font-weight: 700 !important;
         margin-right: 4px !important;
         padding: 8px 18px !important;
-        border: 1px solid #94a3b8 !important;
+        border: 1px solid #475569 !important;
     }
     button[data-baseweb="tab"][aria-selected="true"] {
-        background-color: #e2e8f0 !important;
-        color: #0284c7 !important;
+        background-color: #94a3b8 !important;
+        color: #031726 !important;
         border-bottom: 3.5px solid #0284c7 !important;
     }
 
-    /* Barra lateral */
-    section[data-testid="stSidebar"] {
-        background-color: #e2e8f0 !important;
-        border-right: 1px solid #cbd5e1 !important;
-    }
-
-    /* Desplegables Expanders */
+    /* Expanders */
     div[data-testid="stExpander"] {
-        background-color: #e2e8f0 !important;
-        border: 1px solid #cbd5e1 !important;
+        background-color: #94a3b8 !important;
+        border: 1px solid #64748b !important;
         border-radius: 10px !important;
     }
 
     label, p, span {
-        color: #0f2942;
+        color: #031726;
         font-weight: 600;
     }
 
@@ -200,15 +201,15 @@ st.markdown("""
 def renderizar_reloj_chile():
     html_reloj = """
     <div style="
-        background: #e2e8f0;
-        border: 1px solid #94a3b8;
+        background: #94a3b8;
+        border: 1.5px solid #64748b;
         border-radius: 14px;
         padding: 10px 18px;
         display: flex;
         align-items: center;
         justify-content: space-between;
         gap: 16px;
-        box-shadow: 0 4px 14px rgba(5, 70, 115, 0.15);
+        box-shadow: 0 4px 14px rgba(5, 70, 115, 0.2);
         max-width: 480px;
         margin-left: auto;
         margin-bottom: 15px;
@@ -233,10 +234,10 @@ def renderizar_reloj_chile():
             <div style="font-size: 0.75rem; font-weight: 750; color: #0284c7; text-transform: uppercase; letter-spacing: 0.5px;">
                 🇨🇱 Hora Oficial de Chile
             </div>
-            <div id="digital-clock" style="font-size: 1.5rem; font-weight: 800; color: #09233b; line-height: 1.1;">
+            <div id="digital-clock" style="font-size: 1.5rem; font-weight: 800; color: #04192b; line-height: 1.1;">
                 --:--:--
             </div>
-            <div id="digital-date" style="font-size: 0.78rem; font-weight: 600; color: #475569; margin-top: 2px;">
+            <div id="digital-date" style="font-size: 0.78rem; font-weight: 600; color: #1e293b; margin-top: 2px;">
                 Cargando fecha...
             </div>
         </div>
@@ -357,8 +358,8 @@ if "autenticado" not in st.session_state:
     st.session_state.usuario_clave = None
 
 if not st.session_state.autenticado:
-    st.markdown("<h1 style='text-align:center; color:#e2e8f0 !important; margin-top:35px;'>🔐 Acceso a la Plataforma</h1>", unsafe_allow_html=True)
-    st.markdown("<p style='text-align:center; color:#cbd5e1;'>Ingrese sus credenciales registradas</p>", unsafe_allow_html=True)
+    st.markdown("<h1 style='text-align:center; color:#04192b !important; margin-top:35px;'>🔐 Acceso a la Plataforma</h1>", unsafe_allow_html=True)
+    st.markdown("<p style='text-align:center; color:#031726;'>Ingrese sus credenciales registradas</p>", unsafe_allow_html=True)
     c1, c2, c3 = st.columns([1, 1.4, 1])
     with c2:
         with st.form("login_form"):
@@ -386,7 +387,7 @@ if avatar_path and os.path.exists(avatar_path):
     st.sidebar.image(avatar_path, width=105)
 else:
     st.sidebar.markdown("""
-        <div style='width:80px; height:80px; border-radius:50%; background:#cbd5e1; border:2px solid #94a3b8; display:flex; align-items:center; justify-content:center; font-size:2.2rem; color:#0284c7; margin-bottom:10px;'>
+        <div style='width:80px; height:80px; border-radius:50%; background:#cbd5e1; border:2px solid #64748b; display:flex; align-items:center; justify-content:center; font-size:2.2rem; color:#0284c7; margin-bottom:10px;'>
             👤
         </div>
     """, unsafe_allow_html=True)
@@ -415,8 +416,8 @@ if st.sidebar.button("🚪 Cerrar Sesión", use_container_width=True):
 # --- ENCABEZADO SUPERIOR CON RELOJ ---
 col_head_title, col_head_clock = st.columns([1.2, 1])
 with col_head_title:
-    st.markdown("<h1 style='color:#e2e8f0 !important; margin:0;'>⚡ Centro de Gestión & Analítica</h1>", unsafe_allow_html=True)
-    st.markdown("<p style='color:#cbd5e1; margin-top:4px;'>Plataforma colaborativa multi-formato con procesamiento inteligente.</p>", unsafe_allow_html=True)
+    st.markdown("<h1 style='color:#04192b !important; margin:0;'>⚡ Centro de Gestión & Analítica</h1>", unsafe_allow_html=True)
+    st.markdown("<p style='color:#031726; margin-top:4px;'>Plataforma colaborativa multi-formato con procesamiento inteligente.</p>", unsafe_allow_html=True)
 with col_head_clock:
     renderizar_reloj_chile()
 
@@ -434,7 +435,7 @@ with pestanas_principales[0]:
     st.markdown("""
         <div class='modern-card'>
             <h3 style='margin:0;'>📊 Repositorio de Datasets</h3>
-            <p style='margin:0; color:#475569;'>Suba, visualice y edite hojas de cálculo en ventanas independientes.</p>
+            <p style='margin:0; color:#031726;'>Suba, visualice y edite hojas de cálculo en ventanas independientes.</p>
         </div>
     """, unsafe_allow_html=True)
     
@@ -511,7 +512,7 @@ with pestanas_principales[1]:
     st.markdown("""
         <div class='modern-card'>
             <h3 style='margin:0;'>📂 Módulo de Intervención</h3>
-            <p style='margin:0; color:#475569;'>Soporte y resúmenes automáticos para Documentos, Imágenes y Audios (M4A/MP3/WAV).</p>
+            <p style='margin:0; color:#031726;'>Soporte y resúmenes automáticos para Documentos, Imágenes y Audios (M4A/MP3/WAV).</p>
         </div>
     """, unsafe_allow_html=True)
     
@@ -638,7 +639,7 @@ with pestanas_principales[2]:
     st.markdown("""
         <div class='modern-card'>
             <h3 style='margin:0;'>📄 Informes Compartidos</h3>
-            <p style='margin:0; color:#475569;'>Generación y repositorio colaborativo con exportación en formato Carta.</p>
+            <p style='margin:0; color:#031726;'>Generación y repositorio colaborativo con exportación en formato Carta.</p>
         </div>
     """, unsafe_allow_html=True)
     
@@ -769,7 +770,7 @@ if es_admin:
         st.markdown("""
             <div class='modern-card'>
                 <h3 style='margin:0;'>👥 Gestión de Usuarios y Permisos</h3>
-                <p style='margin:0; color:#475569;'>Control centralizado de cuentas accesible exclusivamente por Administradores.</p>
+                <p style='margin:0; color:#031726;'>Control centralizado de cuentas accesible exclusivamente por Administradores.</p>
             </div>
         """, unsafe_allow_html=True)
         
