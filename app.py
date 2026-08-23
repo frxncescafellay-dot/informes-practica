@@ -1,10 +1,12 @@
 import os
 import io
 import json
+import base64
 from datetime import datetime
 import pytz
 import pandas as pd
 import streamlit as st
+import streamlit.components.v1 as components
 from PIL import Image
 from google import genai
 from google.genai import types
@@ -14,90 +16,182 @@ from pptx import Presentation
 
 # --- CONFIGURACIÓN DE PÁGINA ---
 st.set_page_config(
-    page_title="Plataforma de Intervención & Analítica IA",
-    page_icon="⚡",
+    page_title="Plataforma de Analítica & Intervención IA",
+    page_icon="✨",
     layout="wide",
     initial_sidebar_state="expanded"
 )
 
-# --- CREACIÓN DE DIRECTORIOS PARA PERSISTENCIA ---
+# --- RUTAS DE ALMACENAMIENTO PERSISTENTE ---
 DIR_BASE = "almacen_datos"
 DIR_DATASETS = os.path.join(DIR_BASE, "datasets")
 DIR_INTERVENCION = os.path.join(DIR_BASE, "intervencion")
+DIR_AVATARS = os.path.join(DIR_BASE, "avatares")
 FILE_DB = os.path.join(DIR_BASE, "base_datos.json")
 
-for d in [DIR_BASE, DIR_DATASETS, DIR_INTERVENCION]:
+for d in [DIR_BASE, DIR_DATASETS, DIR_INTERVENCION, DIR_AVATARS]:
     os.makedirs(d, exist_ok=True)
 
-# --- MODELO DESIGNADO ---
 MODELO_GEMINI = "gemini-3.6-flash"
 
-# --- ESTILOS VISUALES MEJORADOS ---
+# --- ESTILOS VISUALES MODERNOS (TEMA CLARO & NEUMÓRFICO) ---
 st.markdown("""
 <style>
+    /* Fondo claro moderno con degradado sutil */
     .stApp {
-        background: radial-gradient(circle at 15% 15%, #0f172a 0%, #030712 100%);
-        color: #f8fafc;
-        font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+        background: linear-gradient(135deg, #f0f4f8 0%, #e2e8f0 50%, #f8fafc 100%);
+        color: #1e293b;
+        font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
     }
     
-    .top-bar {
-        display: flex;
-        justify-content: flex-end;
-        align-items: center;
-        padding: 8px 16px;
-        background: rgba(30, 41, 59, 0.4);
-        border: 1px solid rgba(56, 189, 248, 0.2);
-        border-radius: 10px;
-        margin-bottom: 20px;
-        font-size: 0.9rem;
-        color: #38bdf8;
+    /* Encabezados */
+    h1, h2, h3, h4 {
+        color: #0f172a !important;
+        font-weight: 700;
+        letter-spacing: -0.5px;
     }
     
-    .header-card {
-        background: linear-gradient(135deg, rgba(14, 116, 144, 0.25) 0%, rgba(3, 105, 161, 0.15) 100%);
-        border: 1px solid rgba(56, 189, 248, 0.3);
+    /* Tarjetas de contenido con efecto Glassmorphism claro */
+    .modern-card {
+        background: rgba(255, 255, 255, 0.85);
+        backdrop-filter: blur(12px);
+        border: 1px solid rgba(255, 255, 255, 0.9);
         border-radius: 16px;
         padding: 24px;
-        display: flex;
-        align-items: center;
-        gap: 20px;
-        margin-bottom: 25px;
+        margin-bottom: 20px;
+        box-shadow: 0 10px 25px -5px rgba(148, 163, 184, 0.25), 0 8px 10px -6px rgba(148, 163, 184, 0.2);
     }
-    .header-img {
-        width: 65px;
-        height: 65px;
-        filter: drop-shadow(0 0 8px rgba(56, 189, 248, 0.6));
-    }
-    
+
+    /* Botones primarios modernos */
     .stButton>button {
-        background: linear-gradient(135deg, #0284c7 0%, #0369a1 100%);
-        color: white;
+        background: linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%);
+        color: white !important;
         border: none;
-        border-radius: 8px;
+        border-radius: 10px;
+        padding: 10px 24px;
         font-weight: 600;
-        transition: 0.3s all;
+        box-shadow: 0 4px 12px rgba(37, 99, 235, 0.3);
+        transition: all 0.2s ease-in-out;
     }
     .stButton>button:hover {
-        background: linear-gradient(135deg, #38bdf8 0%, #0284c7 100%);
-        color: #030712;
-        box-shadow: 0 0 14px rgba(56, 189, 248, 0.5);
+        transform: translateY(-2px);
+        box-shadow: 0 6px 18px rgba(37, 99, 235, 0.4);
     }
     
+    /* Barra lateral */
     section[data-testid="stSidebar"] {
-        background-color: #030712 !important;
-        border-right: 1px solid #1e293b;
+        background-color: rgba(255, 255, 255, 0.92) !important;
+        border-right: 1px solid #e2e8f0;
+    }
+
+    /* Insignias de roles */
+    .badge-role {
+        display: inline-block;
+        background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
+        color: white;
+        padding: 4px 14px;
+        border-radius: 20px;
+        font-size: 0.82rem;
+        font-weight: 600;
+        box-shadow: 0 2px 6px rgba(59, 130, 246, 0.3);
     }
 </style>
 """, unsafe_allow_html=True)
 
-# --- COMPONENTE HORA CHILE ---
-def obtener_fecha_hora_chile():
-    tz_cl = pytz.timezone("America/Santiago")
-    hora_cl = datetime.now(tz_cl)
-    return hora_cl.strftime("🇨🇱 Chile: %d/%m/%Y | %H:%M:%S")
+# --- COMPONENTE DE RELOJ DUAL (DIGITAL + ANÁLOGO SVG) ---
+def renderizar_reloj_chile():
+    html_reloj = """
+    <div style="
+        background: rgba(255, 255, 255, 0.9);
+        border: 1px solid #e2e8f0;
+        border-radius: 18px;
+        padding: 16px 24px;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 20px;
+        box-shadow: 0 8px 20px rgba(148, 163, 184, 0.2);
+        max-width: 520px;
+        margin-left: auto;
+        margin-bottom: 20px;
+        font-family: 'Segoe UI', system-ui, sans-serif;
+    ">
+        <!-- Reloj Análogo -->
+        <div style="position: relative; width: 70px; height: 70px;">
+            <svg id="analog-clock" width="70" height="70" viewBox="0 0 100 100">
+                <circle cx="50" cy="50" r="46" fill="#f8fafc" stroke="#3b82f6" stroke-width="4"/>
+                <!-- Marcas horarias principales -->
+                <line x1="50" y1="10" x2="50" y2="16" stroke="#64748b" stroke-width="3" stroke-linecap="round"/>
+                <line x1="90" y1="50" x2="84" y2="50" stroke="#64748b" stroke-width="3" stroke-linecap="round"/>
+                <line x1="50" y1="90" x2="50" y2="84" stroke="#64748b" stroke-width="3" stroke-linecap="round"/>
+                <line x1="10" y1="50" x2="16" y2="50" stroke="#64748b" stroke-width="3" stroke-linecap="round"/>
+                <!-- Agujas -->
+                <line id="hour-hand" x1="50" y1="50" x2="50" y2="28" stroke="#1e293b" stroke-width="4" stroke-linecap="round"/>
+                <line id="min-hand" x1="50" y1="50" x2="50" y2="18" stroke="#3b82f6" stroke-width="3" stroke-linecap="round"/>
+                <line id="sec-hand" x1="50" y1="50" x2="50" y2="14" stroke="#ef4444" stroke-width="1.5" stroke-linecap="round"/>
+                <circle cx="50" cy="50" r="3.5" fill="#1e293b"/>
+            </svg>
+        </div>
+        <!-- Reloj Digital y Fecha -->
+        <div style="display: flex; flex-direction: column; justify-content: center;">
+            <div style="font-size: 0.8rem; font-weight: 700; color: #3b82f6; text-transform: uppercase; letter-spacing: 0.5px;">
+                🇨🇱 Hora Oficial de Chile
+            </div>
+            <div id="digital-clock" style="font-size: 1.7rem; font-weight: 800; color: #0f172a; line-height: 1.1; letter-spacing: -0.5px;">
+                --:--:--
+            </div>
+            <div id="digital-date" style="font-size: 0.85rem; font-weight: 500; color: #64748b; margin-top: 2px;">
+                Cargando fecha...
+            </div>
+        </div>
+    </div>
 
-st.markdown(f"<div class='top-bar'>🕒 {obtener_fecha_hora_chile()}</div>", unsafe_allow_html=True)
+    <script>
+        function actualizarReloj() {
+            const opciones = { timeZone: 'America/Santiago', hour12: false, hour: '2-digit', minute: '2-digit', second: '2-digit' };
+            const opcionesFecha = { timeZone: 'America/Santiago', weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
+            
+            const ahora = new Date();
+            const formateadorHora = new Intl.DateTimeFormat('es-CL', opciones);
+            const formateadorFecha = new Intl.DateTimeFormat('es-CL', opcionesFecha);
+            
+            const partesHora = formateadorHora.formatToParts(ahora);
+            let h = 0, m = 0, s = 0;
+            partesHora.forEach(p => {
+                if (p.type === 'hour') h = parseInt(p.value);
+                if (p.type === 'minute') m = parseInt(p.value);
+                if (p.type === 'second') s = parseInt(p.value);
+            });
+
+            // Formato digital
+            const hStr = h.toString().padStart(2, '0');
+            const mStr = m.toString().padStart(2, '0');
+            const sStr = s.toString().padStart(2, '0');
+            document.getElementById('digital-clock').textContent = `${hStr}:${mStr}:${sStr}`;
+            
+            // Fecha con inicial en mayúscula
+            let fechaStr = formateadorFecha.format(ahora);
+            fechaStr = fechaStr.charAt(0).toUpperCase() + fechaStr.slice(1);
+            document.getElementById('digital-date').textContent = fechaStr;
+
+            // Ángulos para el reloj análogo
+            const secDeg = s * 6;
+            const minDeg = m * 6 + s * 0.1;
+            const hourDeg = (h % 12) * 30 + m * 0.5;
+
+            function rotar(elemId, deg) {
+                const el = document.getElementById(elemId);
+                if (el) el.setAttribute('transform', `rotate(${deg} 50 50)`);
+            }
+            rotar('sec-hand', secDeg);
+            rotar('min-hand', minDeg);
+            rotar('hour-hand', hourDeg);
+        }
+        setInterval(actualizarReloj, 1000);
+        actualizarReloj();
+    </script>
+    """
+    components.html(html_reloj, height=115)
 
 # --- GESTOR DE PERSISTENCIA (JSON) ---
 def cargar_estado():
@@ -109,7 +203,8 @@ def cargar_estado():
                     "rol": "Admin",
                     "pin": "1234",
                     "permiso_editar": True,
-                    "permiso_eliminar": True
+                    "permiso_eliminar": True,
+                    "avatar": ""
                 }
             },
             "datasets": {},
@@ -122,7 +217,7 @@ def cargar_estado():
         try:
             return json.load(f)
         except Exception:
-            return {"usuarios": {"admin1": {"nombre": "Administrador Principal", "rol": "Admin", "pin": "1234", "permiso_editar": True, "permiso_eliminar": True}}, "datasets": {}, "intervencion": [], "informes": []}
+            return {"usuarios": {"admin1": {"nombre": "Administrador Principal", "rol": "Admin", "pin": "1234", "permiso_editar": True, "permiso_eliminar": True, "avatar": ""}}, "datasets": {}, "intervencion": [], "informes": []}
 
 def guardar_estado(data):
     with open(FILE_DB, "w", encoding="utf-8") as f:
@@ -138,7 +233,7 @@ def obtener_cliente_ia():
         return None
     return genai.Client(api_key=API_KEY_GEMINI)
 
-# --- EXTRACCIÓN DE TEXTO PARA DOCUMENTOS ---
+# --- EXTRACCIÓN DE TEXTO PARA RESÚMENES ---
 def extraer_texto_archivo(ruta, extension):
     texto = ""
     try:
@@ -163,14 +258,15 @@ def extraer_texto_archivo(ruta, extension):
         texto = f"Error al extraer texto: {e}"
     return texto[:8000]
 
-# --- CONTROL DE ACCESO ---
+# --- CONTROL DE ACCESO (LOGIN) ---
 if "autenticado" not in st.session_state:
     st.session_state.autenticado = False
     st.session_state.usuario_clave = None
 
 if not st.session_state.autenticado:
-    st.markdown("<h1 style='text-align:center;'>🔐 Acceso a la Plataforma</h1>", unsafe_allow_html=True)
-    c1, c2, c3 = st.columns([1, 2, 1])
+    st.markdown("<h1 style='text-align:center; color:#1e293b !important; margin-top:40px;'>🔐 Acceso a la Plataforma</h1>", unsafe_allow_html=True)
+    st.markdown("<p style='text-align:center; color:#64748b;'>Ingrese sus credenciales registradas</p>", unsafe_allow_html=True)
+    c1, c2, c3 = st.columns([1, 1.5, 1])
     with c2:
         with st.form("login_form"):
             u_in = st.text_input("Usuario")
@@ -184,43 +280,77 @@ if not st.session_state.autenticado:
                     st.error("Credenciales incorrectas")
     st.stop()
 
+# --- DATOS DEL USUARIO ACTUAL ---
 usr_key = st.session_state.usuario_clave
-usr = db["usuarios"].get(usr_key, {"nombre": "Invitado", "rol": "Invitado", "permiso_editar": False, "permiso_eliminar": False})
+usr = db["usuarios"].get(usr_key, {"nombre": "Invitado", "rol": "Usuario", "permiso_editar": False, "permiso_eliminar": False, "avatar": ""})
+es_admin = (usr.get("rol") == "Admin") or (usr_key == "admin1")
 
-# --- SIDEBAR DE NAVEGACIÓN ---
-st.sidebar.markdown(f"### 👤 {usr['nombre']}")
-st.sidebar.caption(f"Rol: **{usr['rol']}**")
+# --- BARRA LATERAL: PERFIL Y FOTO DE USUARIO ---
+st.sidebar.markdown("### 👤 Mi Perfil")
+
+# Foto de perfil
+avatar_path = usr.get("avatar", "")
+if avatar_path and os.path.exists(avatar_path):
+    st.sidebar.image(avatar_path, width=110)
+else:
+    st.sidebar.markdown("""
+        <div style='width:90px; height:90px; border-radius:50%; background:#e2e8f0; display:flex; align-items:center; justify-content:center; font-size:2.2rem; color:#64748b; margin-bottom:10px;'>
+            👤
+        </div>
+    """, unsafe_allow_html=True)
+
+st.sidebar.markdown(f"**{usr.get('nombre')}**")
+st.sidebar.markdown(f"<span class='badge-role'>{usr.get('rol')}</span>", unsafe_allow_html=True)
+
+# Actualizar foto de perfil
+with st.sidebar.expander("📷 Cambiar foto de perfil"):
+    nueva_foto = st.file_uploader("Subir imagen (JPG, PNG):", type=["jpg", "jpeg", "png"], key="upload_avatar")
+    if nueva_foto is not None:
+        if st.button("Guardar Foto"):
+            ruta_avatar = os.path.join(DIR_AVATARS, f"{usr_key}_avatar.png")
+            with open(ruta_avatar, "wb") as f_av:
+                f_av.write(nueva_foto.getbuffer())
+            db["usuarios"][usr_key]["avatar"] = ruta_avatar
+            guardar_estado(db)
+            st.success("Foto actualizada.")
+            st.rerun()
+
 st.sidebar.markdown("---")
-
-menu = ["📊 Datasets & Archivos", "📂 Intervención", "📄 Informes Compartidos"]
-if usr_key == "admin1" or usr.get("rol") == "Admin":
-    menu.append("👥 Gestión de Usuarios")
-
-opcion = st.sidebar.radio("Navegación:", menu)
-
 if st.sidebar.button("🚪 Cerrar Sesión", use_container_width=True):
     st.session_state.autenticado = False
     st.session_state.usuario_clave = None
     st.rerun()
 
+# --- ENCABEZADO SUPERIOR CON RELOJ ---
+col_head_title, col_head_clock = st.columns([1.2, 1])
+with col_head_title:
+    st.title("⚡ Centro de Gestión & Analítica")
+    st.markdown("Plataforma colaborativa multi-formato con procesamiento inteligente.")
+with col_head_clock:
+    renderizar_reloj_chile()
+
+# --- NAVEGACIÓN MODULAR POR PESTAÑAS ---
+titulos_pestanas = ["📊 Datasets & Archivos", "📂 Intervención", "📄 Informes Compartidos"]
+if es_admin:
+    titulos_pestanas.append("👥 Gestión de Usuarios")
+
+pestanas_principales = st.tabs(titulos_pestanas)
+
 # ==========================================
 # 1. DATASETS EXCEL
 # ==========================================
-if opcion == "📊 Datasets & Archivos":
+with pestanas_principales[0]:
     st.markdown("""
-    <div class='header-card'>
-        <img class='header-img' src='https://cdn-icons-png.flaticon.com/512/732/732220.png'>
-        <div>
-            <h2 style='margin:0;'>Módulo de Datasets & Tablas</h2>
-            <p style='margin:0; color:#94a3b8;'>Gestión persistente, edición y visualización por pestañas individuales.</p>
+        <div class='modern-card'>
+            <h3 style='margin:0; color:#0f172a;'>📊 Repositorio de Datasets</h3>
+            <p style='margin:0; color:#64748b;'>Suba, visualice y edite hojas de cálculo en ventanas independientes.</p>
         </div>
-    </div>
     """, unsafe_allow_html=True)
     
-    with st.expander("➕ Cargar Nuevo Archivo Excel", expanded=True):
+    with st.expander("➕ Cargar Nuevo Dataset Excel", expanded=True):
         c_tit, c_arc = st.columns([1, 1])
         with c_tit:
-            t_data = st.text_input("Título de la ventana/dataset:")
+            t_data = st.text_input("Título del dataset:")
         with c_arc:
             f_data = st.file_uploader("Archivo Excel (.xlsx, .xls):", type=["xlsx", "xls"])
             
@@ -247,35 +377,35 @@ if opcion == "📊 Datasets & Archivos":
     if not db["datasets"]:
         st.info("No hay datasets subidos actualmente.")
     else:
-        titulos = list(db["datasets"].keys())
-        pestanas = st.tabs(titulos)
+        titulos_ds = list(db["datasets"].keys())
+        pestanas_ds = st.tabs(titulos_ds)
         
-        for idx, tab in enumerate(pestanas):
-            t_act = titulos[idx]
-            info = db["datasets"][t_act]
+        for idx_ds, tab_ds in enumerate(pestanas_ds):
+            t_act = titulos_ds[idx_ds]
+            info_ds = db["datasets"][t_act]
             
-            with tab:
-                st.markdown(f"### 📋 {info['titulo']}")
-                st.caption(f"Subido por: **{info['autor']}** ({info['fecha']})")
+            with tab_ds:
+                st.markdown(f"### 📋 {info_ds['titulo']}")
+                st.caption(f"Subido por: **{info_ds['autor']}** | Fecha: {info_ds['fecha']}")
                 
-                if os.path.exists(info["ruta"]):
-                    df_actual = pd.read_excel(info["ruta"])
+                if os.path.exists(info_ds["ruta"]):
+                    df_actual = pd.read_excel(info_ds["ruta"])
                     
-                    if usr.get("permiso_editar") or usr_key == "admin1":
+                    if usr.get("permiso_editar") or es_admin:
                         st.markdown("**✏️ Editor de Datos en Vivo:**")
                         df_edit = st.data_editor(df_actual, key=f"d_edit_{t_act}", use_container_width=True)
                         if st.button("💾 Guardar Cambios en Excel", key=f"s_df_{t_act}"):
-                            df_edit.to_excel(info["ruta"], index=False)
+                            df_edit.to_excel(info_ds["ruta"], index=False)
                             st.success("Datos actualizados.")
                             st.rerun()
                     else:
                         st.dataframe(df_actual, use_container_width=True)
                     
-                    if usr.get("permiso_eliminar") or usr_key == "admin1":
+                    if usr.get("permiso_eliminar") or es_admin:
                         st.markdown("---")
-                        if st.button("🗑️ Eliminar Dataset Completo", key=f"del_ds_{t_act}", type="secondary"):
-                            if os.path.exists(info["ruta"]):
-                                os.remove(info["ruta"])
+                        if st.button("🗑️ Eliminar Dataset", key=f"del_ds_{t_act}", type="secondary"):
+                            if os.path.exists(info_ds["ruta"]):
+                                os.remove(info_ds["ruta"])
                             del db["datasets"][t_act]
                             guardar_estado(db)
                             st.success("Dataset eliminado.")
@@ -284,17 +414,14 @@ if opcion == "📊 Datasets & Archivos":
                     st.error("Archivo físico no encontrado.")
 
 # ==========================================
-# 2. INTERVENCIÓN MULTI-FORMATO (CON AUDIO)
+# 2. INTERVENCIÓN MULTI-FORMATO
 # ==========================================
-elif opcion == "📂 Intervención":
+with pestanas_principales[1]:
     st.markdown("""
-    <div class='header-card'>
-        <img class='header-img' src='https://cdn-icons-png.flaticon.com/512/3135/3135715.png'>
-        <div>
-            <h2 style='margin:0;'>Módulo de Intervención Multi-Formato</h2>
-            <p style='margin:0; color:#94a3b8;'>Soporte y resúmenes automáticos para Documentos, Imágenes y Audios (M4A/MP3/WAV).</p>
+        <div class='modern-card'>
+            <h3 style='margin:0; color:#0f172a;'>📂 Módulo de Intervención</h3>
+            <p style='margin:0; color:#64748b;'>Soporte y resúmenes automáticos para Documentos, Imágenes y Audios (M4A/MP3/WAV).</p>
         </div>
-    </div>
     """, unsafe_allow_html=True)
     
     with st.form("form_intervencion"):
@@ -318,37 +445,28 @@ elif opcion == "📂 Intervención":
                         f.write(a.getbuffer())
                     
                     resumen_txt = "Archivo guardado."
-                    
                     if client:
-                        with st.spinner(f"Analizando y resumiendo {a.name} con Gemini..."):
+                        with st.spinner(f"Analizando {a.name} con Gemini..."):
                             try:
-                                # 1. Audio (M4A, MP3, WAV)
                                 if ext in ["m4a", "mp3", "wav"]:
                                     mime_map = {"m4a": "audio/mp4", "mp3": "audio/mp3", "wav": "audio/wav"}
-                                    mime_type = mime_map.get(ext, "audio/mp4")
-                                    
                                     with open(ruta_guardada, "rb") as f_aud:
                                         audio_bytes = f_aud.read()
-                                        
                                     resp = client.models.generate_content(
                                         model=MODELO_GEMINI,
                                         contents=[
-                                            types.Part.from_bytes(data=audio_bytes, mime_type=mime_type),
-                                            "Escucha con atención este archivo de audio. Realiza una transcripción sintetizada de los puntos clave tratados, detallando acuerdos, situaciones descritas y un diagnóstico para el informe de intervención."
+                                            types.Part.from_bytes(data=audio_bytes, mime_type=mime_map.get(ext, "audio/mp4")),
+                                            "Sintetiza los puntos clave tratados en este audio, acuerdos y diagnóstico para intervención."
                                         ]
                                     )
                                     resumen_txt = resp.text
-                                
-                                # 2. Imágenes (JPG, PNG)
                                 elif ext in ["jpg", "jpeg", "png"]:
                                     img = Image.open(ruta_guardada)
                                     resp = client.models.generate_content(
                                         model=MODELO_GEMINI,
-                                        contents=["Describe y resume detalladamente los elementos clave de esta imagen para un informe de intervención:", img]
+                                        contents=["Describe y resume los elementos clave de esta imagen para un informe de intervención:", img]
                                     )
                                     resumen_txt = resp.text
-                                
-                                # 3. Documentos (PDF, DOCX, PPTX, XLSX)
                                 elif ext in ["pdf", "docx", "pptx", "xlsx", "xls"]:
                                     t_doc = extraer_texto_archivo(ruta_guardada, ext)
                                     resp = client.models.generate_content(
@@ -356,11 +474,8 @@ elif opcion == "📂 Intervención":
                                         contents=f"Elabora un resumen y diagnóstico clave de este documento ({a.name}):\n\n{t_doc}"
                                     )
                                     resumen_txt = resp.text
-                                    
-                                # 4. Video (MP4)
                                 elif ext == "mp4":
-                                    resumen_txt = "Archivo de video registrado (reproducción disponible en visor)."
-                                    
+                                    resumen_txt = "Video registrado (reproducción multimedia disponible)."
                             except Exception as e:
                                 resumen_txt = f"Archivo guardado. Diagnóstico no generado: {e}"
                     
@@ -374,14 +489,14 @@ elif opcion == "📂 Intervención":
                         "resumen": resumen_txt
                     })
                 guardar_estado(db)
-                st.success("Materiales integrados y analizados correctamente.")
+                st.success("Materiales integrados correctamente.")
                 st.rerun()
 
     st.markdown("---")
-    st.subheader("📚 Archivos y Diagnósticos Guardados")
+    st.subheader("📚 Materiales Guardados")
     
     if not db["intervencion"]:
-        st.info("No hay materiales en el módulo de intervención.")
+        st.info("No hay registros en intervención.")
     else:
         for idx, item in enumerate(db["intervencion"]):
             titulo_item = item.get("titulo") or item.get("titulo_registro") or "Sin Título"
@@ -398,7 +513,7 @@ elif opcion == "📂 Intervención":
                     st.markdown(f"### 📁 {titulo_item} — `{nombre_arc}`")
                     st.caption(f"Autor: **{autor_arc}** | Fecha: {fecha_arc} | Formato: **{tipo_arc.upper()}**")
                 with col_del_btn:
-                    if usr.get("permiso_eliminar") or usr_key == "admin1":
+                    if usr.get("permiso_eliminar") or es_admin:
                         if st.button("🗑️ Borrar", key=f"del_int_{idx}"):
                             if ruta_arc and os.path.exists(ruta_arc):
                                 os.remove(ruta_arc)
@@ -407,8 +522,7 @@ elif opcion == "📂 Intervención":
                             st.success("Archivo eliminado.")
                             st.rerun()
                 
-                t_vis, t_res = st.tabs(["👁️ Visualizador Multimedia / Descarga", "📝 Diagnóstico y Resumen Visual"])
-                
+                t_vis, t_res = st.tabs(["👁️ Multimedia / Descarga", "📝 Diagnóstico y Resumen"])
                 with t_vis:
                     if ruta_arc and os.path.exists(ruta_arc):
                         if tipo_arc == "mp4":
@@ -421,8 +535,7 @@ elif opcion == "📂 Intervención":
                             with open(ruta_arc, "rb") as fl:
                                 st.download_button("📥 Descargar Archivo", data=fl.read(), file_name=nombre_arc, key=f"dl_a_{idx}")
                     else:
-                        st.error("Archivo físico no encontrado en el servidor.")
-                        
+                        st.error("Archivo físico no encontrado.")
                 with t_res:
                     st.info(resumen_arc)
                 st.markdown("---")
@@ -430,15 +543,12 @@ elif opcion == "📂 Intervención":
 # ==========================================
 # 3. INFORMES COMPARTIDOS
 # ==========================================
-elif opcion == "📄 Informes Compartidos":
+with pestanas_principales[2]:
     st.markdown("""
-    <div class='header-card'>
-        <img class='header-img' src='https://cdn-icons-png.flaticon.com/512/2991/2991108.png'>
-        <div>
-            <h2 style='margin:0;'>Repositorio de Informes Compartidos</h2>
-            <p style='margin:0; color:#94a3b8;'>Generación analítica integral y exportación en formato Carta.</p>
+        <div class='modern-card'>
+            <h3 style='margin:0; color:#0f172a;'>📄 Informes Compartidos</h3>
+            <p style='margin:0; color:#64748b;'>Generación y repositorio colaborativo con exportación en formato Carta.</p>
         </div>
-    </div>
     """, unsafe_allow_html=True)
     
     with st.expander("🤖 Redactar Nuevo Informe con IA", expanded=False):
@@ -453,19 +563,16 @@ elif opcion == "📄 Informes Compartidos":
             elif not client:
                 st.error("API Key de Gemini no configurada.")
             else:
-                with st.spinner("Redactando informe consolidado con Gemini..."):
+                with st.spinner("Redactando informe consolidado..."):
                     resumenes_int = "\n".join([f"- {x.get('nombre_original', 'Archivo')}: {x.get('resumen', '')}" for x in db["intervencion"]])
                     
                     prompt = f"""
-                    Actúa como un especialista y analista de datos senior.
+                    Actúa como especialista analítico senior.
                     Genera un informe estructurado con enfoque '{enf_i}'.
                     Título: {nom_i}
                     Autor solicitante: {usr['nombre']}
-                    
-                    Instrucciones adicionales: {ins_i}
-                    
-                    Materiales de Intervención analizados (audios, documentos e imágenes):
-                    {resumenes_int if resumenes_int else 'Sin materiales adjuntos.'}
+                    Instrucciones: {ins_i}
+                    Materiales analizados: {resumenes_int if resumenes_int else 'Sin materiales adjuntos.'}
                     
                     Estructura:
                     1. Diagnóstico y Visión Global
@@ -484,18 +591,18 @@ elif opcion == "📄 Informes Compartidos":
                             "contenido": resp.text
                         })
                         guardar_estado(db)
-                        st.success("Informe publicado exitosamente.")
+                        st.success("Informe publicado.")
                         st.rerun()
                     except Exception as err:
                         st.error(f"Error al generar informe: {err}")
 
     st.markdown("---")
-    st.subheader("📚 Informes Publicados")
+    st.subheader("📚 Repositorio de Informes")
     
     if not db["informes"]:
         st.info("No hay informes registrados.")
     else:
-        for idx, inf in enumerate(db["informes"]):
+        for idx_inf, inf in enumerate(db["informes"]):
             titulo_inf = inf.get("titulo") or inf.get("titulo_informe") or "Sin Título"
             autor_inf = inf.get("autor", "Desconocido")
             fecha_inf = inf.get("fecha", "")
@@ -507,9 +614,9 @@ elif opcion == "📄 Informes Compartidos":
                     st.markdown(f"### 📄 [{autor_inf}] - {titulo_inf}")
                     st.caption(f"Generado el: {fecha_inf}")
                 with c_inf_del:
-                    if usr.get("permiso_eliminar") or usr_key == "admin1":
-                        if st.button("🗑️ Borrar", key=f"del_inf_{idx}"):
-                            db["informes"].pop(idx)
+                    if usr.get("permiso_eliminar") or es_admin:
+                        if st.button("🗑️ Borrar", key=f"del_inf_{idx_inf}"):
+                            db["informes"].pop(idx_inf)
                             guardar_estado(db)
                             st.success("Informe eliminado.")
                             st.rerun()
@@ -527,7 +634,7 @@ elif opcion == "📄 Informes Compartidos":
                         data=buf.getvalue(),
                         file_name=f"[{autor_inf}] - {titulo_inf}.xlsx",
                         mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
-                        key=f"xls_dl_{idx}"
+                        key=f"xls_dl_{idx_inf}"
                     )
                 with cd2:
                     html_carta = f"""
@@ -539,8 +646,8 @@ elif opcion == "📄 Informes Compartidos":
                         <style>
                             @page {{ size: letter portrait; margin: 25mm; }}
                             body {{ font-family: 'Segoe UI', Arial, sans-serif; color: #0f172a; padding: 20px; }}
-                            .header {{ border-bottom: 2px solid #0284c7; padding-bottom: 8px; margin-bottom: 20px; }}
-                            .title {{ font-size: 20pt; font-weight: bold; color: #0369a1; }}
+                            .header {{ border-bottom: 2px solid #3b82f6; padding-bottom: 8px; margin-bottom: 20px; }}
+                            .title {{ font-size: 20pt; font-weight: bold; color: #1d4ed8; }}
                             .meta {{ font-size: 10pt; color: #64748b; margin-top: 4px; }}
                             .body {{ font-size: 11pt; line-height: 1.6; white-space: pre-wrap; }}
                         </style>
@@ -555,84 +662,83 @@ elif opcion == "📄 Informes Compartidos":
                     </html>
                     """
                     st.download_button(
-                        label="🖼️ Descargar Formato Carta (Imprimible / PDF)",
+                        label="🖼️ Descargar Formato Carta (HTML / PDF)",
                         data=html_carta,
                         file_name=f"[{autor_inf}] - {titulo_inf}_Carta.html",
                         mime="text/html",
-                        key=f"doc_dl_{idx}"
+                        key=f"doc_dl_{idx_inf}"
                     )
                 st.markdown("---")
 
 # ==========================================
-# 4. GESTIÓN DE USUARIOS
+# 4. GESTIÓN DE USUARIOS (SOLO ADMIN)
 # ==========================================
-elif opcion == "👥 Gestión de Usuarios":
-    st.markdown("""
-    <div class='header-card'>
-        <img class='header-img' src='https://cdn-icons-png.flaticon.com/512/1256/1256650.png'>
-        <div>
-            <h2 style='margin:0;'>Administración y Control de Usuarios</h2>
-            <p style='margin:0; color:#94a3b8;'>Creación, asignación de permisos y eliminación de perfiles.</p>
-        </div>
-    </div>
-    """, unsafe_allow_html=True)
-    
-    with st.expander("➕ Crear Nuevo Usuario", expanded=True):
-        cu1, cu2, cu3 = st.columns([1, 1, 1])
-        with cu1:
-            n_u = st.text_input("Usuario (Login):")
-            n_nom = st.text_input("Nombre Completo:")
-        with cu2:
-            n_pin = st.text_input("PIN / Clave:", type="password")
-            n_rol = st.selectbox("Rol:", ["Analista", "Especialista", "Gerencia", "Admin"])
-        with cu3:
-            st.markdown("**Permisos Asignados:**")
-            p_e = st.checkbox("Editar Datasets")
-            p_d = st.checkbox("Eliminar Datasets / Archivos")
-            
-        if st.button("Guardar Perfil"):
-            if not n_u or not n_pin or not n_nom:
-                st.error("Todos los campos son obligatorios.")
-            elif n_u in db["usuarios"]:
-                st.error("El nombre de usuario ya existe.")
-            else:
-                db["usuarios"][n_u] = {
-                    "nombre": n_nom,
-                    "rol": n_rol,
-                    "pin": n_pin,
-                    "permiso_editar": p_e,
-                    "permiso_eliminar": p_d
-                }
-                guardar_estado(db)
-                st.success(f"Usuario '{n_u}' registrado correctamente.")
-                st.rerun()
-
-    st.markdown("---")
-    st.subheader("📜 Usuarios Registrados")
-    
-    for u_k in list(db["usuarios"].keys()):
-        u_d = db["usuarios"][u_k]
-        with st.container():
-            col_u_inf, col_u_e, col_u_d, col_u_del = st.columns([2, 1, 1, 1])
-            with col_u_inf:
-                st.markdown(f"**{u_d.get('nombre', '')}** (`{u_k}`) — Rol: *{u_d.get('rol', '')}*")
-            
-            if u_k == "admin1":
-                st.caption("Administrador Principal (Protegido)")
-            else:
-                with col_u_e:
-                    val_e = st.checkbox("Editar", value=u_d.get("permiso_editar", False), key=f"pe_{u_k}")
-                with col_u_d:
-                    val_d = st.checkbox("Eliminar", value=u_d.get("permiso_eliminar", False), key=f"pd_{u_k}")
-                with col_u_del:
-                    if st.button("🗑️ Eliminar", key=f"del_user_{u_k}"):
-                        del db["usuarios"][u_k]
-                        guardar_estado(db)
-                        st.success(f"Usuario {u_k} eliminado.")
-                        st.rerun()
-                        
-                if val_e != u_d.get("permiso_editar") or val_d != u_d.get("permiso_eliminar"):
-                    db["usuarios"][u_k]["permiso_editar"] = val_e
-                    db["usuarios"][u_k]["permiso_eliminar"] = val_d
+if es_admin:
+    with pestanas_principales[3]:
+        st.markdown("""
+            <div class='modern-card'>
+                <h3 style='margin:0; color:#0f172a;'>👥 Gestión de Usuarios y Permisos</h3>
+                <p style='margin:0; color:#64748b;'>Control centralizado de cuentas accesible exclusivamente por Administradores.</p>
+            </div>
+        """, unsafe_allow_html=True)
+        
+        with st.expander("➕ Registrar Nuevo Usuario", expanded=True):
+            cu1, cu2, cu3 = st.columns([1, 1, 1])
+            with cu1:
+                n_u = st.text_input("Usuario (Login):")
+                n_nom = st.text_input("Nombre Completo:")
+            with cu2:
+                n_pin = st.text_input("PIN / Clave:", type="password")
+                n_rol = st.selectbox("Rol:", ["Usuario", "Analista", "Especialista", "Gerencia", "Admin"])
+            with cu3:
+                st.markdown("**Permisos Iniciales:**")
+                p_e = st.checkbox("Permiso para Editar Datasets")
+                p_d = st.checkbox("Permiso para Eliminar Datasets / Archivos")
+                
+            if st.button("Crear Usuario"):
+                if not n_u or not n_pin or not n_nom:
+                    st.error("Todos los campos son obligatorios.")
+                elif n_u in db["usuarios"]:
+                    st.error("El nombre de usuario ya existe.")
+                else:
+                    db["usuarios"][n_u] = {
+                        "nombre": n_nom,
+                        "rol": n_rol,
+                        "pin": n_pin,
+                        "permiso_editar": p_e,
+                        "permiso_eliminar": p_d,
+                        "avatar": ""
+                    }
                     guardar_estado(db)
+                    st.success(f"Usuario '{n_u}' registrado correctamente.")
+                    st.rerun()
+
         st.markdown("---")
+        st.subheader("📜 Cuentas Registradas")
+        
+        for u_k in list(db["usuarios"].keys()):
+            u_d = db["usuarios"][u_k]
+            with st.container():
+                col_u_inf, col_u_e, col_u_d, col_u_del = st.columns([2, 1, 1, 1])
+                with col_u_inf:
+                    st.markdown(f"**{u_d.get('nombre', '')}** (`{u_k}`) — Rol: *{u_d.get('rol', '')}*")
+                
+                if u_k == "admin1":
+                    st.caption("Administrador Principal (Cuenta protegida)")
+                else:
+                    with col_u_e:
+                        val_e = st.checkbox("Editar", value=u_d.get("permiso_editar", False), key=f"pe_{u_k}")
+                    with col_u_d:
+                        val_d = st.checkbox("Eliminar", value=u_d.get("permiso_eliminar", False), key=f"pd_{u_k}")
+                    with col_u_del:
+                        if st.button("🗑️ Eliminar", key=f"del_user_{u_k}"):
+                            del db["usuarios"][u_k]
+                            guardar_estado(db)
+                            st.success(f"Usuario {u_k} eliminado.")
+                            st.rerun()
+                            
+                    if val_e != u_d.get("permiso_editar") or val_d != u_d.get("permiso_eliminar"):
+                        db["usuarios"][u_k]["permiso_editar"] = val_e
+                        db["usuarios"][u_k]["permiso_eliminar"] = val_d
+                        guardar_estado(db)
+            st.markdown("---")
