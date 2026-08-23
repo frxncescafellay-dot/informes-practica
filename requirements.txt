@@ -3,3 +3,7 @@ pandas
 openpyxl
 google-genai
 pillow
+pypdf
+python-docx
+python-pptx
+moviepy
