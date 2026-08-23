@@ -300,7 +300,7 @@ elif opcion_seleccionada == "📂 Intervención":
                                 if ext in ["jpg", "jpeg", "png"]:
                                     img = Image.open(io.BytesIO(bytes_data))
                                     response = client.models.generate_content(
-                                        model="gemini-2.5-flash",
+                                        model="gemini-3.6-flash",
                                         contents=["Describe y resume detalladamente el contenido de esta imagen para un informe de intervención:", img]
                                     )
                                     resumen_generado = response.text
@@ -308,7 +308,7 @@ elif opcion_seleccionada == "📂 Intervención":
                                     # Documentos de texto o tablas
                                     prompt_doc = f"Sintetiza y resume los aspectos clave del archivo '{arc.name}' para un informe técnico de intervención."
                                     response = client.models.generate_content(
-                                        model="gemini-2.5-flash",
+                                        model="gemini-3.6-flash",
                                         contents=prompt_doc
                                     )
                                     resumen_generado = response.text
