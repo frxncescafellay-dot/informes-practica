@@ -33,7 +33,7 @@ for d in [DIR_BASE, DIR_DATASETS, DIR_INTERVENCION, DIR_AVATARS]:
 
 MODELO_GEMINI = "gemini-3.6-flash"
 
-# --- PALETA TEAL HOMOGÉNEA (BASE: #73b5ae / INPUTS & BOTONES: #a2d2cc) ---
+# --- PALETA TEAL + ACENTOS NARANJA EN RELOJ Y BOTONES PRINCIPALES ---
 st.markdown("""
 <style>
     /* Fondo principal: Teal Suave */
@@ -70,7 +70,7 @@ st.markdown("""
         box-shadow: 0 4px 12px rgba(13, 44, 41, 0.15);
     }
 
-    /* Desplegables (Expanders): Eliminación total de negro */
+    /* Desplegables (Expanders) */
     div[data-testid="stExpander"] {
         background-color: #73b5ae !important;
         border: 2px solid #52948d !important;
@@ -91,7 +91,7 @@ st.markdown("""
         color: #061e1b !important;
     }
 
-    /* Cuadros donde escribe el usuario: Tono Teal más claro */
+    /* Cuadros de texto */
     input[type="text"], 
     input[type="password"], 
     textarea {
@@ -107,8 +107,8 @@ st.markdown("""
     textarea:focus {
         background-color: #bfe3de !important;
         color: #000000 !important;
-        border-color: #061e1b !important;
-        box-shadow: 0 0 0 3px rgba(6, 30, 27, 0.2) !important;
+        border-color: #f3722c !important;
+        box-shadow: 0 0 0 3px rgba(243, 114, 44, 0.25) !important;
     }
 
     /* Selectores desplegables */
@@ -126,7 +126,7 @@ st.markdown("""
     /* Zona de carga de archivos (Uploader) */
     div[data-testid="stFileUploader"] {
         background-color: #73b5ae !important;
-        border: 2px dashed #3d7973 !important;
+        border: 2px dashed #f3722c !important;
         border-radius: 12px !important;
         padding: 14px !important;
     }
@@ -137,13 +137,13 @@ st.markdown("""
         color: #061e1b !important;
     }
     div[data-testid="stFileUploader"] button {
-        background-color: #a2d2cc !important;
-        color: #061e1b !important;
-        border: 2px solid #52948d !important;
+        background-color: #f3722c !important;
+        color: #ffffff !important;
+        border: 2px solid #d95d18 !important;
         font-weight: 750 !important;
     }
     div[data-testid="stFileUploader"] button * {
-        color: #061e1b !important;
+        color: #ffffff !important;
     }
 
     /* Contenedor del Excel y visualización de datos */
@@ -156,7 +156,6 @@ st.markdown("""
         border-radius: 10px !important;
     }
     
-    /* Adaptación del canvas nativo de Streamlit al fondo Teal Suave */
     .glide-data-grid,
     .gdg-container,
     div[data-testid="stDataFrame"] canvas,
@@ -165,23 +164,27 @@ st.markdown("""
         border-radius: 8px !important;
     }
 
-    /* Botones primarios (Teal Claro para contraste) */
+    /* BOTONES PRINCIPALES: COLOR NARANJA */
     .stButton>button {
-        background: #a2d2cc !important;
-        color: #061e1b !important;
-        border: 2px solid #52948d !important;
-        border-radius: 8px !important;
+        background: linear-gradient(135deg, #f3722c 0%, #e85d04 100%) !important;
+        color: #ffffff !important;
+        border: 2px solid #d95d18 !important;
+        border-radius: 9px !important;
         padding: 9px 22px !important;
         font-weight: 800 !important;
         font-size: 0.95rem !important;
-        box-shadow: 0 3px 8px rgba(13, 44, 41, 0.15) !important;
+        box-shadow: 0 4px 12px rgba(232, 93, 4, 0.3) !important;
         transition: all 0.2s ease !important;
     }
     .stButton>button:hover {
-        background: #bfe3de !important;
-        color: #000000 !important;
-        border-color: #061e1b !important;
+        background: linear-gradient(135deg, #f48c06 0%, #f3722c 100%) !important;
+        color: #ffffff !important;
+        border-color: #f48c06 !important;
+        box-shadow: 0 6px 16px rgba(244, 140, 6, 0.45) !important;
         transform: translateY(-1px);
+    }
+    .stButton>button * {
+        color: #ffffff !important;
     }
     
     /* Botones de eliminación / secundarios */
@@ -189,10 +192,14 @@ st.markdown("""
         background: #e29b9b !important;
         color: #5c0f0f !important;
         border: 2px solid #c96b6b !important;
+        box-shadow: none !important;
     }
     div[data-testid="stBaseButton-secondary"] button:hover {
         background: #d67a7a !important;
         color: #3b0505 !important;
+    }
+    div[data-testid="stBaseButton-secondary"] button * {
+        color: #5c0f0f !important;
     }
 
     /* Pestañas de navegación superiores */
@@ -208,7 +215,7 @@ st.markdown("""
     button[data-baseweb="tab"][aria-selected="true"] {
         background-color: #73b5ae !important;
         color: #061e1b !important;
-        border-bottom: 3.5px solid #061e1b !important;
+        border-bottom: 3.5px solid #f3722c !important;
     }
 
     label, p, span {
@@ -218,58 +225,58 @@ st.markdown("""
 
     .badge-role {
         display: inline-block;
-        background: #a2d2cc;
-        color: #061e1b !important;
+        background: #f3722c;
+        color: #ffffff !important;
         padding: 4px 12px;
         border-radius: 14px;
         font-size: 0.82rem;
         font-weight: 800;
-        border: 1.5px solid #52948d;
+        border: 1.5px solid #d95d18;
     }
 </style>
 """, unsafe_allow_html=True)
 
-# --- COMPONENTE DE RELOJ DUAL (DIGITAL + ANÁLOGO SVG) ---
+# --- RELOJ DUAL NARANJA (DIGITAL + ANÁLOGO SVG) ---
 def renderizar_reloj_chile():
     html_reloj = """
     <div style="
-        background: #73b5ae;
-        border: 2px solid #52948d;
-        border-radius: 14px;
-        padding: 10px 18px;
+        background: linear-gradient(135deg, #f3722c 0%, #e85d04 100%);
+        border: 2px solid #d95d18;
+        border-radius: 16px;
+        padding: 12px 20px;
         display: flex;
         align-items: center;
         justify-content: space-between;
         gap: 16px;
-        box-shadow: 0 4px 14px rgba(13, 44, 41, 0.15);
+        box-shadow: 0 6px 18px rgba(232, 93, 4, 0.35);
         max-width: 480px;
         margin-left: auto;
         margin-bottom: 15px;
         font-family: 'Segoe UI', system-ui, sans-serif;
     ">
-        <!-- Reloj Análogo -->
-        <div style="position: relative; width: 58px; height: 58px;">
-            <svg id="analog-clock" width="58" height="58" viewBox="0 0 100 100">
-                <circle cx="50" cy="50" r="46" fill="#a2d2cc" stroke="#3d7973" stroke-width="4"/>
-                <line x1="50" y1="10" x2="50" y2="16" stroke="#061e1b" stroke-width="3" stroke-linecap="round"/>
-                <line x1="90" y1="50" x2="84" y2="50" stroke="#061e1b" stroke-width="3" stroke-linecap="round"/>
-                <line x1="50" y1="90" x2="50" y2="84" stroke="#061e1b" stroke-width="3" stroke-linecap="round"/>
-                <line x1="10" y1="50" x2="16" y2="50" stroke="#061e1b" stroke-width="3" stroke-linecap="round"/>
-                <line id="hour-hand" x1="50" y1="50" x2="50" y2="28" stroke="#061e1b" stroke-width="4.5" stroke-linecap="round"/>
-                <line id="min-hand" x1="50" y1="50" x2="50" y2="18" stroke="#3d7973" stroke-width="3" stroke-linecap="round"/>
-                <line id="sec-hand" x1="50" y1="50" x2="50" y2="14" stroke="#8c2e2e" stroke-width="2" stroke-linecap="round"/>
-                <circle cx="50" cy="50" r="3.5" fill="#061e1b"/>
+        <!-- Reloj Análogo Naranja -->
+        <div style="position: relative; width: 60px; height: 60px;">
+            <svg id="analog-clock" width="60" height="60" viewBox="0 0 100 100">
+                <circle cx="50" cy="50" r="46" fill="#ffe8d6" stroke="#9d0208" stroke-width="4"/>
+                <line x1="50" y1="10" x2="50" y2="16" stroke="#6a040f" stroke-width="3" stroke-linecap="round"/>
+                <line x1="90" y1="50" x2="84" y2="50" stroke="#6a040f" stroke-width="3" stroke-linecap="round"/>
+                <line x1="50" y1="90" x2="50" y2="84" stroke="#6a040f" stroke-width="3" stroke-linecap="round"/>
+                <line x1="10" y1="50" x2="16" y2="50" stroke="#6a040f" stroke-width="3" stroke-linecap="round"/>
+                <line id="hour-hand" x1="50" y1="50" x2="50" y2="28" stroke="#370617" stroke-width="5" stroke-linecap="round"/>
+                <line id="min-hand" x1="50" y1="50" x2="50" y2="18" stroke="#6a040f" stroke-width="3.5" stroke-linecap="round"/>
+                <line id="sec-hand" x1="50" y1="50" x2="50" y2="14" stroke="#d00000" stroke-width="2" stroke-linecap="round"/>
+                <circle cx="50" cy="50" r="4" fill="#370617"/>
             </svg>
         </div>
         <!-- Reloj Digital y Fecha -->
         <div style="display: flex; flex-direction: column; justify-content: center;">
-            <div style="font-size: 0.75rem; font-weight: 800; color: #061e1b; text-transform: uppercase; letter-spacing: 0.5px;">
+            <div style="font-size: 0.76rem; font-weight: 800; color: #ffe8d6; text-transform: uppercase; letter-spacing: 0.8px;">
                 🇨🇱 Hora Oficial de Chile
             </div>
-            <div id="digital-clock" style="font-size: 1.5rem; font-weight: 900; color: #061e1b; line-height: 1.1;">
+            <div id="digital-clock" style="font-size: 1.65rem; font-weight: 900; color: #ffffff; line-height: 1.1; text-shadow: 0 2px 4px rgba(0,0,0,0.2);">
                 --:--:--
             </div>
-            <div id="digital-date" style="font-size: 0.78rem; font-weight: 700; color: #061e1b; margin-top: 2px;">
+            <div id="digital-date" style="font-size: 0.82rem; font-weight: 700; color: #ffe8d6; margin-top: 2px;">
                 Cargando fecha...
             </div>
         </div>
@@ -317,7 +324,7 @@ def renderizar_reloj_chile():
         actualizarReloj();
     </script>
     """
-    components.html(html_reloj, height=95)
+    components.html(html_reloj, height=105)
 
 # --- GESTOR DE PERSISTENCIA (JSON) ---
 def cargar_estado():
@@ -445,7 +452,7 @@ if st.sidebar.button("🚪 Cerrar Sesión", use_container_width=True):
     st.session_state.usuario_clave = None
     st.rerun()
 
-# --- ENCABEZADO SUPERIOR CON RELOJ ---
+# --- ENCABEZADO SUPERIOR CON RELOJ NARANJA ---
 col_head_title, col_head_clock = st.columns([1.2, 1])
 with col_head_title:
     st.markdown("<h1 style='color:#061e1b !important; margin:0;'>⚡ Centro de Gestión & Analítica</h1>", unsafe_allow_html=True)
@@ -866,4 +873,3 @@ if es_admin:
                         db["usuarios"][u_k]["permiso_eliminar"] = val_d
                         guardar_estado(db)
             st.markdown("---")
-    
