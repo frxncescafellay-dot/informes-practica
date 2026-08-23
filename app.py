@@ -128,7 +128,7 @@ st.markdown("""
         color: #061e1b !important;
     }
 
-    /* Selectores desplegables (Selectbox) - Quitar fondo negro de flecha */
+    /* Selectores desplegables (Selectbox) */
     div[data-baseweb="select"] > div {
         background-color: #a2d2cc !important;
         color: #061e1b !important;
@@ -145,7 +145,7 @@ st.markdown("""
         color: #061e1b !important;
     }
 
-    /* CUADROS PARA MARCAR (Checkboxes) - Quitar negro */
+    /* CUADROS PARA MARCAR (Checkboxes) */
     div[data-testid="stCheckbox"] span[role="checkbox"] {
         background-color: #a2d2cc !important;
         border: 2px solid #52948d !important;
@@ -254,7 +254,7 @@ st.markdown("""
         border-radius: 8px !important;
     }
 
-    /* Textos con fondo destacado para nombres de usuarios y archivos (sin negro) */
+    /* Textos con fondo destacado para nombres de usuarios y archivos */
     .highlight-tag {
         background: #a2d2cc;
         border: 1.5px solid #52948d;
@@ -463,25 +463,20 @@ def extraer_texto_archivo(ruta, extension):
             lector = pypdf.PdfReader(ruta)
             for pag in lector.pages:
                 t = pag.extract_text()
-                if t: texto += t + "
-"
+                if t:
+                    texto += t + "\n"
         elif extension == "docx":
             doc = Document(ruta)
-            texto = "
-".join([p.text for p in doc.paragraphs])
+            texto = "\n".join([p.text for p in doc.paragraphs])
         elif extension == "pptx":
             prs = Presentation(ruta)
             for diap in prs.slides:
                 for forma in diap.shapes:
                     if hasattr(forma, "text"):
-                        texto += forma.text + "
-"
+                        texto += forma.text + "\n"
         elif extension in ["xlsx", "xls"]:
             df_tmp = pd.read_excel(ruta)
-            texto = f"Estadísticas:
-{df_tmp.describe(include='all').to_string()}
-Primeras filas:
-{df_tmp.head(10).to_string()}"
+            texto = f"Estadísticas:\n{df_tmp.describe(include='all').to_string()}\nPrimeras filas:\n{df_tmp.head(10).to_string()}"
     except Exception as e:
         texto = f"Error al extraer texto: {e}"
     return texto[:8000]
@@ -697,9 +692,7 @@ with pestanas_principales[1]:
                                     t_doc = extraer_texto_archivo(ruta_guardada, ext)
                                     resp = client.models.generate_content(
                                         model=MODELO_GEMINI,
-                                        contents=f"Elabora un resumen y diagnóstico clave de este documento ({a.name}):
-
-{t_doc}"
+                                        contents=f"Elabora un resumen y diagnóstico clave de este documento ({a.name}):\n\n{t_doc}"
                                     )
                                     resumen_txt = resp.text
                                 elif ext == "mp4":
@@ -792,8 +785,7 @@ with pestanas_principales[2]:
                 st.error("API Key de Gemini no configurada.")
             else:
                 with st.spinner("Redactando informe consolidado con Gemini 3.6 Flash..."):
-                    resumenes_int = "
-".join([f"- {x.get('nombre_original', 'Archivo')}: {x.get('resumen', '')}" for x in db["intervencion"]])
+                    resumenes_int = "\n".join([f"- {x.get('nombre_original', 'Archivo')}: {x.get('resumen', '')}" for x in db["intervencion"]])
                     
                     prompt = f"""
                     Actúa como especialista analítico senior.
@@ -950,7 +942,6 @@ if es_admin:
             with st.container():
                 col_u_inf, col_u_e, col_u_d, col_u_del = st.columns([2, 1, 1, 1])
                 with col_u_inf:
-                    # Nombre de usuario con etiqueta highlight-tag teal claro y misma fuente
                     st.markdown(f"**{u_d.get('nombre', '')}** (<span class='highlight-tag'>{u_k}</span>) — Rol: *{u_d.get('rol', '')}*", unsafe_allow_html=True)
                 
                 if u_k == "admin1":
