@@ -285,7 +285,7 @@ elif seleccion == "📂 Intervención":
                                 if ext in ["jpg", "jpeg", "png"]:
                                     img = Image.open(ruta_int)
                                     resp = client.models.generate_content(
-                                        model="gemini-2.5-flash",
+                                        model="gemini-3.6-flash",
                                         contents=["Realiza un diagnóstico y resumen visual detallado de esta imagen para un informe de intervención:", img]
                                     )
                                     resumen_txt = resp.text
