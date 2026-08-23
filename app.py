@@ -33,150 +33,154 @@ for d in [DIR_BASE, DIR_DATASETS, DIR_INTERVENCION, DIR_AVATARS]:
 
 MODELO_GEMINI = "gemini-3.6-flash"
 
-# --- PALETA FORMAL BASADA EN AZUL CERÚLEO ---
+# --- PALETA FORMAL: GRIS NIEBLA / ACERO SUAVE SOBRE AZUL CERÚLEO ---
 st.markdown("""
 <style>
-    /* Fondo principal: Azul Cerúleo vibrante y formal */
+    /* Fondo principal: Azul Cerúleo */
     .stApp {
         background: radial-gradient(circle at 50% 30%, #1ba4ea 0%, #0c8fd8 55%, #0570b5 100%) !important;
-        color: #0f172a;
+        color: #0f2942;
         font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
     }
     
     /* Encabezados y títulos */
-    h1, h2, h3, h4 {
-        color: #0c2d48 !important;
+    h1, h2, h3, h4, h5, h6 {
+        color: #09233b !important;
         font-weight: 750;
-        letter-spacing: -0.3px;
     }
     
-    /* Contenedores y Tarjetas Formales */
+    /* Contenedores y Tarjetas en Gris Claro Suave */
     .modern-card {
-        background: rgba(255, 255, 255, 0.94);
-        border: 1px solid rgba(255, 255, 255, 0.8);
-        border-radius: 14px;
+        background: #e2e8f0 !important;
+        border: 1px solid #cbd5e1 !important;
+        border-radius: 12px;
         padding: 22px;
         margin-bottom: 20px;
-        box-shadow: 0 10px 25px -3px rgba(5, 70, 115, 0.25);
+        box-shadow: 0 8px 20px rgba(5, 70, 115, 0.18);
     }
 
     /* Cuadros de entrada de datos (Inputs, TextAreas, PIN) */
     input[type="text"], 
     input[type="password"], 
     textarea {
-        background-color: #ffffff !important;
-        color: #0f172a !important;
+        background-color: #cbd5e1 !important;
+        color: #0f2942 !important;
         border: 1.5px solid #94a3b8 !important;
         border-radius: 8px !important;
         font-size: 0.95rem !important;
-        font-weight: 500 !important;
+        font-weight: 600 !important;
     }
     input[type="text"]:focus, 
     input[type="password"]:focus, 
     textarea:focus {
-        background-color: #ffffff !important;
-        color: #000000 !important;
-        border-color: #0c8fd8 !important;
-        box-shadow: 0 0 0 3px rgba(12, 143, 216, 0.25) !important;
+        background-color: #e2e8f0 !important;
+        color: #051a2e !important;
+        border-color: #0284c7 !important;
+        box-shadow: 0 0 0 3px rgba(2, 132, 199, 0.25) !important;
     }
 
     /* Selectores desplegables */
     div[data-baseweb="select"] > div {
-        background-color: #ffffff !important;
-        color: #0f172a !important;
+        background-color: #cbd5e1 !important;
+        color: #0f2942 !important;
         border: 1.5px solid #94a3b8 !important;
         border-radius: 8px !important;
     }
     div[data-baseweb="select"] * {
-        color: #0f172a !important;
-        font-weight: 500 !important;
+        color: #0f2942 !important;
+        font-weight: 600 !important;
     }
 
-    /* Zona de carga de archivos (Uploader) */
+    /* Zona de carga de archivos (Uploader) en Gris Suave */
     div[data-testid="stFileUploader"] {
-        background-color: rgba(255, 255, 255, 0.92) !important;
-        border: 2px dashed #0284c7 !important;
-        border-radius: 12px !important;
-        padding: 15px !important;
-        box-shadow: 0 4px 10px rgba(0, 0, 0, 0.05);
+        background-color: #cbd5e1 !important;
+        border: 2px dashed #64748b !important;
+        border-radius: 10px !important;
+        padding: 12px !important;
     }
     div[data-testid="stFileUploader"] * {
-        color: #0f172a !important;
+        color: #0f2942 !important;
+    }
+    div[data-testid="stFileUploader"] section {
+        background-color: #cbd5e1 !important;
     }
 
-    /* Botones primarios formales */
-    .stButton>button {
-        background: linear-gradient(180deg, #ffffff 0%, #f1f5f9 100%) !important;
-        color: #075985 !important;
-        border: 1.5px solid #bae6fd !important;
-        border-radius: 8px !important;
-        padding: 9px 22px !important;
-        font-weight: 700 !important;
-        font-size: 0.95rem !important;
-        box-shadow: 0 4px 12px rgba(2, 132, 199, 0.2) !important;
-        transition: all 0.2s ease-in-out !important;
-    }
-    .stButton>button:hover {
-        background: linear-gradient(180deg, #f0f9ff 0%, #e0f2fe 100%) !important;
-        color: #0369a1 !important;
-        border-color: #38bdf8 !important;
-        transform: translateY(-1px);
-    }
-    
-    /* Botones secundarios (Eliminar/Borrar) */
-    div[data-testid="stBaseButton-secondary"] button {
-        background: linear-gradient(180deg, #ffffff 0%, #fef2f2 100%) !important;
-        color: #b91c1c !important;
-        border: 1.5px solid #fecaca !important;
-    }
-    div[data-testid="stBaseButton-secondary"] button:hover {
-        background: linear-gradient(180deg, #fee2e2 0%, #fecaca 100%) !important;
-        color: #991b1b !important;
-    }
-
-    /* Tablas de datos Excel / Data Editor */
+    /* Tablas de datos Excel y Editor de Datos en Gris Suave */
     div[data-testid="stDataFrame"], 
     div[data-testid="stDataEditor"] {
-        background-color: #ffffff !important;
-        border: 1px solid #cbd5e1 !important;
+        background-color: #e2e8f0 !important;
+        border: 1.5px solid #94a3b8 !important;
         border-radius: 10px !important;
-        padding: 8px !important;
-        box-shadow: 0 6px 15px rgba(0, 0, 0, 0.06) !important;
+        padding: 6px !important;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08) !important;
+    }
+    
+    /* Celdas y encabezados de tablas */
+    div[data-testid="stDataFrame"] *, 
+    div[data-testid="stDataEditor"] * {
+        color: #0f2942 !important;
+    }
+
+    /* Botones primarios */
+    .stButton>button {
+        background: #cbd5e1 !important;
+        color: #075985 !important;
+        border: 1.5px solid #94a3b8 !important;
+        border-radius: 8px !important;
+        padding: 8px 20px !important;
+        font-weight: 750 !important;
+        font-size: 0.95rem !important;
+        box-shadow: 0 3px 8px rgba(0, 0, 0, 0.1) !important;
+        transition: all 0.2s ease !important;
+    }
+    .stButton>button:hover {
+        background: #94a3b8 !important;
+        color: #042f4b !important;
+        border-color: #64748b !important;
+    }
+    
+    /* Botones de eliminación */
+    div[data-testid="stBaseButton-secondary"] button {
+        background: #e2e8f0 !important;
+        color: #991b1b !important;
+        border: 1.5px solid #fca5a5 !important;
+    }
+    div[data-testid="stBaseButton-secondary"] button:hover {
+        background: #fecaca !important;
+        color: #7f1d1d !important;
     }
 
     /* Pestañas de navegación superiores */
     button[data-baseweb="tab"] {
-        background-color: rgba(255, 255, 255, 0.6) !important;
-        color: #0f2952 !important;
-        border-radius: 10px 10px 0 0 !important;
-        font-weight: 750 !important;
-        margin-right: 6px !important;
-        padding: 10px 22px !important;
-        border: 1px solid rgba(255, 255, 255, 0.4) !important;
+        background-color: #cbd5e1 !important;
+        color: #1e3a5f !important;
+        border-radius: 8px 8px 0 0 !important;
+        font-weight: 700 !important;
+        margin-right: 4px !important;
+        padding: 8px 18px !important;
+        border: 1px solid #94a3b8 !important;
     }
     button[data-baseweb="tab"][aria-selected="true"] {
-        background-color: #ffffff !important;
+        background-color: #e2e8f0 !important;
         color: #0284c7 !important;
         border-bottom: 3.5px solid #0284c7 !important;
-        box-shadow: 0 -4px 10px rgba(0, 0, 0, 0.05) !important;
     }
 
     /* Barra lateral */
     section[data-testid="stSidebar"] {
-        background-color: rgba(255, 255, 255, 0.94) !important;
-        border-right: 1px solid rgba(255, 255, 255, 0.8) !important;
+        background-color: #e2e8f0 !important;
+        border-right: 1px solid #cbd5e1 !important;
     }
 
-    /* Expanders */
+    /* Desplegables Expanders */
     div[data-testid="stExpander"] {
-        background-color: rgba(255, 255, 255, 0.9) !important;
-        border: 1px solid #bae6fd !important;
-        border-radius: 12px !important;
+        background-color: #e2e8f0 !important;
+        border: 1px solid #cbd5e1 !important;
+        border-radius: 10px !important;
     }
 
-    /* Etiquetas de texto general */
     label, p, span {
-        color: #0f172a;
+        color: #0f2942;
         font-weight: 600;
     }
 
@@ -184,9 +188,9 @@ st.markdown("""
         display: inline-block;
         background: #0284c7;
         color: #ffffff !important;
-        padding: 4px 14px;
-        border-radius: 16px;
-        font-size: 0.82rem;
+        padding: 4px 12px;
+        border-radius: 14px;
+        font-size: 0.8rem;
         font-weight: 700;
     }
 </style>
@@ -196,43 +200,43 @@ st.markdown("""
 def renderizar_reloj_chile():
     html_reloj = """
     <div style="
-        background: rgba(255, 255, 255, 0.94);
-        border: 1px solid #bae6fd;
-        border-radius: 16px;
-        padding: 12px 20px;
+        background: #e2e8f0;
+        border: 1px solid #94a3b8;
+        border-radius: 14px;
+        padding: 10px 18px;
         display: flex;
         align-items: center;
         justify-content: space-between;
         gap: 16px;
-        box-shadow: 0 6px 18px rgba(5, 70, 115, 0.15);
+        box-shadow: 0 4px 14px rgba(5, 70, 115, 0.15);
         max-width: 480px;
         margin-left: auto;
         margin-bottom: 15px;
         font-family: 'Segoe UI', system-ui, sans-serif;
     ">
         <!-- Reloj Análogo -->
-        <div style="position: relative; width: 62px; height: 62px;">
-            <svg id="analog-clock" width="62" height="62" viewBox="0 0 100 100">
-                <circle cx="50" cy="50" r="46" fill="#f0f9ff" stroke="#0284c7" stroke-width="4"/>
+        <div style="position: relative; width: 58px; height: 58px;">
+            <svg id="analog-clock" width="58" height="58" viewBox="0 0 100 100">
+                <circle cx="50" cy="50" r="46" fill="#cbd5e1" stroke="#0284c7" stroke-width="4"/>
                 <line x1="50" y1="10" x2="50" y2="16" stroke="#475569" stroke-width="3" stroke-linecap="round"/>
                 <line x1="90" y1="50" x2="84" y2="50" stroke="#475569" stroke-width="3" stroke-linecap="round"/>
                 <line x1="50" y1="90" x2="50" y2="84" stroke="#475569" stroke-width="3" stroke-linecap="round"/>
                 <line x1="10" y1="50" x2="16" y2="50" stroke="#475569" stroke-width="3" stroke-linecap="round"/>
-                <line id="hour-hand" x1="50" y1="50" x2="50" y2="28" stroke="#0f172a" stroke-width="4.5" stroke-linecap="round"/>
+                <line id="hour-hand" x1="50" y1="50" x2="50" y2="28" stroke="#0f2942" stroke-width="4.5" stroke-linecap="round"/>
                 <line id="min-hand" x1="50" y1="50" x2="50" y2="18" stroke="#0284c7" stroke-width="3" stroke-linecap="round"/>
-                <line id="sec-hand" x1="50" y1="50" x2="50" y2="14" stroke="#e11d48" stroke-width="1.5" stroke-linecap="round"/>
-                <circle cx="50" cy="50" r="3.5" fill="#0f172a"/>
+                <line id="sec-hand" x1="50" y1="50" x2="50" y2="14" stroke="#dc2626" stroke-width="1.5" stroke-linecap="round"/>
+                <circle cx="50" cy="50" r="3.5" fill="#0f2942"/>
             </svg>
         </div>
         <!-- Reloj Digital y Fecha -->
         <div style="display: flex; flex-direction: column; justify-content: center;">
-            <div style="font-size: 0.76rem; font-weight: 750; color: #0284c7; text-transform: uppercase; letter-spacing: 0.5px;">
+            <div style="font-size: 0.75rem; font-weight: 750; color: #0284c7; text-transform: uppercase; letter-spacing: 0.5px;">
                 🇨🇱 Hora Oficial de Chile
             </div>
-            <div id="digital-clock" style="font-size: 1.55rem; font-weight: 800; color: #0c2d48; line-height: 1.1;">
+            <div id="digital-clock" style="font-size: 1.5rem; font-weight: 800; color: #09233b; line-height: 1.1;">
                 --:--:--
             </div>
-            <div id="digital-date" style="font-size: 0.8rem; font-weight: 600; color: #475569; margin-top: 2px;">
+            <div id="digital-date" style="font-size: 0.78rem; font-weight: 600; color: #475569; margin-top: 2px;">
                 Cargando fecha...
             </div>
         </div>
@@ -280,7 +284,7 @@ def renderizar_reloj_chile():
         actualizarReloj();
     </script>
     """
-    components.html(html_reloj, height=100)
+    components.html(html_reloj, height=95)
 
 # --- GESTOR DE PERSISTENCIA (JSON) ---
 def cargar_estado():
@@ -353,8 +357,8 @@ if "autenticado" not in st.session_state:
     st.session_state.usuario_clave = None
 
 if not st.session_state.autenticado:
-    st.markdown("<h1 style='text-align:center; color:#ffffff !important; margin-top:40px;'>🔐 Acceso a la Plataforma</h1>", unsafe_allow_html=True)
-    st.markdown("<p style='text-align:center; color:#e0f2fe;'>Ingrese sus credenciales para ingresar al sistema</p>", unsafe_allow_html=True)
+    st.markdown("<h1 style='text-align:center; color:#e2e8f0 !important; margin-top:35px;'>🔐 Acceso a la Plataforma</h1>", unsafe_allow_html=True)
+    st.markdown("<p style='text-align:center; color:#cbd5e1;'>Ingrese sus credenciales registradas</p>", unsafe_allow_html=True)
     c1, c2, c3 = st.columns([1, 1.4, 1])
     with c2:
         with st.form("login_form"):
@@ -382,7 +386,7 @@ if avatar_path and os.path.exists(avatar_path):
     st.sidebar.image(avatar_path, width=105)
 else:
     st.sidebar.markdown("""
-        <div style='width:85px; height:85px; border-radius:50%; background:#e0f2fe; border:2px solid #bae6fd; display:flex; align-items:center; justify-content:center; font-size:2.2rem; color:#0284c7; margin-bottom:10px;'>
+        <div style='width:80px; height:80px; border-radius:50%; background:#cbd5e1; border:2px solid #94a3b8; display:flex; align-items:center; justify-content:center; font-size:2.2rem; color:#0284c7; margin-bottom:10px;'>
             👤
         </div>
     """, unsafe_allow_html=True)
@@ -411,8 +415,8 @@ if st.sidebar.button("🚪 Cerrar Sesión", use_container_width=True):
 # --- ENCABEZADO SUPERIOR CON RELOJ ---
 col_head_title, col_head_clock = st.columns([1.2, 1])
 with col_head_title:
-    st.markdown("<h1 style='color:#ffffff !important; margin:0;'>⚡ Centro de Gestión & Analítica</h1>", unsafe_allow_html=True)
-    st.markdown("<p style='color:#e0f2fe; margin-top:4px;'>Plataforma multi-formato con procesamiento inteligente e informes consolidados.</p>", unsafe_allow_html=True)
+    st.markdown("<h1 style='color:#e2e8f0 !important; margin:0;'>⚡ Centro de Gestión & Analítica</h1>", unsafe_allow_html=True)
+    st.markdown("<p style='color:#cbd5e1; margin-top:4px;'>Plataforma colaborativa multi-formato con procesamiento inteligente.</p>", unsafe_allow_html=True)
 with col_head_clock:
     renderizar_reloj_chile()
 
@@ -732,7 +736,7 @@ with pestanas_principales[2]:
                         <title>{titulo_inf}</title>
                         <style>
                             @page {{ size: letter portrait; margin: 25mm; }}
-                            body {{ font-family: 'Segoe UI', Arial, sans-serif; color: #0f172a; padding: 20px; }}
+                            body {{ font-family: 'Segoe UI', Arial, sans-serif; color: #0f2942; padding: 20px; }}
                             .header {{ border-bottom: 2px solid #0284c7; padding-bottom: 8px; margin-bottom: 20px; }}
                             .title {{ font-size: 20pt; font-weight: bold; color: #0369a1; }}
                             .meta {{ font-size: 10pt; color: #64748b; margin-top: 4px; }}
