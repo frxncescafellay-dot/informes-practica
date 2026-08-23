@@ -1,24 +1,25 @@
 import os
 import io
 import json
-import shutil
 import pandas as pd
 import streamlit as st
+from datetime import datetime
+import pytz
 from PIL import Image
 from google import genai
 import pypdf
 from docx import Document
 from pptx import Presentation
 
-# --- CONFIGURACIÓN DE PÁGINA Y LÍMITES ---
+# --- CONFIGURACIÓN DE PÁGINA ---
 st.set_page_config(
-    page_title="Plataforma Integral de Intervención IA",
-    page_icon="📁",
+    page_title="Plataforma de Intervención & Analítica IA",
+    page_icon="⚡",
     layout="wide",
     initial_sidebar_state="expanded"
 )
 
-# --- CREACIÓN DE DIRECTORIOS PARA PERSISTENCIA TOTAL ---
+# --- CREACIÓN DE DIRECTORIOS PARA PERSISTENCIA ---
 DIR_BASE = "almacen_datos"
 DIR_DATASETS = os.path.join(DIR_BASE, "datasets")
 DIR_INTERVENCION = os.path.join(DIR_BASE, "intervencion")
@@ -27,41 +28,90 @@ FILE_DB = os.path.join(DIR_BASE, "base_datos.json")
 for d in [DIR_BASE, DIR_DATASETS, DIR_INTERVENCION]:
     os.makedirs(d, exist_ok=True)
 
-# --- ESTILOS VISUALES ---
+# --- MODELO DESIGNADO ---
+MODELO_GEMINI = "gemini-3.6-flash"
+
+# --- ESTILOS VISUALES MEJORADOS ---
 st.markdown("""
 <style>
     .stApp {
-        background: linear-gradient(135deg, #0b132b 0%, #1c2541 100%);
-        color: #f1f5f9;
-        font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        background: radial-gradient(circle at 15% 15%, #0f172a 0%, #030712 100%);
+        color: #f8fafc;
+        font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
     }
-    h1, h2, h3, h4 {
-        color: #48cae4 !important;
-        font-weight: 700;
+    
+    /* Header con fecha y hora Chile */
+    .top-bar {
+        display: flex;
+        justify-content: flex-end;
+        align-items: center;
+        padding: 8px 16px;
+        background: rgba(30, 41, 59, 0.4);
+        border: 1px solid rgba(56, 189, 248, 0.2);
+        border-radius: 10px;
+        margin-bottom: 20px;
+        font-size: 0.9rem;
+        color: #38bdf8;
     }
-    section[data-testid="stSidebar"] {
-        background-color: #080d1a !important;
-        border-right: 1px solid #1e293b;
+    
+    /* Banner con ilustraciones */
+    .header-card {
+        background: linear-gradient(135deg, rgba(14, 116, 144, 0.25) 0%, rgba(3, 105, 161, 0.15) 100%);
+        border: 1px solid rgba(56, 189, 248, 0.3);
+        border-radius: 16px;
+        padding: 24px;
+        display: flex;
+        align-items: center;
+        gap: 20px;
+        margin-bottom: 25px;
     }
+    .header-img {
+        width: 65px;
+        height: 65px;
+        filter: drop-shadow(0 0 8px rgba(56, 189, 248, 0.6));
+    }
+    
+    /* Contenedores de contenido */
+    .custom-container {
+        background: rgba(15, 23, 42, 0.7);
+        border: 1px solid #1e293b;
+        border-radius: 12px;
+        padding: 18px;
+        margin-bottom: 16px;
+    }
+    
+    /* Botones primarios */
     .stButton>button {
-        background: linear-gradient(90deg, #0077b6 0%, #023e8a 100%);
+        background: linear-gradient(135deg, #0284c7 0%, #0369a1 100%);
         color: white;
         border: none;
         border-radius: 8px;
-        padding: 8px 20px;
         font-weight: 600;
+        transition: 0.3s all;
     }
-    .badge-user {
-        background-color: #0096c7;
-        color: white;
-        padding: 4px 10px;
-        border-radius: 12px;
-        font-size: 0.8rem;
+    .stButton>button:hover {
+        background: linear-gradient(135deg, #38bdf8 0%, #0284c7 100%);
+        color: #030712;
+        box-shadow: 0 0 14px rgba(56, 189, 248, 0.5);
+    }
+    
+    /* Menú lateral */
+    section[data-testid="stSidebar"] {
+        background-color: #030712 !important;
+        border-right: 1px solid #1e293b;
     }
 </style>
 """, unsafe_allow_html=True)
 
-# --- GESTOR DE PERSISTENCIA EN DISCO (JSON) ---
+# --- COMPONENTE HORA CHILE ---
+def obtener_fecha_hora_chile():
+    tz_cl = pytz.timezone("America/Santiago")
+    hora_cl = datetime.now(tz_cl)
+    return hora_cl.strftime("🇨🇱 Chile: %d/%m/%Y | %H:%M:%S")
+
+st.markdown(f"<div class='top-bar'>🕒 {obtener_fecha_hora_chile()}</div>", unsafe_allow_html=True)
+
+# --- GESTOR DE PERSISTENCIA (JSON) ---
 def cargar_estado():
     if not os.path.exists(FILE_DB):
         data_inicial = {
@@ -72,13 +122,6 @@ def cargar_estado():
                     "pin": "1234",
                     "permiso_editar": True,
                     "permiso_eliminar": True
-                },
-                "analista1": {
-                    "nombre": "Juan Pérez",
-                    "rol": "Analista",
-                    "pin": "5678",
-                    "permiso_editar": False,
-                    "permiso_eliminar": False
                 }
             },
             "datasets": {},
@@ -96,7 +139,7 @@ def guardar_estado(data):
 
 db = cargar_estado()
 
-# --- CLIENTE DE INTELIGENCIA ARTIFICIAL ---
+# --- CLIENTE GENAI ---
 API_KEY_GEMINI = os.environ.get("GEMINI_API_KEY", "")
 
 def obtener_cliente_ia():
@@ -124,45 +167,45 @@ def extraer_texto_archivo(ruta, extension):
                         texto += forma.text + "\n"
         elif extension in ["xlsx", "xls"]:
             df_tmp = pd.read_excel(ruta)
-            texto = f"Resumen estadístico del Excel:\n{df_tmp.describe(include='all').to_string()}\nPrimeras filas:\n{df_tmp.head(10).to_string()}"
+            texto = f"Estadísticas:\n{df_tmp.describe(include='all').to_string()}\nPrimeras filas:\n{df_tmp.head(10).to_string()}"
     except Exception as e:
-        texto = f"Error extrayendo texto: {e}"
+        texto = f"Error al extraer texto: {e}"
     return texto[:8000]
 
-# --- MANEJO DE SESIÓN ---
+# --- CONTROL DE ACCESO ---
 if "autenticado" not in st.session_state:
     st.session_state.autenticado = False
     st.session_state.usuario_clave = None
 
 if not st.session_state.autenticado:
-    st.markdown("<h1 style='text-align:center;'>🔐 Acceso al Sistema</h1>", unsafe_allow_html=True)
-    col1, col2, col3 = st.columns([1, 2, 1])
-    with col2:
-        with st.form("login"):
-            usr = st.text_input("Usuario")
-            pin = st.text_input("PIN / Contraseña", type="password")
-            if st.form_submit_button("Entrar", use_container_width=True):
-                if usr in db["usuarios"] and db["usuarios"][usr]["pin"] == pin:
+    st.markdown("<h1 style='text-align:center;'>🔐 Acceso a la Plataforma</h1>", unsafe_allow_html=True)
+    c1, c2, c3 = st.columns([1, 2, 1])
+    with c2:
+        with st.form("login_form"):
+            u_in = st.text_input("Usuario")
+            p_in = st.text_input("PIN / Contraseña", type="password")
+            if st.form_submit_button("Iniciar Sesión", use_container_width=True):
+                if u_in in db["usuarios"] and db["usuarios"][u_in]["pin"] == p_in:
                     st.session_state.autenticado = True
-                    st.session_state.usuario_clave = usr
+                    st.session_state.usuario_clave = u_in
                     st.rerun()
                 else:
                     st.error("Credenciales incorrectas")
     st.stop()
 
-usr_actual_key = st.session_state.usuario_clave
-usr_actual = db["usuarios"].get(usr_actual_key, {"nombre": "Desconocido", "rol": "Invitado", "permiso_editar": False, "permiso_eliminar": False})
+usr_key = st.session_state.usuario_clave
+usr = db["usuarios"].get(usr_key, {"nombre": "Invitado", "rol": "Invitado", "permiso_editar": False, "permiso_eliminar": False})
 
 # --- SIDEBAR DE NAVEGACIÓN ---
-st.sidebar.markdown(f"**Usuario:** {usr_actual['nombre']}")
-st.sidebar.markdown(f"<span class='badge-user'>{usr_actual['rol']}</span>", unsafe_allow_html=True)
+st.sidebar.markdown(f"### 👤 {usr['nombre']}")
+st.sidebar.caption(f"Rol: **{usr['rol']}**")
 st.sidebar.markdown("---")
 
-opciones = ["📊 Datasets & Archivos", "📂 Intervención", "📄 Informes Compartidos"]
-if usr_actual_key == "admin1" or usr_actual.get("rol") == "Admin":
-    opciones.append("👥 Gestión de Usuarios")
+menu = ["📊 Datasets & Archivos", "📂 Intervención", "📄 Informes Compartidos"]
+if usr_key == "admin1" or usr.get("rol") == "Admin":
+    menu.append("👥 Gestión de Usuarios")
 
-seleccion = st.sidebar.radio("Navegación:", opciones)
+opcion = st.sidebar.radio("Navegación:", menu)
 
 if st.sidebar.button("🚪 Cerrar Sesión", use_container_width=True):
     st.session_state.autenticado = False
@@ -170,163 +213,179 @@ if st.sidebar.button("🚪 Cerrar Sesión", use_container_width=True):
     st.rerun()
 
 # ==========================================
-# SECCIÓN 1: DATASETS EXCEL
+# 1. DATASETS EXCEL
 # ==========================================
-if seleccion == "📊 Datasets & Archivos":
-    st.title("📊 Gestión Persistente de Datasets")
+if opcion == "📊 Datasets & Archivos":
+    st.markdown("""
+    <div class='header-card'>
+        <img class='header-img' src='https://cdn-icons-png.flaticon.com/512/732/732220.png'>
+        <div>
+            <h2 style='margin:0;'>Módulo de Datasets & Tablas</h2>
+            <p style='margin:0; color:#94a3b8;'>Gestión persistente, edición y visualización por pestañas individuales.</p>
+        </div>
+    </div>
+    """, unsafe_allow_html=True)
     
-    with st.expander("➕ Subir Nuevo Dataset Excel con Ventana Propia", expanded=True):
-        col_t, col_f = st.columns([1, 1])
-        with col_t:
-            titulo_dataset = st.text_input("Título descriptivo del dataset:")
-        with col_f:
-            archivo_excel = st.file_uploader("Archivo Excel (.xlsx, .xls)", type=["xlsx", "xls"])
-        
+    with st.expander("➕ Cargar Nuevo Archivo Excel", expanded=True):
+        c_tit, c_arc = st.columns([1, 1])
+        with c_tit:
+            t_data = st.text_input("Título de la ventana/dataset:")
+        with c_arc:
+            f_data = st.file_uploader("Archivo Excel (.xlsx, .xls):", type=["xlsx", "xls"])
+            
         if st.button("Guardar Dataset"):
-            if not titulo_dataset.strip() or archivo_excel is None:
-                st.error("Debe ingresar un título y seleccionar un archivo.")
+            if not t_data.strip() or f_data is None:
+                st.error("Complete el título y seleccione un archivo.")
             else:
-                nombre_archivo_disco = f"{pd.Timestamp.now().strftime('%Y%m%d_%H%M%S')}_{archivo_excel.name}"
-                ruta_disco = os.path.join(DIR_DATASETS, nombre_archivo_disco)
+                nom_arc = f"{datetime.now().strftime('%Y%m%d_%H%M%S')}_{f_data.name}"
+                ruta_dest = os.path.join(DIR_DATASETS, nom_arc)
+                with open(ruta_dest, "wb") as f:
+                    f.write(f_data.getbuffer())
                 
-                with open(ruta_disco, "wb") as f:
-                    f.write(archivo_excel.getbuffer())
-                
-                db["datasets"][titulo_dataset] = {
-                    "titulo": titulo_dataset,
-                    "autor": usr_actual["nombre"],
-                    "fecha": pd.Timestamp.now().strftime("%Y-%m-%d %H:%M"),
-                    "ruta": ruta_disco
+                db["datasets"][t_data] = {
+                    "titulo": t_data,
+                    "autor": usr["nombre"],
+                    "fecha": datetime.now().strftime("%Y-%m-%d %H:%M"),
+                    "ruta": ruta_dest
                 }
                 guardar_estado(db)
-                st.success("Dataset guardado permanentemente.")
+                st.success("Dataset guardado con éxito.")
                 st.rerun()
 
     st.markdown("---")
-    
     if not db["datasets"]:
-        st.info("No hay datasets subidos.")
+        st.info("No hay datasets subidos actualmente.")
     else:
         titulos = list(db["datasets"].keys())
         pestanas = st.tabs(titulos)
         
         for idx, tab in enumerate(pestanas):
-            t_actual = titulos[idx]
-            info = db["datasets"][t_actual]
+            t_act = titulos[idx]
+            info = db["datasets"][t_act]
             
             with tab:
-                st.subheader(f"Dataset: {info['titulo']}")
-                st.caption(f"Subido por: **{info['autor']}** el {info['fecha']}")
+                st.markdown(f"### 📋 {info['titulo']}")
+                st.caption(f"Subido por: **{info['autor']}** ({info['fecha']})")
                 
                 if os.path.exists(info["ruta"]):
-                    df_cargado = pd.read_excel(info["ruta"])
+                    df_actual = pd.read_excel(info["ruta"])
                     
-                    if usr_actual.get("permiso_editar") or usr_actual_key == "admin1":
-                        st.write("✏️ **Edición de datos habilitada:**")
-                        df_modificado = st.data_editor(df_cargado, key=f"edit_{t_actual}", use_container_width=True)
-                        
-                        col_s, col_d = st.columns([1, 1])
-                        with col_s:
-                            if st.button("💾 Guardar Modificaciones", key=f"btn_save_{t_actual}"):
-                                df_modificado.to_excel(info["ruta"], index=False)
-                                st.success("Cambios persistidos en el archivo original.")
-                                st.rerun()
+                    if usr.get("permiso_editar") or usr_key == "admin1":
+                        st.markdown("**✏️ Editor de Datos en Vivo:**")
+                        df_edit = st.data_editor(df_actual, key=f"d_edit_{t_act}", use_container_width=True)
+                        if st.button("💾 Guardar Cambios en Excel", key=f"s_df_{t_act}"):
+                            df_edit.to_excel(info["ruta"], index=False)
+                            st.success("Datos actualizados.")
+                            st.rerun()
                     else:
-                        st.dataframe(df_cargado, use_container_width=True)
+                        st.dataframe(df_actual, use_container_width=True)
                     
-                    if usr_actual.get("permiso_eliminar") or usr_actual_key == "admin1":
+                    if usr.get("permiso_eliminar") or usr_key == "admin1":
                         st.markdown("---")
-                        if st.button("🗑️ Eliminar Dataset", key=f"btn_del_{t_actual}"):
+                        if st.button("🗑️ Eliminar Dataset Completo", key=f"del_ds_{t_act}", type="secondary"):
                             if os.path.exists(info["ruta"]):
                                 os.remove(info["ruta"])
-                            del db["datasets"][t_actual]
+                            del db["datasets"][t_act]
                             guardar_estado(db)
                             st.success("Dataset eliminado.")
                             st.rerun()
                 else:
-                    st.error("El archivo físico no se encuentra en el servidor.")
+                    st.error("Archivo físico no encontrado.")
 
 # ==========================================
-# SECCIÓN 2: MÓDULO INTERVENCIÓN
+# 2. INTERVENCIÓN MULTI-FORMATO
 # ==========================================
-elif seleccion == "📂 Intervención":
-    st.title("📂 Módulo de Intervención Multi-Formato")
-    st.markdown("Formatos soportados: **Excel, Word, PDF, PPT, JPG, PNG, MP4, M4A** (Límite 500 MB).")
+elif opcion == "📂 Intervención":
+    st.markdown("""
+    <div class='header-card'>
+        <img class='header-img' src='https://cdn-icons-png.flaticon.com/512/3135/3135715.png'>
+        <div>
+            <h2 style='margin:0;'>Módulo de Intervención Multi-Formato</h2>
+            <p style='margin:0; color:#94a3b8;'>Soporte para Excel, Word, PDF, PPT, Imágenes, Audio (M4A) y Video (MP4).</p>
+        </div>
+    </div>
+    """, unsafe_allow_html=True)
     
     with st.form("form_intervencion"):
-        tit_int = st.text_input("Título del registro de Intervención:")
+        tit_int = st.text_input("Título descriptivo del material:")
         archivos = st.file_uploader(
-            "Seleccionar archivos:",
+            "Cargar archivos:",
             type=["xlsx", "xls", "docx", "pdf", "pptx", "jpg", "jpeg", "png", "mp4", "m4a"],
             accept_multiple_files=True
         )
-        subir_int = st.form_submit_button("Subir y Procesar Archivos")
-        
-        if subir_int:
+        if st.form_submit_button("Subir y Procesar"):
             if not tit_int.strip() or not archivos:
                 st.error("Complete el título y cargue al menos un archivo.")
             else:
                 client = obtener_cliente_ia()
                 for a in archivos:
                     ext = a.name.split(".")[-1].lower()
-                    nombre_guardado = f"{pd.Timestamp.now().strftime('%Y%m%d_%H%M%S')}_{a.name}"
-                    ruta_int = os.path.join(DIR_INTERVENCION, nombre_guardado)
+                    nom_dest = f"{datetime.now().strftime('%Y%m%d_%H%M%S')}_{a.name}"
+                    ruta_guardada = os.path.join(DIR_INTERVENCION, nom_dest)
                     
-                    # Guardar archivo físico
-                    with open(ruta_int, "wb") as f:
+                    with open(ruta_guardada, "wb") as f:
                         f.write(a.getbuffer())
                     
-                    resumen_txt = "Archivo de audio/video almacenado (sin resumen de texto automático)."
-                    
-                    # Generar resumen con IA si NO es video ni audio
+                    resumen_txt = "Archivo multimedia (audio/video)."
                     if ext not in ["mp4", "m4a"] and client:
-                        with st.spinner(f"Analizando {a.name}..."):
+                        with st.spinner(f"Analizando {a.name} con Gemini 3.6 Flash..."):
                             try:
                                 if ext in ["jpg", "jpeg", "png"]:
-                                    img = Image.open(ruta_int)
+                                    img = Image.open(ruta_guardada)
                                     resp = client.models.generate_content(
-                                        model="gemini-3.6-flash",
-                                        contents=["Realiza un diagnóstico y resumen visual detallado de esta imagen para un informe de intervención:", img]
+                                        model=MODELO_GEMINI,
+                                        contents=["Describe y resume detalladamente los elementos clave de esta imagen para un informe de intervención:", img]
                                     )
                                     resumen_txt = resp.text
                                 else:
-                                    texto_doc = extraer_texto_archivo(ruta_int, ext)
+                                    t_doc = extraer_texto_archivo(ruta_guardada, ext)
                                     resp = client.models.generate_content(
-                                        model="gemini-2.5-flash",
-                                        contents=f"Genera un resumen analítico y diagnóstico del siguiente documento '{a.name}':\n\n{texto_doc}"
+                                        model=MODELO_GEMINI,
+                                        contents=f"Elabora un resumen y diagnóstico clave de este documento ({a.name}):\n\n{t_doc}"
                                     )
                                     resumen_txt = resp.text
                             except Exception as e:
-                                resumen_txt = f"Archivo guardado. No se pudo generar resumen automático: {e}"
+                                resumen_txt = f"Archivo guardado. Diagnóstico no generado: {e}"
                     
                     db["intervencion"].append({
-                        "titulo_registro": tit_int,
+                        "id": f"{datetime.now().strftime('%Y%m%d%H%M%S')}_{a.name}",
+                        "titulo": tit_int,
                         "nombre_original": a.name,
                         "tipo": ext,
-                        "autor": usr_actual["nombre"],
-                        "fecha": pd.Timestamp.now().strftime("%Y-%m-%d %H:%M"),
-                        "ruta": ruta_int,
+                        "autor": usr["nombre"],
+                        "fecha": datetime.now().strftime("%Y-%m-%d %H:%M"),
+                        "ruta": ruta_guardada,
                         "resumen": resumen_txt
                     })
                 guardar_estado(db)
-                st.success("Archivos procesados y guardados permanentemente.")
+                st.success("Materiales integrados correctamente.")
                 st.rerun()
 
     st.markdown("---")
-    st.subheader("📋 Registros de Intervención Almacenados")
+    st.subheader("📚 Archivos y Diagnósticos Guardados")
     
     if not db["intervencion"]:
-        st.info("No hay archivos en el módulo de intervención.")
+        st.info("No hay materiales en el módulo de intervención.")
     else:
         for idx, item in enumerate(db["intervencion"]):
             with st.container():
-                st.markdown(f"### 📂 {item['titulo_registro']} — `{item['nombre_original']}`")
-                st.caption(f"Autor: **{item['autor']}** | Fecha: {item['fecha']} | Formato: **{item['tipo'].upper()}**")
+                col_head, col_del_btn = st.columns([5, 1])
+                with col_head:
+                    st.markdown(f"### 📁 {item['titulo']} — `{item['nombre_original']}`")
+                    st.caption(f"Autor: **{item['autor']}** | Fecha: {item['fecha']} | Formato: **{item['tipo'].upper()}**")
+                with col_del_btn:
+                    if usr.get("permiso_eliminar") or usr_key == "admin1":
+                        if st.button("🗑️ Borrar", key=f"del_int_{idx}"):
+                            if os.path.exists(item["ruta"]):
+                                os.remove(item["ruta"])
+                            db["intervencion"].pop(idx)
+                            guardar_estado(db)
+                            st.success("Archivo eliminado.")
+                            st.rerun()
                 
-                # Pestañas separadas para el archivo y para el resumen
-                tab_visual, tab_resumen = st.tabs(["👁️ Archivo Multimedia / Descarga", "📝 Diagnóstico y Resumen Visual"])
+                t_vis, t_res = st.tabs(["👁️ Visualizador Multimedia / Descarga", "📝 Diagnóstico y Resumen Visual"])
                 
-                with tab_visual:
+                with t_vis:
                     if os.path.exists(item["ruta"]):
                         if item["tipo"] == "mp4":
                             st.video(item["ruta"])
@@ -335,104 +394,114 @@ elif seleccion == "📂 Intervención":
                         elif item["tipo"] in ["jpg", "jpeg", "png"]:
                             st.image(item["ruta"], use_container_width=True)
                         else:
-                            with open(item["ruta"], "rb") as f_descarga:
-                                st.download_button(
-                                    label=f"📥 Descargar {item['nombre_original']}",
-                                    data=f_descarga.read(),
-                                    file_name=item["nombre_original"],
-                                    key=f"dl_file_{idx}"
-                                )
+                            with open(item["ruta"], "rb") as fl:
+                                st.download_button("📥 Descargar Archivo", data=fl.read(), file_name=item["nombre_original"], key=f"dl_a_{idx}")
                     else:
-                        st.error("El archivo no se encuentra disponible en disco.")
-                
-                with tab_resumen:
-                    st.markdown("#### Resumen Analítico Generado")
+                        st.error("Archivo no encontrado en el servidor.")
+                        
+                with t_res:
                     st.info(item["resumen"])
-                
                 st.markdown("---")
 
 # ==========================================
-# SECCIÓN 3: INFORMES COMPARTIDOS
+# 3. INFORMES COMPARTIDOS
 # ==========================================
-elif seleccion == "📄 Informes Compartidos":
-    st.title("📄 Informes Compartidos del Equipo")
+elif opcion == "📄 Informes Compartidos":
+    st.markdown("""
+    <div class='header-card'>
+        <img class='header-img' src='https://cdn-icons-png.flaticon.com/512/2991/2991108.png'>
+        <div>
+            <h2 style='margin:0;'>Repositorio de Informes Compartidos</h2>
+            <p style='margin:0; color:#94a3b8;'>Generación analítica con Gemini 3.6 Flash y exportación en formato Carta.</p>
+        </div>
+    </div>
+    """, unsafe_allow_html=True)
     
     with st.expander("🤖 Redactar Nuevo Informe con IA", expanded=False):
-        nom_inf = st.text_input("Título del Informe:")
-        enfoque_inf = st.selectbox("Enfoque:", ["Resumen Ejecutivo", "Diagnóstico Técnico", "Evaluación de Riesgos"])
-        extra_inst = st.text_area("Instrucciones complementarias:")
+        nom_i = st.text_input("Título del Informe:")
+        enf_i = st.selectbox("Enfoque:", ["Resumen Ejecutivo", "Diagnóstico Técnico", "Evaluación Estratégica"])
+        ins_i = st.text_area("Instrucciones complementarias:")
         
         if st.button("🚀 Generar Informe"):
-            if not nom_inf.strip():
+            client = obtener_cliente_ia()
+            if not nom_i.strip():
                 st.error("Ingrese un título para el informe.")
+            elif not client:
+                st.error("API Key de Gemini no configurada.")
             else:
-                client = obtener_cliente_ia()
-                if not client:
-                    st.error("API Key de Gemini no configurada.")
-                else:
-                    with st.spinner("Compilando materiales y generando informe..."):
-                        resumenes = "\n".join([f"- Archivo {i['nombre_original']}: {i['resumen']}" for i in db["intervencion"]])
-                        
-                        prompt = f"""
-                        Actúa como un consultor y analista senior.
-                        Genera un informe analítico con enfoque '{enfoque_inf}'.
-                        Título: {nom_inf}
-                        Autor solicitante: {usr_actual['nombre']}
-                        
-                        Instrucciones:
-                        {extra_inst}
-                        
-                        Materiales de Intervención disponibles:
-                        {resumenes if resumenes else 'Sin materiales adjuntos.'}
-                        
-                        Estructura requerida:
-                        1. Diagnóstico General
-                        2. Hallazgos Clave
-                        3. Plan de Acción Recomendado
-                        """
-                        try:
-                            resp = client.models.generate_content(
-                                model="gemini-2.5-flash",
-                                contents=prompt
-                            )
-                            db["informes"].append({
-                                "titulo": nom_inf,
-                                "autor": usr_actual["nombre"],
-                                "fecha": pd.Timestamp.now().strftime("%Y-%m-%d %H:%M"),
-                                "contenido": resp.text
-                            })
-                            guardar_estado(db)
-                            st.success("Informe guardado y publicado para todos los usuarios.")
-                            st.rerun()
-                        except Exception as e:
-                            st.error(f"Error generando informe: {e}")
+                with st.spinner("Redactando informe con Gemini 3.6 Flash..."):
+                    resumenes_int = "\n".join([f"- {x['nombre_original']}: {x['resumen']}" for x in db["intervencion"]])
+                    
+                    prompt = f"""
+                    Actúa como un especialista y analista de datos senior.
+                    Genera un informe estructurado con enfoque '{enf_i}'.
+                    Título: {nom_i}
+                    Autor solicitante: {usr['nombre']}
+                    
+                    Instrucciones adicionales: {ins_i}
+                    
+                    Materiales de Intervención analizados:
+                    {resumenes_int if resumenes_int else 'Sin materiales adjuntos.'}
+                    
+                    Estructura:
+                    1. Diagnóstico y Visión Global
+                    2. Hallazgos Analíticos Relevantes
+                    3. Conclusiones y Plan de Acción
+                    """
+                    try:
+                        resp = client.models.generate_content(
+                            model=MODELO_GEMINI,
+                            contents=prompt
+                        )
+                        db["informes"].append({
+                            "titulo": nom_i,
+                            "autor": usr["nombre"],
+                            "fecha": datetime.now().strftime("%Y-%m-%d %H:%M"),
+                            "contenido": resp.text
+                        })
+                        guardar_estado(db)
+                        st.success("Informe publicado exitosamente.")
+                        st.rerun()
+                    except Exception as err:
+                        st.error(f"Error al generar informe: {err}")
 
     st.markdown("---")
-    st.subheader("📚 Repositorio General de Informes")
+    st.subheader("📚 Informes Publicados")
     
     if not db["informes"]:
-        st.info("No hay informes generados.")
+        st.info("No hay informes registrados.")
     else:
-        for idx_inf, inf in enumerate(db["informes"]):
+        for idx, inf in enumerate(db["informes"]):
             with st.container():
-                st.markdown(f"### 📄 [{inf['autor']}] - {inf['titulo']}")
-                st.caption(f"Generado el: {inf['fecha']}")
+                c_inf_t, c_inf_del = st.columns([5, 1])
+                with c_inf_t:
+                    st.markdown(f"### 📄 [{inf['autor']}] - {inf['titulo']}")
+                    st.caption(f"Generado el: {inf['fecha']}")
+                with c_inf_del:
+                    if usr.get("permiso_eliminar") or usr_key == "admin1":
+                        if st.button("🗑️ Borrar", key=f"del_inf_{idx}"):
+                            db["informes"].pop(idx)
+                            guardar_estado(db)
+                            st.success("Informe eliminado.")
+                            st.rerun()
+                
                 st.markdown(inf["contenido"])
                 
-                col_d1, col_d2 = st.columns([1, 1])
-                with col_d1:
+                # Descargas
+                cd1, cd2 = st.columns([1, 1])
+                with cd1:
                     df_out = pd.DataFrame([{"Autor": inf["autor"], "Título": inf["titulo"], "Fecha": inf["fecha"], "Contenido": inf["contenido"]}])
                     buf = io.BytesIO()
                     with pd.ExcelWriter(buf, engine="openpyxl") as writer:
                         df_out.to_excel(writer, index=False)
                     st.download_button(
-                        label="📥 Descargar en Excel (.xlsx)",
+                        label="📥 Descargar Excel (.xlsx)",
                         data=buf.getvalue(),
                         file_name=f"[{inf['autor']}] - {inf['titulo']}.xlsx",
                         mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
-                        key=f"xls_{idx_inf}"
+                        key=f"xls_dl_{idx}"
                     )
-                with col_d2:
+                with cd2:
                     html_carta = f"""
                     <!DOCTYPE html>
                     <html>
@@ -462,36 +531,44 @@ elif seleccion == "📄 Informes Compartidos":
                         data=html_carta,
                         file_name=f"[{inf['autor']}] - {inf['titulo']}_Carta.html",
                         mime="text/html",
-                        key=f"doc_{idx_inf}"
+                        key=f"doc_dl_{idx}"
                     )
                 st.markdown("---")
 
 # ==========================================
-# SECCIÓN 4: GESTIÓN Y ELIMINACIÓN DE USUARIOS
+# 4. GESTIÓN DE USUARIOS
 # ==========================================
-elif seleccion == "👥 Gestión de Usuarios":
-    st.title("👥 Gestión y Control de Usuarios")
+elif opcion == "👥 Gestión de Usuarios":
+    st.markdown("""
+    <div class='header-card'>
+        <img class='header-img' src='https://cdn-icons-png.flaticon.com/512/1256/1256650.png'>
+        <div>
+            <h2 style='margin:0;'>Administración y Control de Usuarios</h2>
+            <p style='margin:0; color:#94a3b8;'>Creación, asignación de permisos y eliminación de perfiles.</p>
+        </div>
+    </div>
+    """, unsafe_allow_html=True)
     
-    with st.expander("➕ Registrar Nuevo Usuario", expanded=True):
-        col_u1, col_u2, col_u3 = st.columns([1, 1, 1])
-        with col_u1:
-            n_usr = st.text_input("Usuario (Login):")
+    with st.expander("➕ Crear Nuevo Usuario", expanded=True):
+        cu1, cu2, cu3 = st.columns([1, 1, 1])
+        with cu1:
+            n_u = st.text_input("Usuario (Login):")
             n_nom = st.text_input("Nombre Completo:")
-        with col_u2:
-            n_pin = st.text_input("PIN:", type="password")
+        with cu2:
+            n_pin = st.text_input("PIN / Clave:", type="password")
             n_rol = st.selectbox("Rol:", ["Analista", "Especialista", "Gerencia", "Admin"])
-        with col_u3:
-            st.markdown("**Permisos:**")
+        with cu3:
+            st.markdown("**Permisos Asignados:**")
             p_e = st.checkbox("Editar Datasets")
-            p_d = st.checkbox("Eliminar Datasets")
-        
-        if st.button("Guardar Usuario"):
-            if not n_usr or not n_pin or not n_nom:
-                st.error("Complete todos los campos.")
-            elif n_usr in db["usuarios"]:
-                st.error("El usuario ya existe.")
+            p_d = st.checkbox("Eliminar Datasets / Archivos")
+            
+        if st.button("Guardar Perfil"):
+            if not n_u or not n_pin or not n_nom:
+                st.error("Todos los campos son obligatorios.")
+            elif n_u in db["usuarios"]:
+                st.error("El nombre de usuario ya existe.")
             else:
-                db["usuarios"][n_usr] = {
+                db["usuarios"][n_u] = {
                     "nombre": n_nom,
                     "rol": n_rol,
                     "pin": n_pin,
@@ -499,37 +576,35 @@ elif seleccion == "👥 Gestión de Usuarios":
                     "permiso_eliminar": p_d
                 }
                 guardar_estado(db)
-                st.success(f"Usuario '{n_usr}' registrado.")
+                st.success(f"Usuario '{n_u}' registrado correctamente.")
                 st.rerun()
 
     st.markdown("---")
     st.subheader("📜 Usuarios Registrados")
     
-    usuarios_claves = list(db["usuarios"].keys())
-    for u_key in usuarios_claves:
-        u_data = db["usuarios"][u_key]
+    for u_k in list(db["usuarios"].keys()):
+        u_d = db["usuarios"][u_k]
         with st.container():
-            col_inf, col_p1, col_p2, col_del = st.columns([2, 1, 1, 1])
-            with col_inf:
-                st.markdown(f"**{u_data['nombre']}** (`{u_key}`) — *{u_data['rol']}*")
+            col_u_inf, col_u_e, col_u_d, col_u_del = st.columns([2, 1, 1, 1])
+            with col_u_inf:
+                st.markdown(f"**{u_d['nombre']}** (`{u_k}`) — Rol: *{u_d['rol']}*")
             
-            if u_key == "admin1":
+            if u_k == "admin1":
                 st.caption("Administrador Principal (Protegido)")
             else:
-                with col_p1:
-                    e_val = st.checkbox("Editar", value=u_data.get("permiso_editar", False), key=f"pe_{u_key}")
-                with col_p2:
-                    d_val = st.checkbox("Eliminar", value=u_data.get("permiso_eliminar", False), key=f"pd_{u_key}")
-                with col_del:
-                    if st.button("🗑️ Eliminar Usuario", key=f"del_u_{u_key}"):
-                        del db["usuarios"][u_key]
+                with col_u_e:
+                    val_e = st.checkbox("Editar", value=u_d.get("permiso_editar", False), key=f"pe_{u_k}")
+                with col_u_d:
+                    val_d = st.checkbox("Eliminar", value=u_d.get("permiso_eliminar", False), key=f"pd_{u_k}")
+                with col_u_del:
+                    if st.button("🗑️ Eliminar", key=f"del_user_{u_k}"):
+                        del db["usuarios"][u_k]
                         guardar_estado(db)
-                        st.success(f"Usuario {u_key} eliminado.")
+                        st.success(f"Usuario {u_k} eliminado.")
                         st.rerun()
-                
-                # Actualizar permisos
-                if e_val != u_data.get("permiso_editar") or d_val != u_data.get("permiso_eliminar"):
-                    db["usuarios"][u_key]["permiso_editar"] = e_val
-                    db["usuarios"][u_key]["permiso_eliminar"] = d_val
+                        
+                if val_e != u_d.get("permiso_editar") or val_d != u_d.get("permiso_eliminar"):
+                    db["usuarios"][u_k]["permiso_editar"] = val_e
+                    db["usuarios"][u_k]["permiso_eliminar"] = val_d
                     guardar_estado(db)
         st.markdown("---")
