@@ -33,10 +33,10 @@ for d in [DIR_BASE, DIR_DATASETS, DIR_INTERVENCION, DIR_AVATARS]:
 
 MODELO_GEMINI = "gemini-3.6-flash"
 
-# --- PALETA TEAL + NARANJA QUEMADO / TERRACOTA (#c84b1e / #b23b14) ---
+# --- PALETA TEAL + ACENTOS NARANJA TERRACOTA (SIN ELEMENTOS NEGROS) ---
 st.markdown("""
 <style>
-    /* Tipografía sin forzar pseudoelementos de Streamlit */
+    /* Tipografía sin interferir con fuentes de iconos nativos */
     html, body, [class*="css"], .stApp {
         font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
     }
@@ -64,7 +64,7 @@ st.markdown("""
         font-weight: 600;
     }
 
-    /* Cuadros de título de cada módulo (Más claros que el fondo: #89c7c0) */
+    /* Cuadros de título y tarjetas (Tono Teal más claro que el fondo: #89c7c0) */
     .modern-card {
         background: #89c7c0 !important;
         border: 2px solid #63a59e !important;
@@ -140,8 +140,6 @@ st.markdown("""
     div[data-testid="stFileUploader"] section * {
         color: #061e1b !important;
     }
-    
-    /* Botón interno Browse files / Upload */
     div[data-testid="stFileUploader"] button {
         background-color: #c84b1e !important;
         border: 2px solid #9e3610 !important;
@@ -152,25 +150,30 @@ st.markdown("""
         color: #ffffff !important;
     }
 
-    /* Tablas de datos Excel */
-    div[data-testid="stDataFrame"], 
-    div[data-testid="stDataEditor"],
-    div[data-testid="stDataFrame"] > div,
-    div[data-testid="stDataEditor"] > div {
-        background-color: #89c7c0 !important;
+    /* BOTONES DE DESCARGA (Download Buttons) EN TEAL CLARO */
+    div[data-testid="stDownloadButton"]>button {
+        background: #a2d2cc !important;
+        color: #061e1b !important;
         border: 2px solid #52948d !important;
-        border-radius: 10px !important;
+        border-radius: 9px !important;
+        padding: 9px 20px !important;
+        font-weight: 800 !important;
+        font-size: 0.95rem !important;
+        box-shadow: 0 3px 8px rgba(13, 44, 41, 0.15) !important;
+        transition: all 0.2s ease !important;
     }
-    
-    .glide-data-grid,
-    .gdg-container,
-    div[data-testid="stDataFrame"] canvas,
-    div[data-testid="stDataEditor"] canvas {
-        filter: invert(0.85) sepia(0.3) saturate(2.5) hue-rotate(130deg) brightness(1.05) !important;
-        border-radius: 8px !important;
+    div[data-testid="stDownloadButton"]>button:hover {
+        background: #bfe3de !important;
+        color: #000000 !important;
+        border-color: #061e1b !important;
+        transform: translateY(-1px);
+    }
+    div[data-testid="stDownloadButton"]>button p {
+        color: #061e1b !important;
+        font-weight: 800 !important;
     }
 
-    /* BOTONES PRINCIPALES: NARANJA OSCURO / TERRACOTA (#c84b1e) */
+    /* BOTONES PRIMARIOS Y DE FORMULARIO: NARANJA OSCURO / TERRACOTA (#c84b1e) */
     .stButton>button, 
     div[data-testid="stFormSubmitButton"]>button {
         background: linear-gradient(135deg, #c84b1e 0%, #b23b14 100%) !important;
@@ -194,6 +197,24 @@ st.markdown("""
     div[data-testid="stFormSubmitButton"]>button p {
         color: #ffffff !important;
         font-weight: 800 !important;
+    }
+
+    /* Tablas de datos Excel */
+    div[data-testid="stDataFrame"], 
+    div[data-testid="stDataEditor"],
+    div[data-testid="stDataFrame"] > div,
+    div[data-testid="stDataEditor"] > div {
+        background-color: #89c7c0 !important;
+        border: 2px solid #52948d !important;
+        border-radius: 10px !important;
+    }
+    
+    .glide-data-grid,
+    .gdg-container,
+    div[data-testid="stDataFrame"] canvas,
+    div[data-testid="stDataEditor"] canvas {
+        filter: invert(0.85) sepia(0.3) saturate(2.5) hue-rotate(130deg) brightness(1.05) !important;
+        border-radius: 8px !important;
     }
 
     /* Textos con fondo destacado (sin cajas negras) */
