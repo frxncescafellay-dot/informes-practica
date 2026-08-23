@@ -33,15 +33,15 @@ for d in [DIR_BASE, DIR_DATASETS, DIR_INTERVENCION, DIR_AVATARS]:
 
 MODELO_GEMINI = "gemini-3.6-flash"
 
-# --- PALETA TEAL + ACENTOS NARANJA TERRACOTA (SIN ELEMENTOS NEGROS) ---
+# --- PALETA TEAL + NARANJA TERRACOTA (CERO ELEMENTOS NEGROS) ---
 st.markdown("""
 <style>
-    /* Tipografía sin interferir con fuentes de iconos nativos */
+    /* Tipografía uniforme */
     html, body, [class*="css"], .stApp {
-        font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+        font-family: 'Segoe UI', system-ui, -apple-system, sans-serif !important;
     }
 
-    /* Fondo principal: Teal Suave */
+    /* Fondo principal */
     .stApp {
         background: #73b5ae !important;
         color: #061e1b;
@@ -52,6 +52,7 @@ st.markdown("""
         color: #061e1b !important;
         font-weight: 800;
         letter-spacing: -0.5px;
+        font-family: 'Segoe UI', system-ui, -apple-system, sans-serif !important;
     }
     
     /* Barra lateral */
@@ -64,7 +65,7 @@ st.markdown("""
         font-weight: 600;
     }
 
-    /* Cuadros de título y tarjetas (Tono Teal más claro que el fondo: #89c7c0) */
+    /* Tarjetas y Contenedores */
     .modern-card {
         background: #89c7c0 !important;
         border: 2px solid #63a59e !important;
@@ -95,7 +96,7 @@ st.markdown("""
         color: #061e1b !important;
     }
 
-    /* Cuadros de entrada de texto */
+    /* Cuadros de texto */
     input[type="text"], 
     input[type="password"], 
     textarea {
@@ -115,7 +116,19 @@ st.markdown("""
         box-shadow: 0 0 0 3px rgba(200, 75, 30, 0.25) !important;
     }
 
-    /* Selectores desplegables */
+    /* Quitar fondo negro del botón de ver contraseña en input password */
+    div[data-baseweb="input"] button,
+    div[data-baseweb="input"] div {
+        background-color: #a2d2cc !important;
+        border: none !important;
+        color: #061e1b !important;
+    }
+    div[data-baseweb="input"] svg {
+        fill: #061e1b !important;
+        color: #061e1b !important;
+    }
+
+    /* Selectores desplegables (Selectbox) - Quitar fondo negro de flecha */
     div[data-baseweb="select"] > div {
         background-color: #a2d2cc !important;
         color: #061e1b !important;
@@ -123,6 +136,30 @@ st.markdown("""
         border-radius: 8px !important;
     }
     div[data-baseweb="select"] * {
+        background-color: #a2d2cc !important;
+        color: #061e1b !important;
+        font-weight: 600 !important;
+    }
+    div[data-baseweb="select"] svg {
+        fill: #061e1b !important;
+        color: #061e1b !important;
+    }
+
+    /* CUADROS PARA MARCAR (Checkboxes) - Quitar negro */
+    div[data-testid="stCheckbox"] span[role="checkbox"] {
+        background-color: #a2d2cc !important;
+        border: 2px solid #52948d !important;
+        border-radius: 5px !important;
+    }
+    div[data-testid="stCheckbox"] span[role="checkbox"][aria-checked="true"] {
+        background-color: #c84b1e !important;
+        border-color: #9e3610 !important;
+    }
+    div[data-testid="stCheckbox"] svg {
+        color: #ffffff !important;
+        fill: #ffffff !important;
+    }
+    div[data-testid="stCheckbox"] label span {
         color: #061e1b !important;
         font-weight: 600 !important;
     }
@@ -150,7 +187,7 @@ st.markdown("""
         color: #ffffff !important;
     }
 
-    /* BOTONES DE DESCARGA (Download Buttons) EN TEAL CLARO */
+    /* BOTONES DE DESCARGA */
     div[data-testid="stDownloadButton"]>button {
         background: #a2d2cc !important;
         color: #061e1b !important;
@@ -173,7 +210,7 @@ st.markdown("""
         font-weight: 800 !important;
     }
 
-    /* BOTONES PRIMARIOS Y DE FORMULARIO: NARANJA OSCURO / TERRACOTA (#c84b1e) */
+    /* BOTONES PRINCIPALES Y FORMULARIOS */
     .stButton>button, 
     div[data-testid="stFormSubmitButton"]>button {
         background: linear-gradient(135deg, #c84b1e 0%, #b23b14 100%) !important;
@@ -217,7 +254,7 @@ st.markdown("""
         border-radius: 8px !important;
     }
 
-    /* Textos con fondo destacado (sin cajas negras) */
+    /* Textos con fondo destacado para nombres de usuarios y archivos (sin negro) */
     .highlight-tag {
         background: #a2d2cc;
         border: 1.5px solid #52948d;
@@ -227,6 +264,18 @@ st.markdown("""
         color: #061e1b;
         font-size: 0.92rem;
         display: inline-block;
+        font-family: 'Segoe UI', system-ui, -apple-system, sans-serif !important;
+    }
+
+    code, pre {
+        background-color: #a2d2cc !important;
+        color: #061e1b !important;
+        border: 1.5px solid #52948d !important;
+        border-radius: 6px !important;
+        padding: 3px 8px !important;
+        font-family: 'Segoe UI', system-ui, -apple-system, sans-serif !important;
+        font-size: 0.92rem !important;
+        font-weight: 700 !important;
     }
     
     /* Botones de eliminación / secundarios */
@@ -414,19 +463,25 @@ def extraer_texto_archivo(ruta, extension):
             lector = pypdf.PdfReader(ruta)
             for pag in lector.pages:
                 t = pag.extract_text()
-                if t: texto += t + "\n"
+                if t: texto += t + "
+"
         elif extension == "docx":
             doc = Document(ruta)
-            texto = "\n".join([p.text for p in doc.paragraphs])
+            texto = "
+".join([p.text for p in doc.paragraphs])
         elif extension == "pptx":
             prs = Presentation(ruta)
             for diap in prs.slides:
                 for forma in diap.shapes:
                     if hasattr(forma, "text"):
-                        texto += forma.text + "\n"
+                        texto += forma.text + "
+"
         elif extension in ["xlsx", "xls"]:
             df_tmp = pd.read_excel(ruta)
-            texto = f"Estadísticas:\n{df_tmp.describe(include='all').to_string()}\nPrimeras filas:\n{df_tmp.head(10).to_string()}"
+            texto = f"Estadísticas:
+{df_tmp.describe(include='all').to_string()}
+Primeras filas:
+{df_tmp.head(10).to_string()}"
     except Exception as e:
         texto = f"Error al extraer texto: {e}"
     return texto[:8000]
@@ -642,7 +697,9 @@ with pestanas_principales[1]:
                                     t_doc = extraer_texto_archivo(ruta_guardada, ext)
                                     resp = client.models.generate_content(
                                         model=MODELO_GEMINI,
-                                        contents=f"Elabora un resumen y diagnóstico clave de este documento ({a.name}):\n\n{t_doc}"
+                                        contents=f"Elabora un resumen y diagnóstico clave de este documento ({a.name}):
+
+{t_doc}"
                                     )
                                     resumen_txt = resp.text
                                 elif ext == "mp4":
@@ -735,7 +792,8 @@ with pestanas_principales[2]:
                 st.error("API Key de Gemini no configurada.")
             else:
                 with st.spinner("Redactando informe consolidado con Gemini 3.6 Flash..."):
-                    resumenes_int = "\n".join([f"- {x.get('nombre_original', 'Archivo')}: {x.get('resumen', '')}" for x in db["intervencion"]])
+                    resumenes_int = "
+".join([f"- {x.get('nombre_original', 'Archivo')}: {x.get('resumen', '')}" for x in db["intervencion"]])
                     
                     prompt = f"""
                     Actúa como especialista analítico senior.
@@ -892,7 +950,8 @@ if es_admin:
             with st.container():
                 col_u_inf, col_u_e, col_u_d, col_u_del = st.columns([2, 1, 1, 1])
                 with col_u_inf:
-                    st.markdown(f"**{u_d.get('nombre', '')}** (`{u_k}`) — Rol: *{u_d.get('rol', '')}*")
+                    # Nombre de usuario con etiqueta highlight-tag teal claro y misma fuente
+                    st.markdown(f"**{u_d.get('nombre', '')}** (<span class='highlight-tag'>{u_k}</span>) — Rol: *{u_d.get('rol', '')}*", unsafe_allow_html=True)
                 
                 if u_k == "admin1":
                     st.caption("Administrador Principal (Cuenta protegida)")
