@@ -13,6 +13,7 @@ import pypdf
 from docx import Document
 from pptx import Presentation
 
+# --- CONFIGURACIÓN DE PÁGINA ---
 st.set_page_config(
     page_title="Plataforma de Analítica & Intervención IA",
     page_icon="⚡",
@@ -20,6 +21,7 @@ st.set_page_config(
     initial_sidebar_state="expanded"
 )
 
+# --- RUTAS DE ALMACENAMIENTO PERSISTENTE ---
 DIR_BASE = "almacen_datos"
 DIR_DATASETS = os.path.join(DIR_BASE, "datasets")
 DIR_INTERVENCION = os.path.join(DIR_BASE, "intervencion")
@@ -31,70 +33,71 @@ for d in [DIR_BASE, DIR_DATASETS, DIR_INTERVENCION, DIR_AVATARS]:
 
 MODELO_GEMINI = "gemini-3.6-flash"
 
+# --- PALETA TEAL HOMOGÉNEA (BASE: #73b5ae / INPUTS & BOTONES: #a2d2cc) ---
 st.markdown("""
 <style>
     /* Fondo principal: Teal Suave */
     .stApp {
-        background-color: #6fbab3 !important;
-        color: #0d3b37 !important;
+        background: #73b5ae !important;
+        color: #0d2c29;
         font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
     }
     
     /* Encabezados y títulos */
     h1, h2, h3, h4, h5, h6 {
-        color: #0a2d2a !important;
+        color: #061e1b !important;
         font-weight: 800;
         letter-spacing: -0.5px;
     }
     
     /* Barra lateral */
     section[data-testid="stSidebar"] {
-        background-color: #5ea8a1 !important;
-        border-right: 2px solid #4a8d86 !important;
+        background-color: #63a59e !important;
+        border-right: 2px solid #52948d !important;
     }
     section[data-testid="stSidebar"] * {
-        color: #0a2d2a !important;
+        color: #061e1b !important;
         font-weight: 600;
     }
 
     /* Tarjetas y Contenedores */
     .modern-card {
-        background-color: #8acbc5 !important;
-        border: 1.5px solid #5ea8a1 !important;
+        background: #73b5ae !important;
+        border: 2px solid #52948d !important;
         border-radius: 14px;
         padding: 22px;
         margin-bottom: 20px;
-        box-shadow: 0 6px 16px rgba(10, 45, 42, 0.15);
+        box-shadow: 0 4px 12px rgba(13, 44, 41, 0.15);
     }
 
-    /* Desplegables (Expanders) */
+    /* Desplegables (Expanders): Eliminación total de negro */
     div[data-testid="stExpander"] {
-        background-color: #8acbc5 !important;
-        border: 1.5px solid #5ea8a1 !important;
+        background-color: #73b5ae !important;
+        border: 2px solid #52948d !important;
         border-radius: 10px !important;
     }
     div[data-testid="stExpander"] summary {
-        background-color: #5ea8a1 !important;
-        color: #0a2d2a !important;
+        background-color: #63a59e !important;
+        color: #061e1b !important;
         border-radius: 8px !important;
         font-weight: 750 !important;
     }
     div[data-testid="stExpander"] summary * {
-        color: #0a2d2a !important;
+        color: #061e1b !important;
         font-weight: 750 !important;
     }
     div[data-testid="stExpander"] div[role="region"] {
-        background-color: #8acbc5 !important;
-        color: #0a2d2a !important;
+        background-color: #73b5ae !important;
+        color: #061e1b !important;
     }
 
-    /* Campos de texto y entradas */
+    /* Cuadros donde escribe el usuario: Tono Teal más claro */
     input[type="text"], 
     input[type="password"], 
     textarea {
-        background-color: #a8ddd8 !important;
-        color: #0a2d2a !important;
-        border: 1.5px solid #5ea8a1 !important;
+        background-color: #a2d2cc !important;
+        color: #061e1b !important;
+        border: 2px solid #52948d !important;
         border-radius: 8px !important;
         font-size: 0.95rem !important;
         font-weight: 600 !important;
@@ -102,165 +105,171 @@ st.markdown("""
     input[type="text"]:focus, 
     input[type="password"]:focus, 
     textarea:focus {
-        background-color: #c0ebe6 !important;
-        color: #051a18 !important;
-        border-color: #e76f51 !important;
-        box-shadow: 0 0 0 3px rgba(231, 111, 81, 0.3) !important;
+        background-color: #bfe3de !important;
+        color: #000000 !important;
+        border-color: #061e1b !important;
+        box-shadow: 0 0 0 3px rgba(6, 30, 27, 0.2) !important;
     }
 
-    /* Selectores */
+    /* Selectores desplegables */
     div[data-baseweb="select"] > div {
-        background-color: #a8ddd8 !important;
-        color: #0a2d2a !important;
-        border: 1.5px solid #5ea8a1 !important;
+        background-color: #a2d2cc !important;
+        color: #061e1b !important;
+        border: 2px solid #52948d !important;
         border-radius: 8px !important;
     }
     div[data-baseweb="select"] * {
-        color: #0a2d2a !important;
+        color: #061e1b !important;
         font-weight: 600 !important;
     }
 
     /* Zona de carga de archivos (Uploader) */
     div[data-testid="stFileUploader"] {
-        background-color: #8acbc5 !important;
-        border: 2px dashed #4a8d86 !important;
+        background-color: #73b5ae !important;
+        border: 2px dashed #3d7973 !important;
         border-radius: 12px !important;
-        padding: 12px !important;
+        padding: 14px !important;
     }
     div[data-testid="stFileUploader"] section {
-        background-color: #8acbc5 !important;
+        background-color: #73b5ae !important;
     }
     div[data-testid="stFileUploader"] section * {
-        color: #0a2d2a !important;
+        color: #061e1b !important;
     }
     div[data-testid="stFileUploader"] button {
-        background-color: #a8ddd8 !important;
-        color: #0a2d2a !important;
-        border: 1.5px solid #5ea8a1 !important;
+        background-color: #a2d2cc !important;
+        color: #061e1b !important;
+        border: 2px solid #52948d !important;
         font-weight: 750 !important;
     }
     div[data-testid="stFileUploader"] button * {
-        color: #0a2d2a !important;
+        color: #061e1b !important;
     }
 
-    /* Tablas de datos Excel y Editor de Datos */
+    /* Contenedor del Excel y visualización de datos */
     div[data-testid="stDataFrame"], 
     div[data-testid="stDataEditor"],
     div[data-testid="stDataFrame"] > div,
     div[data-testid="stDataEditor"] > div {
-        background-color: #8acbc5 !important;
-        border: 1.5px solid #4a8d86 !important;
+        background-color: #73b5ae !important;
+        border: 2px solid #3d7973 !important;
         border-radius: 10px !important;
     }
     
+    /* Adaptación del canvas nativo de Streamlit al fondo Teal Suave */
+    .glide-data-grid,
+    .gdg-container,
     div[data-testid="stDataFrame"] canvas,
     div[data-testid="stDataEditor"] canvas {
-        background-color: #a8ddd8 !important;
+        filter: invert(0.85) sepia(0.3) saturate(2.5) hue-rotate(130deg) brightness(1.05) !important;
         border-radius: 8px !important;
     }
 
-    /* Botones primarios */
+    /* Botones primarios (Teal Claro para contraste) */
     .stButton>button {
-        background: #e76f51 !important;
-        color: #0a2d2a !important;
-        border: 1.5px solid #cf5436 !important;
+        background: #a2d2cc !important;
+        color: #061e1b !important;
+        border: 2px solid #52948d !important;
         border-radius: 8px !important;
-        padding: 8px 20px !important;
+        padding: 9px 22px !important;
         font-weight: 800 !important;
         font-size: 0.95rem !important;
-        box-shadow: 0 4px 10px rgba(10, 45, 42, 0.15) !important;
+        box-shadow: 0 3px 8px rgba(13, 44, 41, 0.15) !important;
         transition: all 0.2s ease !important;
     }
     .stButton>button:hover {
-        background: #f4a261 !important;
-        color: #051a18 !important;
-        border-color: #e76f51 !important;
+        background: #bfe3de !important;
+        color: #000000 !important;
+        border-color: #061e1b !important;
         transform: translateY(-1px);
     }
     
-    /* Botones de eliminación */
+    /* Botones de eliminación / secundarios */
     div[data-testid="stBaseButton-secondary"] button {
-        background: #e63946 !important;
-        color: #ffffff !important;
-        border: 1.5px solid #ba181b !important;
+        background: #e29b9b !important;
+        color: #5c0f0f !important;
+        border: 2px solid #c96b6b !important;
     }
     div[data-testid="stBaseButton-secondary"] button:hover {
-        background: #ba181b !important;
-        color: #ffffff !important;
+        background: #d67a7a !important;
+        color: #3b0505 !important;
     }
 
     /* Pestañas de navegación superiores */
     button[data-baseweb="tab"] {
-        background-color: #5ea8a1 !important;
-        color: #0a2d2a !important;
+        background-color: #63a59e !important;
+        color: #061e1b !important;
         border-radius: 8px 8px 0 0 !important;
         font-weight: 750 !important;
         margin-right: 4px !important;
         padding: 9px 18px !important;
-        border: 1px solid #4a8d86 !important;
+        border: 1px solid #52948d !important;
     }
     button[data-baseweb="tab"][aria-selected="true"] {
-        background-color: #8acbc5 !important;
-        color: #0a2d2a !important;
-        border-bottom: 3.5px solid #e76f51 !important;
+        background-color: #73b5ae !important;
+        color: #061e1b !important;
+        border-bottom: 3.5px solid #061e1b !important;
     }
 
     label, p, span {
-        color: #0a2d2a !important;
+        color: #061e1b;
         font-weight: 600;
     }
 
     .badge-role {
         display: inline-block;
-        background: #e76f51;
-        color: #0a2d2a !important;
+        background: #a2d2cc;
+        color: #061e1b !important;
         padding: 4px 12px;
         border-radius: 14px;
         font-size: 0.82rem;
         font-weight: 800;
-        border: 1px solid #cf5436;
+        border: 1.5px solid #52948d;
     }
 </style>
 """, unsafe_allow_html=True)
 
+# --- COMPONENTE DE RELOJ DUAL (DIGITAL + ANÁLOGO SVG) ---
 def renderizar_reloj_chile():
     html_reloj = """
     <div style="
-        background: #8acbc5;
-        border: 1.5px solid #5ea8a1;
+        background: #73b5ae;
+        border: 2px solid #52948d;
         border-radius: 14px;
         padding: 10px 18px;
         display: flex;
         align-items: center;
         justify-content: space-between;
         gap: 16px;
-        box-shadow: 0 4px 14px rgba(10, 45, 42, 0.15);
+        box-shadow: 0 4px 14px rgba(13, 44, 41, 0.15);
         max-width: 480px;
         margin-left: auto;
         margin-bottom: 15px;
         font-family: 'Segoe UI', system-ui, sans-serif;
     ">
+        <!-- Reloj Análogo -->
         <div style="position: relative; width: 58px; height: 58px;">
             <svg id="analog-clock" width="58" height="58" viewBox="0 0 100 100">
-                <circle cx="50" cy="50" r="46" fill="#a8ddd8" stroke="#4a8d86" stroke-width="4"/>
-                <line x1="50" y1="10" x2="50" y2="16" stroke="#0a2d2a" stroke-width="3" stroke-linecap="round"/>
-                <line x1="90" y1="50" x2="84" y2="50" stroke="#0a2d2a" stroke-width="3" stroke-linecap="round"/>
-                <line x1="50" y1="90" x2="50" y2="84" stroke="#0a2d2a" stroke-width="3" stroke-linecap="round"/>
-                <line x1="10" y1="50" x2="16" y2="50" stroke="#0a2d2a" stroke-width="3" stroke-linecap="round"/>
-                <line id="hour-hand" x1="50" y1="50" x2="50" y2="28" stroke="#0a2d2a" stroke-width="4.5" stroke-linecap="round"/>
-                <line id="min-hand" x1="50" y1="50" x2="50" y2="18" stroke="#4a8d86" stroke-width="3" stroke-linecap="round"/>
-                <line id="sec-hand" x1="50" y1="50" x2="50" y2="14" stroke="#e76f51" stroke-width="2" stroke-linecap="round"/>
-                <circle cx="50" cy="50" r="3.5" fill="#0a2d2a"/>
+                <circle cx="50" cy="50" r="46" fill="#a2d2cc" stroke="#3d7973" stroke-width="4"/>
+                <line x1="50" y1="10" x2="50" y2="16" stroke="#061e1b" stroke-width="3" stroke-linecap="round"/>
+                <line x1="90" y1="50" x2="84" y2="50" stroke="#061e1b" stroke-width="3" stroke-linecap="round"/>
+                <line x1="50" y1="90" x2="50" y2="84" stroke="#061e1b" stroke-width="3" stroke-linecap="round"/>
+                <line x1="10" y1="50" x2="16" y2="50" stroke="#061e1b" stroke-width="3" stroke-linecap="round"/>
+                <line id="hour-hand" x1="50" y1="50" x2="50" y2="28" stroke="#061e1b" stroke-width="4.5" stroke-linecap="round"/>
+                <line id="min-hand" x1="50" y1="50" x2="50" y2="18" stroke="#3d7973" stroke-width="3" stroke-linecap="round"/>
+                <line id="sec-hand" x1="50" y1="50" x2="50" y2="14" stroke="#8c2e2e" stroke-width="2" stroke-linecap="round"/>
+                <circle cx="50" cy="50" r="3.5" fill="#061e1b"/>
             </svg>
         </div>
+        <!-- Reloj Digital y Fecha -->
         <div style="display: flex; flex-direction: column; justify-content: center;">
-            <div style="font-size: 0.75rem; font-weight: 800; color: #0a2d2a; text-transform: uppercase; letter-spacing: 0.5px;">
+            <div style="font-size: 0.75rem; font-weight: 800; color: #061e1b; text-transform: uppercase; letter-spacing: 0.5px;">
                 🇨🇱 Hora Oficial de Chile
             </div>
-            <div id="digital-clock" style="font-size: 1.5rem; font-weight: 900; color: #0a2d2a; line-height: 1.1;">
+            <div id="digital-clock" style="font-size: 1.5rem; font-weight: 900; color: #061e1b; line-height: 1.1;">
                 --:--:--
             </div>
-            <div id="digital-date" style="font-size: 0.78rem; font-weight: 700; color: #0a2d2a; margin-top: 2px;">
+            <div id="digital-date" style="font-size: 0.78rem; font-weight: 700; color: #061e1b; margin-top: 2px;">
                 Cargando fecha...
             </div>
         </div>
@@ -310,6 +319,7 @@ def renderizar_reloj_chile():
     """
     components.html(html_reloj, height=95)
 
+# --- GESTOR DE PERSISTENCIA (JSON) ---
 def cargar_estado():
     if not os.path.exists(FILE_DB):
         data_inicial = {
@@ -341,6 +351,7 @@ def guardar_estado(data):
 
 db = cargar_estado()
 
+# --- CLIENTE GENAI ---
 API_KEY_GEMINI = os.environ.get("GEMINI_API_KEY", "")
 
 def obtener_cliente_ia():
@@ -348,6 +359,7 @@ def obtener_cliente_ia():
         return None
     return genai.Client(api_key=API_KEY_GEMINI)
 
+# --- EXTRACCIÓN DE TEXTO PARA RESÚMENES ---
 def extraer_texto_archivo(ruta, extension):
     texto = ""
     try:
@@ -372,13 +384,14 @@ def extraer_texto_archivo(ruta, extension):
         texto = f"Error al extraer texto: {e}"
     return texto[:8000]
 
+# --- CONTROL DE ACCESO (LOGIN) ---
 if "autenticado" not in st.session_state:
     st.session_state.autenticado = False
     st.session_state.usuario_clave = None
 
 if not st.session_state.autenticado:
-    st.markdown("<h1 style='text-align:center; color:#0a2d2a !important; margin-top:35px;'>🔐 Acceso a la Plataforma</h1>", unsafe_allow_html=True)
-    st.markdown("<p style='text-align:center; color:#0d3b37;'>Ingrese sus credenciales registradas</p>", unsafe_allow_html=True)
+    st.markdown("<h1 style='text-align:center; color:#061e1b !important; margin-top:35px;'>🔐 Acceso a la Plataforma</h1>", unsafe_allow_html=True)
+    st.markdown("<p style='text-align:center; color:#061e1b;'>Ingrese sus credenciales registradas</p>", unsafe_allow_html=True)
     c1, c2, c3 = st.columns([1, 1.4, 1])
     with c2:
         with st.form("login_form"):
@@ -393,10 +406,12 @@ if not st.session_state.autenticado:
                     st.error("Credenciales incorrectas")
     st.stop()
 
+# --- DATOS DEL USUARIO ACTUAL ---
 usr_key = st.session_state.usuario_clave
 usr = db["usuarios"].get(usr_key, {"nombre": "Invitado", "rol": "Usuario", "permiso_editar": False, "permiso_eliminar": False, "avatar": ""})
 es_admin = (usr.get("rol") == "Admin") or (usr_key == "admin1")
 
+# --- BARRA LATERAL: PERFIL Y FOTO ---
 st.sidebar.markdown("### 👤 Mi Perfil")
 
 avatar_path = usr.get("avatar", "")
@@ -404,7 +419,7 @@ if avatar_path and os.path.exists(avatar_path):
     st.sidebar.image(avatar_path, width=105)
 else:
     st.sidebar.markdown("""
-        <div style='width:80px; height:80px; border-radius:50%; background:#a8ddd8; border:2px solid #4a8d86; display:flex; align-items:center; justify-content:center; font-size:2.2rem; color:#0a2d2a; margin-bottom:10px;'>
+        <div style='width:80px; height:80px; border-radius:50%; background:#a2d2cc; border:2px solid #52948d; display:flex; align-items:center; justify-content:center; font-size:2.2rem; color:#061e1b; margin-bottom:10px;'>
             👤
         </div>
     """, unsafe_allow_html=True)
@@ -430,13 +445,15 @@ if st.sidebar.button("🚪 Cerrar Sesión", use_container_width=True):
     st.session_state.usuario_clave = None
     st.rerun()
 
+# --- ENCABEZADO SUPERIOR CON RELOJ ---
 col_head_title, col_head_clock = st.columns([1.2, 1])
 with col_head_title:
-    st.markdown("<h1 style='color:#0a2d2a !important; margin:0;'>⚡ Centro de Gestión & Analítica</h1>", unsafe_allow_html=True)
-    st.markdown("<p style='color:#0d3b37; margin-top:4px;'>Plataforma colaborativa multi-formato con procesamiento inteligente.</p>", unsafe_allow_html=True)
+    st.markdown("<h1 style='color:#061e1b !important; margin:0;'>⚡ Centro de Gestión & Analítica</h1>", unsafe_allow_html=True)
+    st.markdown("<p style='color:#061e1b; margin-top:4px;'>Plataforma colaborativa multi-formato con procesamiento inteligente.</p>", unsafe_allow_html=True)
 with col_head_clock:
     renderizar_reloj_chile()
 
+# --- NAVEGACIÓN MODULAR POR PESTAÑAS ---
 titulos_pestanas = ["📊 Datasets & Archivos", "📂 Intervención", "📄 Informes Compartidos"]
 if es_admin:
     titulos_pestanas.append("👥 Gestión de Usuarios")
@@ -450,7 +467,7 @@ with pestanas_principales[0]:
     st.markdown("""
         <div class='modern-card'>
             <h3 style='margin:0;'>📊 Repositorio de Datasets</h3>
-            <p style='margin:0; color:#0a2d2a;'>Suba, visualice y edite hojas de cálculo en ventanas independientes.</p>
+            <p style='margin:0; color:#061e1b;'>Suba, visualice y edite hojas de cálculo en ventanas independientes.</p>
         </div>
     """, unsafe_allow_html=True)
     
@@ -527,7 +544,7 @@ with pestanas_principales[1]:
     st.markdown("""
         <div class='modern-card'>
             <h3 style='margin:0;'>📂 Módulo de Intervención</h3>
-            <p style='margin:0; color:#0a2d2a;'>Soporte y resúmenes automáticos para Documentos, Imágenes y Audios (M4A/MP3/WAV).</p>
+            <p style='margin:0; color:#061e1b;'>Soporte y resúmenes automáticos para Documentos, Imágenes y Audios (M4A/MP3/WAV).</p>
         </div>
     """, unsafe_allow_html=True)
     
@@ -654,7 +671,7 @@ with pestanas_principales[2]:
     st.markdown("""
         <div class='modern-card'>
             <h3 style='margin:0;'>📄 Informes Compartidos</h3>
-            <p style='margin:0; color:#0a2d2a;'>Generación y repositorio colaborativo con exportación en formato Carta.</p>
+            <p style='margin:0; color:#061e1b;'>Generación y repositorio colaborativo con exportación en formato Carta.</p>
         </div>
     """, unsafe_allow_html=True)
     
@@ -752,10 +769,10 @@ with pestanas_principales[2]:
                         <title>{titulo_inf}</title>
                         <style>
                             @page {{ size: letter portrait; margin: 25mm; }}
-                            body {{ font-family: 'Segoe UI', Arial, sans-serif; color: #0a2d2a; padding: 20px; background-color: #8acbc5; }}
-                            .header {{ border-bottom: 2px solid #4a8d86; padding-bottom: 8px; margin-bottom: 20px; }}
-                            .title {{ font-size: 20pt; font-weight: bold; color: #0a2d2a; }}
-                            .meta {{ font-size: 10pt; color: #4a8d86; margin-top: 4px; }}
+                            body {{ font-family: 'Segoe UI', Arial, sans-serif; color: #061e1b; padding: 20px; background-color: #73b5ae; }}
+                            .header {{ border-bottom: 2px solid #3d7973; padding-bottom: 8px; margin-bottom: 20px; }}
+                            .title {{ font-size: 20pt; font-weight: bold; color: #061e1b; }}
+                            .meta {{ font-size: 10pt; color: #061e1b; margin-top: 4px; }}
                             .body {{ font-size: 11pt; line-height: 1.6; white-space: pre-wrap; }}
                         </style>
                     </head>
@@ -785,7 +802,7 @@ if es_admin:
         st.markdown("""
             <div class='modern-card'>
                 <h3 style='margin:0;'>👥 Gestión de Usuarios y Permisos</h3>
-                <p style='margin:0; color:#0a2d2a;'>Control centralizado de cuentas accesible exclusivamente por Administradores.</p>
+                <p style='margin:0; color:#061e1b;'>Control centralizado de cuentas accesible exclusivamente por Administradores.</p>
             </div>
         """, unsafe_allow_html=True)
         
@@ -849,3 +866,4 @@ if es_admin:
                         db["usuarios"][u_k]["permiso_eliminar"] = val_d
                         guardar_estado(db)
             st.markdown("---")
+    
