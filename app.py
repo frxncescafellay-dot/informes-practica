@@ -33,10 +33,10 @@ for d in [DIR_BASE, DIR_DATASETS, DIR_INTERVENCION, DIR_AVATARS]:
 
 MODELO_GEMINI = "gemini-3.6-flash"
 
-# --- PALETA INSPIRADA EN NEURO (DEEP TEAL + SOFT AQUA + ACCENT CORAL - ZERO WHITE) ---
+# --- ESTILOS VISUALES TEAL SUAVE INTEGRAL (SIN NEGRO NI BLANCO PURO) ---
 st.markdown("""
 <style>
-    /* Fondo principal: Teal Profundo / Verde Azulado de Neuro */
+    /* Fondo principal: Teal Profundo */
     .stApp {
         background: radial-gradient(circle at 50% 30%, #007f8c 0%, #005f69 55%, #003e45 100%) !important;
         color: #001e28;
@@ -50,7 +50,7 @@ st.markdown("""
         letter-spacing: -0.5px;
     }
     
-    /* Barra lateral en Teal Medio */
+    /* Barra lateral */
     section[data-testid="stSidebar"] {
         background-color: #5c9e9b !important;
         border-right: 2px solid #3d7976 !important;
@@ -60,7 +60,7 @@ st.markdown("""
         font-weight: 600;
     }
 
-    /* Contenedores y Tarjetas en Aqua Glaciar Suave */
+    /* Tarjetas y Contenedores */
     .modern-card {
         background: #83c5be !important;
         border: 1.5px solid #63a9a2 !important;
@@ -70,7 +70,28 @@ st.markdown("""
         box-shadow: 0 8px 20px rgba(0, 30, 40, 0.25);
     }
 
-    /* Cuadros de entrada de datos (Inputs, TextAreas, PIN) */
+    /* Desplegables (Expanders): corrección de barra negra superior */
+    div[data-testid="stExpander"] {
+        background-color: #83c5be !important;
+        border: 1.5px solid #63a9a2 !important;
+        border-radius: 10px !important;
+    }
+    div[data-testid="stExpander"] summary {
+        background-color: #5c9e9b !important;
+        color: #001e28 !important;
+        border-radius: 8px !important;
+        font-weight: 750 !important;
+    }
+    div[data-testid="stExpander"] summary * {
+        color: #001e28 !important;
+        font-weight: 750 !important;
+    }
+    div[data-testid="stExpander"] div[role="region"] {
+        background-color: #83c5be !important;
+        color: #001e28 !important;
+    }
+
+    /* Campos de texto y entradas */
     input[type="text"], 
     input[type="password"], 
     textarea {
@@ -90,7 +111,7 @@ st.markdown("""
         box-shadow: 0 0 0 3px rgba(231, 111, 81, 0.3) !important;
     }
 
-    /* Selectores desplegables */
+    /* Selectores */
     div[data-baseweb="select"] > div {
         background-color: #a5d8d3 !important;
         color: #001e28 !important;
@@ -102,35 +123,49 @@ st.markdown("""
         font-weight: 600 !important;
     }
 
-    /* Zona de carga de archivos (Uploader) */
+    /* Zona de carga de archivos (Uploader): corrección de botón negro */
     div[data-testid="stFileUploader"] {
         background-color: #83c5be !important;
         border: 2px dashed #005f69 !important;
         border-radius: 12px !important;
         padding: 12px !important;
     }
-    div[data-testid="stFileUploader"] * {
-        color: #001e28 !important;
-    }
     div[data-testid="stFileUploader"] section {
         background-color: #83c5be !important;
     }
-
-    /* Tablas de datos Excel y Editor de Datos */
-    div[data-testid="stDataFrame"], 
-    div[data-testid="stDataEditor"] {
-        background-color: #83c5be !important;
-        border: 1.5px solid #3d7976 !important;
-        border-radius: 10px !important;
-        padding: 6px !important;
-        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15) !important;
+    div[data-testid="stFileUploader"] section * {
+        color: #001e28 !important;
     }
-    div[data-testid="stDataFrame"] *, 
-    div[data-testid="stDataEditor"] * {
+    div[data-testid="stFileUploader"] button {
+        background-color: #4a8b88 !important;
+        color: #001e28 !important;
+        border: 1.5px solid #2b5f5c !important;
+        font-weight: 750 !important;
+    }
+    div[data-testid="stFileUploader"] button * {
         color: #001e28 !important;
     }
 
-    /* Botones primarios (Tono Coral Neuro) */
+    /* Tablas de datos Excel / Data Editor: corrección de fondo negro */
+    div[data-testid="stDataFrame"], 
+    div[data-testid="stDataEditor"],
+    div[data-testid="stDataFrame"] > div,
+    div[data-testid="stDataEditor"] > div {
+        background-color: #83c5be !important;
+        border: 1.5px solid #3d7976 !important;
+        border-radius: 10px !important;
+    }
+    
+    /* Celdas del canvas de Glide Data Grid (Excel de Streamlit) */
+    .glide-data-grid,
+    .gdg-container,
+    div[data-testid="stDataFrame"] canvas,
+    div[data-testid="stDataEditor"] canvas {
+        filter: invert(0.88) hue-rotate(180deg) saturate(1.8) contrast(1.1) !important;
+        border-radius: 8px !important;
+    }
+
+    /* Botones primarios (Tono Coral) */
     .stButton>button {
         background: #e76f51 !important;
         color: #001e28 !important;
@@ -149,7 +184,7 @@ st.markdown("""
         transform: translateY(-1px);
     }
     
-    /* Botones de eliminación / secundarios */
+    /* Botones secundarios (Borrar / Eliminar) */
     div[data-testid="stBaseButton-secondary"] button {
         background: #e63946 !important;
         color: #ffffff !important;
@@ -160,7 +195,7 @@ st.markdown("""
         color: #ffffff !important;
     }
 
-    /* Pestañas de navegación superiores */
+    /* Pestañas de navegación */
     button[data-baseweb="tab"] {
         background-color: #5c9e9b !important;
         color: #001e28 !important;
@@ -174,13 +209,6 @@ st.markdown("""
         background-color: #83c5be !important;
         color: #001e28 !important;
         border-bottom: 3.5px solid #e76f51 !important;
-    }
-
-    /* Expanders */
-    div[data-testid="stExpander"] {
-        background-color: #83c5be !important;
-        border: 1.5px solid #63a9a2 !important;
-        border-radius: 10px !important;
     }
 
     label, p, span {
