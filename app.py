@@ -24,10 +24,11 @@ st.set_page_config(
 DIR_BASE = "almacen_datos"
 DIR_DATASETS = os.path.join(DIR_BASE, "datasets")
 DIR_MATERIAL = os.path.join(DIR_BASE, "material")
+DIR_INFORMES = os.path.join(DIR_BASE, "informes_guardados")
 DIR_AVATARS = os.path.join(DIR_BASE, "avatares")
 FILE_DB = os.path.join(DIR_BASE, "base_datos.json")
 
-for d in [DIR_BASE, DIR_DATASETS, DIR_MATERIAL, DIR_AVATARS]:
+for d in [DIR_BASE, DIR_DATASETS, DIR_MATERIAL, DIR_INFORMES, DIR_AVATARS]:
     os.makedirs(d, exist_ok=True)
 
 MODELO_WHISPER = "whisper-large-v3"
@@ -331,6 +332,15 @@ st.markdown("""
         font-weight: 800;
         border: 1.5px solid #9e3610;
     }
+
+    .login-container-teal {
+        background: #89c7c0 !important;
+        border: 2px solid #52948d !important;
+        border-radius: 18px;
+        padding: 36px 32px;
+        box-shadow: 0 10px 30px rgba(13, 44, 41, 0.2);
+        margin-top: 40px;
+    }
 </style>
 """, unsafe_allow_html=True)
 
@@ -395,11 +405,25 @@ def renderizar_reloj_chile():
     """
     components.html(html_reloj, height=105)
 
-# --- GESTOR DE PERSISTENCIA Y RESTAURACION ---
+# --- GESTOR DE PERSISTENCIA Y RESTAURACION ANTI-HIBERNACION ---
 def restaurar_repositorio_local(data):
-    rutas_existentes = {item.get("ruta") for item in data.get("material", []) if item.get("ruta")}
-    
-    # Migrar carpeta legacy si existia
+    # 1. Recuperar Datasets
+    if os.path.exists(DIR_DATASETS):
+        for arch in os.listdir(DIR_DATASETS):
+            ruta_f = os.path.join(DIR_DATASETS, arch)
+            if os.path.isfile(ruta_f):
+                partes = arch.split("_", 1)
+                titulo_ds = partes[1].rsplit(".", 1)[0] if len(partes) > 1 else arch
+                if titulo_ds not in data["datasets"]:
+                    data["datasets"][titulo_ds] = {
+                        "titulo": titulo_ds,
+                        "autor": "Archivo Restaurado",
+                        "fecha": datetime.now().strftime("%Y-%m-%d %H:%M"),
+                        "ruta": ruta_f
+                    }
+
+    # 2. Recuperar Materiales (audios, documentos, imagenes)
+    rutas_mat = {item.get("ruta") for item in data.get("material", []) if item.get("ruta")}
     dir_legacy = os.path.join(DIR_BASE, "intervencion")
     if os.path.exists(dir_legacy):
         for f in os.listdir(dir_legacy):
@@ -407,11 +431,11 @@ def restaurar_repositorio_local(data):
             destino = os.path.join(DIR_MATERIAL, f)
             if not os.path.exists(destino):
                 os.rename(origen, destino)
-    
+                
     if os.path.exists(DIR_MATERIAL):
         for arch in os.listdir(DIR_MATERIAL):
             ruta_f = os.path.join(DIR_MATERIAL, arch)
-            if ruta_f not in rutas_existentes and os.path.isfile(ruta_f):
+            if ruta_f not in rutas_mat and os.path.isfile(ruta_f):
                 partes = arch.split("_", 1)
                 nombre_orig = partes[1] if len(partes) > 1 else arch
                 ext = arch.split(".")[-1].lower()
@@ -422,17 +446,31 @@ def restaurar_repositorio_local(data):
                     "autor": "Sistema / Restauración",
                     "fecha": datetime.now().strftime("%Y-%m-%d %H:%M"),
                     "ruta": ruta_f,
-                    "resumen": "Archivo físico recuperado automáticamente del almacenamiento local."
+                    "resumen": "Archivo físico recuperado automáticamente del almacenamiento persistente."
                 })
+
+    # 3. Recuperar Informes generados físicamente
+    if os.path.exists(DIR_INFORMES):
+        titulos_inf = {inf.get("titulo") for inf in data.get("informes", [])}
+        for arch in os.listdir(DIR_INFORMES):
+            if arch.endswith(".json"):
+                ruta_inf = os.path.join(DIR_INFORMES, arch)
+                try:
+                    with open(ruta_inf, "r", encoding="utf-8") as fi:
+                        inf_obj = json.load(fi)
+                        if inf_obj.get("titulo") not in titulos_inf:
+                            data["informes"].append(inf_obj)
+                except Exception:
+                    pass
     return data
 
 def cargar_estado():
     data_defecto = {
         "usuarios": {
-            "admin1": {
+            "Francesca Fellay": {
                 "nombre": "Francesca Fellay",
                 "rol": "Admin",
-                "pin": "1234",
+                "pin": "1953",
                 "permiso_editar": True,
                 "permiso_eliminar": True,
                 "avatar": ""
@@ -461,25 +499,25 @@ def cargar_estado():
             data = json.load(f)
         except Exception:
             data = data_defecto
-    
-    # Migracion de clave 'intervencion' a 'material'
-    if "intervencion" in data:
-        if "material" not in data:
-            data["material"] = data.pop("intervencion")
-        else:
-            data["material"].extend(data.pop("intervencion"))
-    elif "material" not in data:
-        data["material"] = []
 
+    if "material" not in data:
+        data["material"] = data.pop("intervencion", [])
+    if "datasets" not in data:
+        data["datasets"] = {}
+    if "informes" not in data:
+        data["informes"] = []
     if "usuarios" not in data:
         data["usuarios"] = {}
-    
-    # Garantizar usuarios base
-    if "admin1" not in data["usuarios"]:
-        data["usuarios"]["admin1"] = data_defecto["usuarios"]["admin1"]
-    else:
-        data["usuarios"]["admin1"]["nombre"] = "Francesca Fellay"
-        
+
+    # Asegurar usuarios requeridos
+    data["usuarios"]["Francesca Fellay"] = {
+        "nombre": "Francesca Fellay",
+        "rol": "Admin",
+        "pin": "1953",
+        "permiso_editar": True,
+        "permiso_eliminar": True,
+        "avatar": data["usuarios"].get("Francesca Fellay", {}).get("avatar", "")
+    }
     data["usuarios"]["gerente"] = {
         "nombre": "Gerencia General",
         "rol": "Admin",
@@ -580,26 +618,41 @@ if "autenticado" not in st.session_state:
     st.session_state.usuario_clave = None
 
 if not st.session_state.autenticado:
-    st.markdown("<h1 style='text-align:center; color:#061e1b !important; margin-top:35px;'>🔐 Acceso a la Plataforma</h1>", unsafe_allow_html=True)
-    st.markdown("<p style='text-align:center; color:#061e1b;'>Ingrese sus credenciales registradas</p>", unsafe_allow_html=True)
     c1, c2, c3 = st.columns([1, 1.4, 1])
     with c2:
+        st.markdown("""
+        <div class='login-container-teal'>
+            <div style='text-align: center; margin-bottom: 22px;'>
+                <div style='font-size: 3rem; margin-bottom: 4px;'>⚡</div>
+                <h2 style='margin: 0; color: #061e1b !important; font-size: 1.8rem;'>Acceso a la Plataforma</h2>
+                <p style='margin: 4px 0 0 0; color: #061e1b; font-size: 0.95rem; font-weight: 700;'>Gestión & Analítica con Groq IA</p>
+            </div>
+        """, unsafe_allow_html=True)
+        
         with st.form("login_form"):
-            u_in = st.text_input("Usuario")
-            p_in = st.text_input("PIN / Contraseña", type="password")
+            st.markdown("<p style='color:#061e1b; font-weight:750; margin-bottom:4px;'>Usuario:</p>", unsafe_allow_html=True)
+            u_in = st.text_input("Usuario", label_visibility="collapsed")
+            
+            st.markdown("<p style='color:#061e1b; font-weight:750; margin-bottom:4px; margin-top:12px;'>PIN / Contraseña:</p>", unsafe_allow_html=True)
+            p_in = st.text_input("PIN", type="password", label_visibility="collapsed")
+            
+            st.markdown("<div style='margin-top: 18px;'></div>", unsafe_allow_html=True)
             if st.form_submit_button("Iniciar Sesión", use_container_width=True):
-                if u_in in db["usuarios"] and db["usuarios"][u_in]["pin"] == p_in:
+                u_clean = u_in.strip()
+                if u_clean in db["usuarios"] and db["usuarios"][u_clean]["pin"] == p_in:
                     st.session_state.autenticado = True
-                    st.session_state.usuario_clave = u_in
+                    st.session_state.usuario_clave = u_clean
                     st.rerun()
                 else:
-                    st.error("Credenciales incorrectas")
+                    st.error("Credenciales incorrectas. Verifique el usuario y el PIN ingresado.")
+                    
+        st.markdown("</div>", unsafe_allow_html=True)
     st.stop()
 
 # --- DATOS DEL USUARIO ACTUAL ---
 usr_key = st.session_state.usuario_clave
-usr = db["usuarios"].get(usr_key, {"nombre": "Invitado", "rol": "Usuario", "permiso_editar": False, "permiso_eliminar": False, "avatar": ""})
-es_admin = (usr.get("rol") == "Admin") or (usr_key in ["admin1", "gerente"])
+usr = db["usuarios"].get(usr_key, {"nombre": usr_key, "rol": "Admin", "permiso_editar": True, "permiso_eliminar": True, "avatar": ""})
+es_admin = (usr.get("rol") == "Admin") or (usr_key in ["Francesca Fellay", "gerente"])
 
 # --- BARRA LATERAL ---
 st.sidebar.markdown("### 👤 Mi Perfil")
@@ -875,14 +928,23 @@ REGLA OBLIGATORIA DE FORMATO:
 - Todo el texto analítico debe fluir con negritas y viñetas claras."""
                     try:
                         resp_txt = ejecutar_chat_groq(client, p_sys, p_user)
-                        db["informes"].append({
+                        
+                        nuevo_inf = {
                             "titulo": nom_i,
                             "autor": usr["nombre"],
                             "fecha": datetime.now().strftime("%Y-%m-%d %H:%M"),
                             "contenido": resp_txt
-                        })
+                        }
+                        
+                        db["informes"].append(nuevo_inf)
+                        
+                        # Respaldo físico individual del informe
+                        nom_inf_f = f"inf_{datetime.now().strftime('%Y%m%d_%H%M%S')}.json"
+                        with open(os.path.join(DIR_INFORMES, nom_inf_f), "w", encoding="utf-8") as fi_b:
+                            json.dump(nuevo_inf, fi_b, ensure_ascii=False, indent=2)
+                            
                         guardar_estado(db)
-                        st.success("Informe publicado.")
+                        st.success("Informe publicado y respaldado con éxito.")
                         st.rerun()
                     except Exception as err:
                         st.error(f"Error al generar informe: {err}")
@@ -1013,7 +1075,7 @@ if es_admin:
                 with col_u_inf:
                     st.markdown(f"**{u_d.get('nombre', '')}** (<span class='highlight-tag'>{u_k}</span>) — Rol: *{u_d.get('rol', '')}*", unsafe_allow_html=True)
                 
-                if u_k == "admin1":
+                if u_k == "Francesca Fellay":
                     st.caption("Administrador Principal (Cuenta protegida)")
                 else:
                     with col_u_e:
