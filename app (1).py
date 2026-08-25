@@ -7,8 +7,7 @@ import pandas as pd
 import streamlit as st
 import streamlit.components.v1 as components
 from PIL import Image
-from google import genai
-from google.genai import types
+from groq import Groq
 import pypdf
 from docx import Document
 from pptx import Presentation
@@ -29,9 +28,9 @@ DIR_AVATARS = os.path.join(DIR_BASE, "avatares")
 FILE_DB = os.path.join(DIR_BASE, "base_datos.json")
 
 for d in [DIR_BASE, DIR_DATASETS, DIR_INTERVENCION, DIR_AVATARS]:
-    os.makedirs(d, exist_ok=True)
+    os.makedirs(d, exist_ok=True)[cite: 7]
 
-MODELO_GEMINI = "gemini-3.6-flash"
+MODELO_WHISPER = "whisper-large-v3"[cite: 3, 6]
 
 # --- PALETA TEAL + NARANJA TERRACOTA (CERO ELEMENTOS NEGROS) ---
 st.markdown("""
@@ -351,7 +350,7 @@ st.markdown("""
         border: 1.5px solid #9e3610;
     }
 </style>
-""", unsafe_allow_html=True)
+""", unsafe_allow_html=True)[cite: 7]
 
 # --- RELOJ DUAL NARANJA ---
 def renderizar_reloj_chile():
@@ -412,7 +411,7 @@ def renderizar_reloj_chile():
         actualizarReloj();
     </script>
     """
-    components.html(html_reloj, height=105)
+    components.html(html_reloj, height=105)[cite: 7]
 
 # --- GESTOR DE PERSISTENCIA ---
 def cargar_estado():
@@ -472,21 +471,62 @@ def cargar_estado():
         "avatar": ""
     }
     guardar_estado(data)
-    return data
+    return data[cite: 7]
 
 def guardar_estado(data):
     with open(FILE_DB, "w", encoding="utf-8") as f:
-        json.dump(data, f, ensure_ascii=False, indent=2)
+        json.dump(data, f, ensure_ascii=False, indent=2)[cite: 7]
 
-db = cargar_estado()
+db = cargar_estado()[cite: 7]
 
-# --- CLIENTE GENAI ---
-API_KEY_GEMINI = os.environ.get("GEMINI_API_KEY", "")
+# --- CLIENTE GROQ IA ---
+def obtener_api_key_groq():
+    if "GROQ_API_KEY" in st.secrets:
+        return st.secrets["GROQ_API_KEY"][cite: 6]
+    return os.environ.get("GROQ_API_KEY", "")[cite: 6]
+
+API_KEY_GROQ = obtener_api_key_groq()[cite: 6]
 
 def obtener_cliente_ia():
-    if not API_KEY_GEMINI:
+    if not API_KEY_GROQ:
         return None
-    return genai.Client(api_key=API_KEY_GEMINI)
+    try:
+        return Groq(api_key=API_KEY_GROQ)[cite: 6]
+    except Exception:
+        return None
+
+def ejecutar_chat_groq(client, prompt_sistema, prompt_usuario):
+    modelos_candidatos = [
+        "llama-3.3-70b-versatile",
+        "llama-3.1-70b-versatile",
+        "llama3-70b-8192",
+        "mixtral-8x7b-32768",
+        "gemma2-9b-it"
+    ][cite: 6]
+    try:
+        lista_api = [m.id for m in client.models.list().data if "whisper" not in m.id.lower() and "guard" not in m.id.lower()][cite: 6]
+    except Exception:
+        lista_api = [][cite: 6]
+
+    candidatos = [m for m in modelos_candidatos if m in lista_api] + lista_api + modelos_candidatos[cite: 6]
+    candidatos = list(dict.fromkeys(candidatos))[cite: 6]
+
+    ultimo_error = None
+    for model_id in candidatos:
+        try:
+            resp = client.chat.completions.create(
+                model=model_id,
+                messages=[
+                    {"role": "system", "content": prompt_sistema},
+                    {"role": "user", "content": prompt_usuario}
+                ],
+                temperature=0.3
+            )[cite: 6]
+            return resp.choices[0].message.content[cite: 6]
+        except Exception as e:
+            ultimo_error = e
+            continue
+    raise Exception(f"No fue posible conectar con los modelos de Groq. Detalle: {ultimo_error}")[cite: 6]
 
 # --- EXTRACCION DE TEXTO ---
 def extraer_texto_archivo(ruta, extension):
@@ -512,12 +552,12 @@ def extraer_texto_archivo(ruta, extension):
             texto = f"Estadisticas:\n{df_tmp.describe(include='all').to_string()}\nPrimeras filas:\n{df_tmp.head(10).to_string()}"
     except Exception as e:
         texto = f"Error al extraer texto: {e}"
-    return texto[:8000]
+    return texto[:8000][cite: 7]
 
 # --- CONTROL DE ACCESO (LOGIN) ---
 if "autenticado" not in st.session_state:
     st.session_state.autenticado = False
-    st.session_state.usuario_clave = None
+    st.session_state.usuario_clave = None[cite: 7]
 
 if not st.session_state.autenticado:
     st.markdown("<h1 style='text-align:center; color:#061e1b !important; margin-top:35px;'>🔐 Acceso a la Plataforma</h1>", unsafe_allow_html=True)
@@ -534,12 +574,12 @@ if not st.session_state.autenticado:
                     st.rerun()
                 else:
                     st.error("Credenciales incorrectas")
-    st.stop()
+    st.stop()[cite: 7]
 
 # --- DATOS DEL USUARIO ACTUAL ---
 usr_key = st.session_state.usuario_clave
 usr = db["usuarios"].get(usr_key, {"nombre": "Invitado", "rol": "Usuario", "permiso_editar": False, "permiso_eliminar": False, "avatar": ""})
-es_admin = (usr.get("rol") == "Admin") or (usr_key in ["admin1", "gerente"])
+es_admin = (usr.get("rol") == "Admin") or (usr_key in ["admin1", "gerente"])[cite: 7]
 
 # --- BARRA LATERAL ---
 st.sidebar.markdown("### 👤 Mi Perfil")
@@ -569,22 +609,22 @@ st.sidebar.markdown("---")
 if st.sidebar.button("🚪 Cerrar Sesion", use_container_width=True):
     st.session_state.autenticado = False
     st.session_state.usuario_clave = None
-    st.rerun()
+    st.rerun()[cite: 7]
 
 # --- ENCABEZADO SUPERIOR CON RELOJ ---
 col_head_title, col_head_clock = st.columns([1.2, 1])
 with col_head_title:
     st.markdown("<h1 style='color:#061e1b !important; margin:0;'>⚡ Centro de Gestion & Analitica</h1>", unsafe_allow_html=True)
-    st.markdown("<p style='color:#061e1b; margin-top:4px;'>Plataforma colaborativa multi-formato con procesamiento inteligente.</p>", unsafe_allow_html=True)
+    st.markdown("<p style='color:#061e1b; margin-top:4px;'>Plataforma colaborativa multi-formato con procesamiento inteligente mediante Groq IA.</p>", unsafe_allow_html=True)
 with col_head_clock:
-    renderizar_reloj_chile()
+    renderizar_reloj_chile()[cite: 7]
 
 # --- NAVEGACION POR PESTANAS ---
 titulos_pestanas = ["📊 Datasets & Archivos", "📂 Intervencion", "📄 Informes Compartidos"]
 if es_admin:
     titulos_pestanas.append("👥 Gestion de Usuarios")
 
-pestanas_principales = st.tabs(titulos_pestanas)
+pestanas_principales = st.tabs(titulos_pestanas)[cite: 7]
 
 # ==========================================
 # 1. DATASETS EXCEL
@@ -656,13 +696,13 @@ with pestanas_principales[0]:
                             st.success("Dataset eliminado.")
                             st.rerun()
                 else:
-                    st.error("Archivo fisico no encontrado.")
+                    st.error("Archivo fisico no encontrado.")[cite: 7]
 
 # ==========================================
 # 2. INTERVENCION MULTI-FORMATO
 # ==========================================
 with pestanas_principales[1]:
-    st.markdown("""<div class='modern-card'><h3 style='margin:0;'>📂 Modulo de Intervencion</h3><p style='margin:0; color:#061e1b;'>Soporte y resumenes automaticos para Documentos, Imagenes y Audios (M4A/MP3/WAV).</p></div>""", unsafe_allow_html=True)
+    st.markdown("""<div class='modern-card'><h3 style='margin:0;'>📂 Modulo de Intervencion</h3><p style='margin:0; color:#061e1b;'>Soporte y resumenes automaticos con Groq para Documentos, Imagenes y Audios (M4A/MP3/WAV).</p></div>""", unsafe_allow_html=True)
     
     with st.form("form_intervencion"):
         tit_int = st.text_input("Titulo descriptivo del material:")
@@ -686,36 +726,33 @@ with pestanas_principales[1]:
                     
                     resumen_txt = "Archivo guardado."
                     if client:
-                        with st.spinner(f"Analizando {a.name} con Gemini 3.6 Flash..."):
+                        with st.spinner(f"Analizando {a.name} con Groq IA..."):
                             try:
                                 if ext in ["m4a", "mp3", "wav"]:
-                                    mime_map = {"m4a": "audio/mp4", "mp3": "audio/mp3", "wav": "audio/wav"}
                                     with open(ruta_guardada, "rb") as f_aud:
                                         audio_bytes = f_aud.read()
-                                    resp = client.models.generate_content(
-                                        model=MODELO_GEMINI,
-                                        contents=[
-                                            types.Part.from_bytes(data=audio_bytes, mime_type=mime_map.get(ext, "audio/mp4")),
-                                            "Sintetiza los puntos clave tratados en este audio, acuerdos y diagnostico para intervencion. Usa parrafos claros o vinetas Markdown estandar, nunca bloques de codigo o diagramas ASCII."
-                                        ]
-                                    )
-                                    resumen_txt = resp.text
-                                elif ext in ["jpg", "jpeg", "png"]:
-                                    img = Image.open(ruta_guardada)
-                                    resp = client.models.generate_content(
-                                        model=MODELO_GEMINI,
-                                        contents=["Describe y resume los elementos clave de esta imagen para un informe de intervencion:", img]
-                                    )
-                                    resumen_txt = resp.text
+                                    audio_buffer = io.BytesIO(audio_bytes)
+                                    audio_buffer.name = f"temp_audio.{ext}"
+                                    
+                                    transcripcion = client.audio.transcriptions.create(
+                                        model=MODELO_WHISPER,
+                                        file=audio_buffer,
+                                        language="es"
+                                    )[cite: 6]
+                                    texto_audio = transcripcion.text[cite: 6]
+                                    
+                                    p_sys = "Eres un especialista senior en diagnostico e intervencion social/academica. Sintetiza con precision en espanol latinoamericano."
+                                    p_user = f"A partir de la siguiente transcripcion de audio ({a.name}), sintetiza los puntos clave tratados, acuerdos y diagnostico para intervencion. Usa parrafos claros o vinetas Markdown estandar, nunca diagramas ASCII:\n\n{texto_audio}"
+                                    resumen_txt = ejecutar_chat_groq(client, p_sys, p_user)
                                 elif ext in ["pdf", "docx", "pptx", "xlsx", "xls"]:
                                     t_doc = extraer_texto_archivo(ruta_guardada, ext)
-                                    resp = client.models.generate_content(
-                                        model=MODELO_GEMINI,
-                                        contents=f"Elabora un resumen y diagnostico clave de este documento ({a.name}):\n\n{t_doc}\n\nUsa vinetas Markdown estandar."
-                                    )
-                                    resumen_txt = resp.text
+                                    p_sys = "Eres un especialista senior en analisis documental e intervencion."
+                                    p_user = f"Elabora un resumen y diagnostico clave del siguiente documento ({a.name}):\n\n{t_doc}\n\nUsa vinetas Markdown estandar con conceptos clave en negrita."
+                                    resumen_txt = ejecutar_chat_groq(client, p_sys, p_user)
+                                elif ext in ["jpg", "jpeg", "png"]:
+                                    resumen_txt = f"Imagen registrada ({a.name}). Visualizacion disponible en la pestana multimedia."
                                 elif ext == "mp4":
-                                    resumen_txt = "Video registrado (reproduccion multimedia disponible)."
+                                    resumen_txt = f"Video registrado ({a.name}). Reproduccion multimedia disponible."
                             except Exception as e:
                                 resumen_txt = f"Archivo guardado. Diagnostico no generado: {e}"
                     
@@ -778,7 +815,7 @@ with pestanas_principales[1]:
                         st.error("Archivo fisico no encontrado.")
                 with t_res:
                     st.markdown(resumen_arc)
-                st.markdown("---")
+                st.markdown("---")[cite: 7]
 
 # ==========================================
 # 3. INFORMES COMPARTIDOS
@@ -786,7 +823,7 @@ with pestanas_principales[1]:
 with pestanas_principales[2]:
     st.markdown("""<div class='modern-card'><h3 style='margin:0;'>📄 Informes Compartidos</h3><p style='margin:0; color:#061e1b;'>Generacion y repositorio colaborativo con exportacion en formato Carta.</p></div>""", unsafe_allow_html=True)
     
-    with st.expander("🤖 Redactar Nuevo Informe con IA", expanded=False):
+    with st.expander("🤖 Redactar Nuevo Informe con IA (Groq)", expanded=False):
         nom_i = st.text_input("Titulo del Informe:")
         enf_i = st.selectbox("Enfoque:", ["Resumen Ejecutivo", "Diagnostico Tecnico", "Evaluacion Estrategica"])
         ins_i = st.text_area("Instrucciones complementarias:")
@@ -796,13 +833,13 @@ with pestanas_principales[2]:
             if not nom_i.strip():
                 st.error("Ingrese un titulo para el informe.")
             elif not client:
-                st.error("API Key de Gemini no configurada.")
+                st.error("API Key de Groq (GROQ_API_KEY) no configurada en Secrets.")
             else:
-                with st.spinner("Redactando informe consolidado con Gemini 3.6 Flash..."):
+                with st.spinner("Redactando informe consolidado con Groq IA..."):
                     resumenes_int = "\n".join([f"- {x.get('nombre_original', 'Archivo')}: {x.get('resumen', '')}" for x in db["intervencion"]])
                     
-                    prompt = f"""Actua como especialista analitico senior.
-Genera un informe estructurado profesional con enfoque '{enf_i}'.
+                    p_sys = "Actua como especialista analitico senior. Genera informes estructurados de excelencia en espanol latinoamericano."
+                    p_user = f"""Genera un informe estructurado profesional con enfoque '{enf_i}'.
 Titulo: {nom_i}
 Autor solicitante: {usr['nombre']}
 Instrucciones: {ins_i}
@@ -817,15 +854,12 @@ REGLA OBLIGATORIA DE FORMATO:
 - Las tablas deben ser tablas Markdown renderizables reales.
 - Todo el texto analitico debe fluir con negritas y vinetas claras."""
                     try:
-                        resp = client.models.generate_content(
-                            model=MODELO_GEMINI,
-                            contents=prompt
-                        )
+                        resp_txt = ejecutar_chat_groq(client, p_sys, p_user)
                         db["informes"].append({
                             "titulo": nom_i,
                             "autor": usr["nombre"],
                             "fecha": datetime.now().strftime("%Y-%m-%d %H:%M"),
-                            "contenido": resp.text
+                            "contenido": resp_txt
                         })
                         guardar_estado(db)
                         st.success("Informe publicado.")
@@ -906,7 +940,7 @@ REGLA OBLIGATORIA DE FORMATO:
                         mime="text/html",
                         key=f"doc_dl_{idx_inf}"
                     )
-                st.markdown("---")
+                st.markdown("---")[cite: 7]
 
 # ==========================================
 # 4. GESTION DE USUARIOS (SOLO ADMIN)
@@ -956,24 +990,4 @@ if es_admin:
             with st.container():
                 col_u_inf, col_u_e, col_u_d, col_u_del = st.columns([2, 1, 1, 1])
                 with col_u_inf:
-                    st.markdown(f"**{u_d.get('nombre', '')}** (<span class='highlight-tag'>{u_k}</span>) — Rol: *{u_d.get('rol', '')}*", unsafe_allow_html=True)
-                
-                if u_k == "admin1":
-                    st.caption("Administrador Principal (Cuenta protegida)")
-                else:
-                    with col_u_e:
-                        val_e = st.checkbox("Editar", value=u_d.get("permiso_editar", False), key=f"pe_{u_k}")
-                    with col_u_d:
-                        val_d = st.checkbox("Eliminar", value=u_d.get("permiso_eliminar", False), key=f"pd_{u_k}")
-                    with col_u_del:
-                        if st.button("🗑️ Eliminar", key=f"del_user_{u_k}", type="secondary"):
-                            del db["usuarios"][u_k]
-                            guardar_estado(db)
-                            st.success(f"Usuario {u_k} eliminado.")
-                            st.rerun()
-                            
-                    if val_e != u_d.get("permiso_editar") or val_d != u_d.get("permiso_eliminar"):
-                        db["usuarios"][u_k]["permiso_editar"] = val_e
-                        db["usuarios"][u_k]["permiso_eliminar"] = val_d
-                        guardar_estado(db)
-            st.markdown("---")
+                    st.markdown(f"**{u_d.get('nombre', '')}** (<span class='highlight-tag'>{u_k}</span>) — Rol: *{u_d.get('rol',
