@@ -25,10 +25,11 @@ DIR_BASE = "almacen_datos"
 DIR_DATASETS = os.path.join(DIR_BASE, "datasets")
 DIR_MATERIAL = os.path.join(DIR_BASE, "material")
 DIR_INFORMES = os.path.join(DIR_BASE, "informes_guardados")
+DIR_USUARIOS = os.path.join(DIR_BASE, "usuarios_guardados")
 DIR_AVATARS = os.path.join(DIR_BASE, "avatares")
 FILE_DB = os.path.join(DIR_BASE, "base_datos.json")
 
-for d in [DIR_BASE, DIR_DATASETS, DIR_MATERIAL, DIR_INFORMES, DIR_AVATARS]:
+for d in [DIR_BASE, DIR_DATASETS, DIR_MATERIAL, DIR_INFORMES, DIR_USUARIOS, DIR_AVATARS]:
     os.makedirs(d, exist_ok=True)
 
 MODELO_WHISPER = "whisper-large-v3"
@@ -405,9 +406,30 @@ def renderizar_reloj_chile():
     """
     components.html(html_reloj, height=105)
 
-# --- GESTOR DE PERSISTENCIA Y RESTAURACION ANTI-HIBERNACION ---
+# --- GESTOR DE PERSISTENCIA Y RESTAURACION TOTAL (ANTI-HIBERNACION) ---
+def sincronizar_usuarios_fisicos(usuarios_dict):
+    # Respaldar cada usuario individualmente en disco
+    for u_k, u_data in usuarios_dict.items():
+        ruta_u_json = os.path.join(DIR_USUARIOS, f"{u_k}.json")
+        with open(ruta_u_json, "w", encoding="utf-8") as fu:
+            json.dump(u_data, fu, ensure_ascii=False, indent=2)
+
 def restaurar_repositorio_local(data):
-    # 1. Recuperar Datasets
+    # 1. Recuperar y Sincronizar Usuarios Creados
+    if os.path.exists(DIR_USUARIOS):
+        for arch in os.listdir(DIR_USUARIOS):
+            if arch.endswith(".json"):
+                u_login = arch.rsplit(".json", 1)[0]
+                ruta_uj = os.path.join(DIR_USUARIOS, arch)
+                try:
+                    with open(ruta_uj, "r", encoding="utf-8") as fuj:
+                        u_info = json.load(fuj)
+                        if u_login not in data["usuarios"]:
+                            data["usuarios"][u_login] = u_info
+                except Exception:
+                    pass
+
+    # 2. Recuperar Datasets
     if os.path.exists(DIR_DATASETS):
         for arch in os.listdir(DIR_DATASETS):
             ruta_f = os.path.join(DIR_DATASETS, arch)
@@ -422,7 +444,7 @@ def restaurar_repositorio_local(data):
                         "ruta": ruta_f
                     }
 
-    # 2. Recuperar Materiales (audios, documentos, imagenes)
+    # 3. Recuperar Materiales
     rutas_mat = {item.get("ruta") for item in data.get("material", []) if item.get("ruta")}
     dir_legacy = os.path.join(DIR_BASE, "intervencion")
     if os.path.exists(dir_legacy):
@@ -449,7 +471,7 @@ def restaurar_repositorio_local(data):
                     "resumen": "Archivo físico recuperado automáticamente del almacenamiento persistente."
                 })
 
-    # 3. Recuperar Informes generados físicamente
+    # 4. Recuperar Informes
     if os.path.exists(DIR_INFORMES):
         titulos_inf = {inf.get("titulo") for inf in data.get("informes", [])}
         for arch in os.listdir(DIR_INFORMES):
@@ -491,6 +513,7 @@ def cargar_estado():
     
     if not os.path.exists(FILE_DB):
         data = restaurar_repositorio_local(data_defecto)
+        sincronizar_usuarios_fisicos(data["usuarios"])
         guardar_estado(data)
         return data
         
@@ -509,15 +532,12 @@ def cargar_estado():
     if "usuarios" not in data:
         data["usuarios"] = {}
 
-    # Asegurar usuarios requeridos
-    data["usuarios"]["Francesca Fellay"] = {
-        "nombre": "Francesca Fellay",
-        "rol": "Admin",
-        "pin": "1953",
-        "permiso_editar": True,
-        "permiso_eliminar": True,
-        "avatar": data["usuarios"].get("Francesca Fellay", {}).get("avatar", "")
-    }
+    # Asegurar usuarios base
+    if "Francesca Fellay" not in data["usuarios"]:
+        data["usuarios"]["Francesca Fellay"] = data_defecto["usuarios"]["Francesca Fellay"]
+    else:
+        data["usuarios"]["Francesca Fellay"]["pin"] = "1953"
+        
     data["usuarios"]["gerente"] = {
         "nombre": "Gerencia General",
         "rol": "Admin",
@@ -528,10 +548,12 @@ def cargar_estado():
     }
     
     data = restaurar_repositorio_local(data)
+    sincronizar_usuarios_fisicos(data["usuarios"])
     guardar_estado(data)
     return data
 
 def guardar_estado(data):
+    sincronizar_usuarios_fisicos(data.get("usuarios", {}))
     with open(FILE_DB, "w", encoding="utf-8") as f:
         json.dump(data, f, ensure_ascii=False, indent=2)
 
@@ -867,6 +889,8 @@ with pestanas_principales[1]:
                         if st.button("🗑️ Borrar", key=f"del_mat_{idx}", type="secondary"):
                             if ruta_arc and os.path.exists(ruta_arc):
                                 os.remove(ruta_arc)
+                            if os.path.exists(os.path.join(DIR_USUARIOS, f"{nombre_arc}.json")):
+                                os.remove(os.path.join(DIR_USUARIOS, f"{nombre_arc}.json"))
                             db["material"].pop(idx)
                             guardar_estado(db)
                             st.success("Archivo eliminado.")
@@ -938,7 +962,6 @@ REGLA OBLIGATORIA DE FORMATO:
                         
                         db["informes"].append(nuevo_inf)
                         
-                        # Respaldo físico individual del informe
                         nom_inf_f = f"inf_{datetime.now().strftime('%Y%m%d_%H%M%S')}.json"
                         with open(os.path.join(DIR_INFORMES, nom_inf_f), "w", encoding="utf-8") as fi_b:
                             json.dump(nuevo_inf, fi_b, ensure_ascii=False, indent=2)
@@ -1059,13 +1082,12 @@ if es_admin:
                         "avatar": ""
                     }
                     guardar_estado(db)
-                    st.success(f"Usuario '{n_u}' registrado correctamente.")
+                    st.success(f"Usuario '{n_u}' registrado y respaldado correctamente.")
                     st.rerun()
 
         st.markdown("---")
         st.subheader("📜 Cuentas Registradas")
         
-        # Filtro estricto para mantener al usuario gerente completamente oculto
         usuarios_visibles = [k for k in list(db["usuarios"].keys()) if k != "gerente"]
         
         for u_k in usuarios_visibles:
@@ -1084,6 +1106,10 @@ if es_admin:
                         val_d = st.checkbox("Eliminar", value=u_d.get("permiso_eliminar", False), key=f"pd_{u_k}")
                     with col_u_del:
                         if st.button("🗑️ Eliminar", key=f"del_user_{u_k}", type="secondary"):
+                            # Eliminar archivo persistente del usuario
+                            ruta_u_del = os.path.join(DIR_USUARIOS, f"{u_k}.json")
+                            if os.path.exists(ruta_u_del):
+                                os.remove(ruta_u_del)
                             del db["usuarios"][u_k]
                             guardar_estado(db)
                             st.success(f"Usuario {u_k} eliminado.")
