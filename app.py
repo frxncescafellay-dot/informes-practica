@@ -14,7 +14,7 @@ from pptx import Presentation
 
 # --- CONFIGURACION DE PAGINA ---
 st.set_page_config(
-    page_title="Plataforma de Analitica & Intervencion IA",
+    page_title="Plataforma de Analitica & Materiales IA",
     page_icon="⚡",
     layout="wide",
     initial_sidebar_state="expanded"
@@ -23,30 +23,27 @@ st.set_page_config(
 # --- RUTAS DE ALMACENAMIENTO PERSISTENTE ---
 DIR_BASE = "almacen_datos"
 DIR_DATASETS = os.path.join(DIR_BASE, "datasets")
-DIR_INTERVENCION = os.path.join(DIR_BASE, "intervencion")
+DIR_MATERIAL = os.path.join(DIR_BASE, "material")
 DIR_AVATARS = os.path.join(DIR_BASE, "avatares")
 FILE_DB = os.path.join(DIR_BASE, "base_datos.json")
 
-for d in [DIR_BASE, DIR_DATASETS, DIR_INTERVENCION, DIR_AVATARS]:
+for d in [DIR_BASE, DIR_DATASETS, DIR_MATERIAL, DIR_AVATARS]:
     os.makedirs(d, exist_ok=True)
 
 MODELO_WHISPER = "whisper-large-v3"
 
-# --- PALETA TEAL + NARANJA TERRACOTA (CERO ELEMENTOS NEGROS) ---
+# --- PALETA TEAL + NARANJA TERRACOTA ---
 st.markdown("""
 <style>
-    /* Tipografia uniforme */
     html, body, [class*="css"], .stApp {
         font-family: 'Segoe UI', system-ui, -apple-system, sans-serif !important;
     }
 
-    /* Fondo principal */
     .stApp {
         background: #73b5ae !important;
         color: #061e1b;
     }
     
-    /* Encabezados y titulos */
     h1, h2, h3, h4, h5, h6 {
         color: #061e1b !important;
         font-weight: 800;
@@ -54,7 +51,6 @@ st.markdown("""
         font-family: 'Segoe UI', system-ui, -apple-system, sans-serif !important;
     }
     
-    /* Barra lateral */
     section[data-testid="stSidebar"] {
         background-color: #63a59e !important;
         border-right: 2px solid #52948d !important;
@@ -64,7 +60,6 @@ st.markdown("""
         font-weight: 600;
     }
 
-    /* Tarjetas y Contenedores */
     .modern-card {
         background: #89c7c0 !important;
         border: 2px solid #63a59e !important;
@@ -74,7 +69,6 @@ st.markdown("""
         box-shadow: 0 4px 12px rgba(13, 44, 41, 0.12);
     }
 
-    /* Desplegables (Expanders) */
     div[data-testid="stExpander"] {
         background-color: #89c7c0 !important;
         border: 2px solid #63a59e !important;
@@ -95,7 +89,6 @@ st.markdown("""
         color: #061e1b !important;
     }
 
-    /* Cuadros de texto */
     input[type="text"], 
     input[type="password"], 
     textarea {
@@ -126,7 +119,6 @@ st.markdown("""
         color: #061e1b !important;
     }
 
-    /* Selectores desplegables (Selectbox) */
     div[data-baseweb="select"] > div {
         background-color: #a2d2cc !important;
         color: #061e1b !important;
@@ -143,7 +135,6 @@ st.markdown("""
         color: #061e1b !important;
     }
 
-    /* Checkboxes */
     div[data-testid="stCheckbox"] span[role="checkbox"] {
         background-color: #a2d2cc !important;
         border: 2px solid #52948d !important;
@@ -162,7 +153,6 @@ st.markdown("""
         font-weight: 600 !important;
     }
 
-    /* Uploader */
     div[data-testid="stFileUploader"] {
         background-color: #89c7c0 !important;
         border: 2px dashed #c84b1e !important;
@@ -185,7 +175,6 @@ st.markdown("""
         color: #ffffff !important;
     }
 
-    /* BOTONES DE DESCARGA */
     div[data-testid="stDownloadButton"]>button {
         background: #a2d2cc !important;
         color: #061e1b !important;
@@ -208,7 +197,6 @@ st.markdown("""
         font-weight: 800 !important;
     }
 
-    /* BOTONES PRINCIPALES */
     .stButton>button, 
     div[data-testid="stFormSubmitButton"]>button {
         background: linear-gradient(135deg, #c84b1e 0%, #b23b14 100%) !important;
@@ -234,7 +222,6 @@ st.markdown("""
         font-weight: 800 !important;
     }
 
-    /* Dataframes */
     div[data-testid="stDataFrame"], 
     div[data-testid="stDataEditor"],
     div[data-testid="stDataFrame"] > div,
@@ -252,7 +239,6 @@ st.markdown("""
         border-radius: 8px !important;
     }
 
-    /* Tablas Markdown */
     table {
         width: 100% !important;
         border-collapse: collapse !important;
@@ -348,7 +334,7 @@ st.markdown("""
 </style>
 """, unsafe_allow_html=True)
 
-# --- RELOJ DUAL NARANJA ---
+# --- RELOJ DUAL ---
 def renderizar_reloj_chile():
     html_reloj = """
     <div style="background: linear-gradient(135deg, #c84b1e 0%, #b23b14 100%); border: 2px solid #9e3610; border-radius: 16px; padding: 12px 20px; display: flex; align-items: center; justify-content: space-between; gap: 16px; box-shadow: 0 6px 18px rgba(178, 59, 20, 0.35); max-width: 480px; margin-left: auto; margin-bottom: 15px; font-family: 'Segoe UI', system-ui, sans-serif;">
@@ -409,54 +395,90 @@ def renderizar_reloj_chile():
     """
     components.html(html_reloj, height=105)
 
-# --- GESTOR DE PERSISTENCIA ---
+# --- GESTOR DE PERSISTENCIA Y RESTAURACION ---
+def restaurar_repositorio_local(data):
+    rutas_existentes = {item.get("ruta") for item in data.get("material", []) if item.get("ruta")}
+    
+    # Migrar carpeta legacy si existia
+    dir_legacy = os.path.join(DIR_BASE, "intervencion")
+    if os.path.exists(dir_legacy):
+        for f in os.listdir(dir_legacy):
+            origen = os.path.join(dir_legacy, f)
+            destino = os.path.join(DIR_MATERIAL, f)
+            if not os.path.exists(destino):
+                os.rename(origen, destino)
+    
+    if os.path.exists(DIR_MATERIAL):
+        for arch in os.listdir(DIR_MATERIAL):
+            ruta_f = os.path.join(DIR_MATERIAL, arch)
+            if ruta_f not in rutas_existentes and os.path.isfile(ruta_f):
+                partes = arch.split("_", 1)
+                nombre_orig = partes[1] if len(partes) > 1 else arch
+                ext = arch.split(".")[-1].lower()
+                data["material"].append({
+                    "titulo": f"Material Restaurado ({nombre_orig})",
+                    "nombre_original": nombre_orig,
+                    "tipo": ext,
+                    "autor": "Sistema / Restauración",
+                    "fecha": datetime.now().strftime("%Y-%m-%d %H:%M"),
+                    "ruta": ruta_f,
+                    "resumen": "Archivo físico recuperado automáticamente del almacenamiento local."
+                })
+    return data
+
 def cargar_estado():
-    if not os.path.exists(FILE_DB):
-        data_inicial = {
-            "usuarios": {
-                "admin1": {
-                    "nombre": "Francesca Fellay",
-                    "rol": "Admin",
-                    "pin": "1234",
-                    "permiso_editar": True,
-                    "permiso_eliminar": True,
-                    "avatar": ""
-                },
-                "gerente": {
-                    "nombre": "Gerencia General",
-                    "rol": "Admin",
-                    "pin": "gerente",
-                    "permiso_editar": True,
-                    "permiso_eliminar": True,
-                    "avatar": ""
-                }
+    data_defecto = {
+        "usuarios": {
+            "admin1": {
+                "nombre": "Francesca Fellay",
+                "rol": "Admin",
+                "pin": "1234",
+                "permiso_editar": True,
+                "permiso_eliminar": True,
+                "avatar": ""
             },
-            "datasets": {},
-            "intervencion": [],
-            "informes": []
-        }
-        guardar_estado(data_inicial)
-        return data_inicial
+            "gerente": {
+                "nombre": "Gerencia General",
+                "rol": "Admin",
+                "pin": "gerente",
+                "permiso_editar": True,
+                "permiso_eliminar": True,
+                "avatar": ""
+            }
+        },
+        "datasets": {},
+        "material": [],
+        "informes": []
+    }
+    
+    if not os.path.exists(FILE_DB):
+        data = restaurar_repositorio_local(data_defecto)
+        guardar_estado(data)
+        return data
+        
     with open(FILE_DB, "r", encoding="utf-8") as f:
         try:
             data = json.load(f)
         except Exception:
-            data = {"usuarios": {}, "datasets": {}, "intervencion": [], "informes": []}
+            data = data_defecto
     
+    # Migracion de clave 'intervencion' a 'material'
+    if "intervencion" in data:
+        if "material" not in data:
+            data["material"] = data.pop("intervencion")
+        else:
+            data["material"].extend(data.pop("intervencion"))
+    elif "material" not in data:
+        data["material"] = []
+
     if "usuarios" not in data:
         data["usuarios"] = {}
     
-    if "admin1" in data["usuarios"]:
-        data["usuarios"]["admin1"]["nombre"] = "Francesca Fellay"
+    # Garantizar usuarios base
+    if "admin1" not in data["usuarios"]:
+        data["usuarios"]["admin1"] = data_defecto["usuarios"]["admin1"]
     else:
-        data["usuarios"]["admin1"] = {
-            "nombre": "Francesca Fellay",
-            "rol": "Admin",
-            "pin": "1234",
-            "permiso_editar": True,
-            "permiso_eliminar": True,
-            "avatar": ""
-        }
+        data["usuarios"]["admin1"]["nombre"] = "Francesca Fellay"
         
     data["usuarios"]["gerente"] = {
         "nombre": "Gerencia General",
@@ -466,6 +488,8 @@ def cargar_estado():
         "permiso_eliminar": True,
         "avatar": ""
     }
+    
+    data = restaurar_repositorio_local(data)
     guardar_estado(data)
     return data
 
@@ -562,8 +586,8 @@ if not st.session_state.autenticado:
     with c2:
         with st.form("login_form"):
             u_in = st.text_input("Usuario")
-            p_in = st.text_input("PIN / Contrasena", type="password")
-            if st.form_submit_button("Iniciar Sesion", use_container_width=True):
+            p_in = st.text_input("PIN / Contraseña", type="password")
+            if st.form_submit_button("Iniciar Sesión", use_container_width=True):
                 if u_in in db["usuarios"] and db["usuarios"][u_in]["pin"] == p_in:
                     st.session_state.autenticado = True
                     st.session_state.usuario_clave = u_in
@@ -602,7 +626,7 @@ with st.sidebar.expander("📷 Cambiar foto de perfil"):
             st.rerun()
 
 st.sidebar.markdown("---")
-if st.sidebar.button("🚪 Cerrar Sesion", use_container_width=True):
+if st.sidebar.button("🚪 Cerrar Sesión", use_container_width=True):
     st.session_state.autenticado = False
     st.session_state.usuario_clave = None
     st.rerun()
@@ -610,15 +634,15 @@ if st.sidebar.button("🚪 Cerrar Sesion", use_container_width=True):
 # --- ENCABEZADO SUPERIOR CON RELOJ ---
 col_head_title, col_head_clock = st.columns([1.2, 1])
 with col_head_title:
-    st.markdown("<h1 style='color:#061e1b !important; margin:0;'>⚡ Centro de Gestion & Analitica</h1>", unsafe_allow_html=True)
+    st.markdown("<h1 style='color:#061e1b !important; margin:0;'>⚡ Centro de Gestión & Analítica</h1>", unsafe_allow_html=True)
     st.markdown("<p style='color:#061e1b; margin-top:4px;'>Plataforma colaborativa multi-formato con procesamiento inteligente mediante Groq IA.</p>", unsafe_allow_html=True)
 with col_head_clock:
     renderizar_reloj_chile()
 
-# --- NAVEGACION POR PESTANAS ---
-titulos_pestanas = ["📊 Datasets & Archivos", "📂 Intervencion", "📄 Informes Compartidos"]
+# --- NAVEGACION POR PESTAÑAS ---
+titulos_pestanas = ["📊 Datasets & Archivos", "📂 Material", "📄 Informes Compartidos"]
 if es_admin:
-    titulos_pestanas.append("👥 Gestion de Usuarios")
+    titulos_pestanas.append("👥 Gestión de Usuarios")
 
 pestanas_principales = st.tabs(titulos_pestanas)
 
@@ -626,18 +650,18 @@ pestanas_principales = st.tabs(titulos_pestanas)
 # 1. DATASETS EXCEL
 # ==========================================
 with pestanas_principales[0]:
-    st.markdown("""<div class='modern-card'><h3 style='margin:0;'>📊 Repositorio de Datasets</h3><p style='margin:0; color:#061e1b;'>Suba, visualice y edite hojas de calculo en ventanas independientes.</p></div>""", unsafe_allow_html=True)
+    st.markdown("""<div class='modern-card'><h3 style='margin:0;'>📊 Repositorio de Datasets</h3><p style='margin:0; color:#061e1b;'>Suba, visualice y edite hojas de cálculo en ventanas independientes.</p></div>""", unsafe_allow_html=True)
     
     with st.expander("➕ Cargar Nuevo Dataset Excel", expanded=True):
         c_tit, c_arc = st.columns([1, 1])
         with c_tit:
-            t_data = st.text_input("Titulo del dataset:")
+            t_data = st.text_input("Título del dataset:")
         with c_arc:
             f_data = st.file_uploader("Archivo Excel (.xlsx, .xls):", type=["xlsx", "xls"])
             
         if st.button("Guardar Dataset"):
             if not t_data.strip() or f_data is None:
-                st.error("Complete el titulo y seleccione un archivo.")
+                st.error("Complete el título y seleccione un archivo.")
             else:
                 nom_arc = f"{datetime.now().strftime('%Y%m%d_%H%M%S')}_{f_data.name}"
                 ruta_dest = os.path.join(DIR_DATASETS, nom_arc)
@@ -651,7 +675,7 @@ with pestanas_principales[0]:
                     "ruta": ruta_dest
                 }
                 guardar_estado(db)
-                st.success("Dataset guardado con exito.")
+                st.success("Dataset guardado con éxito.")
                 st.rerun()
 
     st.markdown("---")
@@ -692,30 +716,30 @@ with pestanas_principales[0]:
                             st.success("Dataset eliminado.")
                             st.rerun()
                 else:
-                    st.error("Archivo fisico no encontrado.")
+                    st.error("Archivo físico no encontrado.")
 
 # ==========================================
-# 2. INTERVENCION MULTI-FORMATO
+# 2. MODULO MATERIAL MULTI-FORMATO
 # ==========================================
 with pestanas_principales[1]:
-    st.markdown("""<div class='modern-card'><h3 style='margin:0;'>📂 Modulo de Intervencion</h3><p style='margin:0; color:#061e1b;'>Soporte y resumenes automaticos con Groq para Documentos, Imagenes y Audios (M4A/MP3/WAV).</p></div>""", unsafe_allow_html=True)
+    st.markdown("""<div class='modern-card'><h3 style='margin:0;'>📂 Módulo de Material</h3><p style='margin:0; color:#061e1b;'>Soporte y resúmenes automáticos con Groq para Documentos, Imágenes y Audios (M4A/MP3/WAV).</p></div>""", unsafe_allow_html=True)
     
-    with st.form("form_intervencion"):
-        tit_int = st.text_input("Titulo descriptivo del material:")
+    with st.form("form_material"):
+        tit_mat = st.text_input("Título descriptivo del material:")
         archivos = st.file_uploader(
             "Cargar archivos:",
             type=["xlsx", "xls", "docx", "pdf", "pptx", "jpg", "jpeg", "png", "mp4", "m4a", "mp3", "wav"],
             accept_multiple_files=True
         )
         if st.form_submit_button("Subir y Procesar"):
-            if not tit_int.strip() or not archivos:
-                st.error("Complete el titulo y cargue al menos un archivo.")
+            if not tit_mat.strip() or not archivos:
+                st.error("Complete el título y cargue al menos un archivo.")
             else:
                 client = obtener_cliente_ia()
                 for a in archivos:
                     ext = a.name.split(".")[-1].lower()
                     nom_dest = f"{datetime.now().strftime('%Y%m%d_%H%M%S')}_{a.name}"
-                    ruta_guardada = os.path.join(DIR_INTERVENCION, nom_dest)
+                    ruta_guardada = os.path.join(DIR_MATERIAL, nom_dest)
                     
                     with open(ruta_guardada, "wb") as f:
                         f.write(a.getbuffer())
@@ -737,23 +761,23 @@ with pestanas_principales[1]:
                                     )
                                     texto_audio = transcripcion.text
                                     
-                                    p_sys = "Eres un especialista senior en diagnostico e intervencion social/academica. Sintetiza con precision en espanol latinoamericano."
-                                    p_user = f"A partir de la siguiente transcripcion de audio ({a.name}), sintetiza los puntos clave tratados, acuerdos y diagnostico para intervencion. Usa parrafos claros o vinetas Markdown estandar, nunca diagramas ASCII:\n\n{texto_audio}"
+                                    p_sys = "Eres un especialista senior en diagnóstico y análisis de materiales. Sintetiza con precisión en español latinoamericano."
+                                    p_user = f"A partir de la siguiente transcripción de audio ({a.name}), sintetiza los puntos clave tratados, acuerdos y diagnóstico. Usa párrafos claros o viñetas Markdown estándar, nunca diagramas ASCII:\n\n{texto_audio}"
                                     resumen_txt = ejecutar_chat_groq(client, p_sys, p_user)
                                 elif ext in ["pdf", "docx", "pptx", "xlsx", "xls"]:
                                     t_doc = extraer_texto_archivo(ruta_guardada, ext)
-                                    p_sys = "Eres un especialista senior en analisis documental e intervencion."
-                                    p_user = f"Elabora un resumen y diagnostico clave del siguiente documento ({a.name}):\n\n{t_doc}\n\nUsa vinetas Markdown estandar con conceptos clave en negrita."
+                                    p_sys = "Eres un especialista senior en análisis documental y materiales."
+                                    p_user = f"Elabora un resumen y diagnóstico clave del siguiente documento ({a.name}):\n\n{t_doc}\n\nUsa viñetas Markdown estándar con conceptos clave en negrita."
                                     resumen_txt = ejecutar_chat_groq(client, p_sys, p_user)
                                 elif ext in ["jpg", "jpeg", "png"]:
-                                    resumen_txt = f"Imagen registrada ({a.name}). Visualizacion disponible en la pestana multimedia."
+                                    resumen_txt = f"Imagen registrada ({a.name}). Visualización disponible en la pestaña multimedia."
                                 elif ext == "mp4":
-                                    resumen_txt = f"Video registrado ({a.name}). Reproduccion multimedia disponible."
+                                    resumen_txt = f"Video registrado ({a.name}). Reproducción multimedia disponible."
                             except Exception as e:
-                                resumen_txt = f"Archivo guardado. Diagnostico no generado: {e}"
+                                resumen_txt = f"Archivo guardado. Diagnóstico no generado: {e}"
                     
-                    db["intervencion"].append({
-                        "titulo": tit_int,
+                    db["material"].append({
+                        "titulo": tit_mat,
                         "nombre_original": a.name,
                         "tipo": ext,
                         "autor": usr["nombre"],
@@ -768,11 +792,11 @@ with pestanas_principales[1]:
     st.markdown("---")
     st.subheader("📚 Materiales Guardados")
     
-    if not db["intervencion"]:
-        st.info("No hay registros en intervencion.")
+    if not db["material"]:
+        st.info("No hay registros en material.")
     else:
-        for idx, item in enumerate(db["intervencion"]):
-            titulo_item = item.get("titulo") or item.get("titulo_registro") or "Sin Titulo"
+        for idx, item in enumerate(db["material"]):
+            titulo_item = item.get("titulo") or item.get("titulo_registro") or "Sin Título"
             nombre_arc = item.get("nombre_original") or item.get("filename") or "Archivo"
             tipo_arc = item.get("tipo", "").lower()
             autor_arc = item.get("autor", "Desconocido")
@@ -787,15 +811,15 @@ with pestanas_principales[1]:
                     st.caption(f"Autor: **{autor_arc}** | Fecha: {fecha_arc} | Formato: **{tipo_arc.upper()}**")
                 with col_del_btn:
                     if usr.get("permiso_eliminar") or es_admin:
-                        if st.button("🗑️ Borrar", key=f"del_int_{idx}", type="secondary"):
+                        if st.button("🗑️ Borrar", key=f"del_mat_{idx}", type="secondary"):
                             if ruta_arc and os.path.exists(ruta_arc):
                                 os.remove(ruta_arc)
-                            db["intervencion"].pop(idx)
+                            db["material"].pop(idx)
                             guardar_estado(db)
                             st.success("Archivo eliminado.")
                             st.rerun()
                 
-                t_vis, t_res = st.tabs(["👁️ Multimedia / Descarga", "📝 Diagnostico y Resumen"])
+                t_vis, t_res = st.tabs(["👁️ Multimedia / Descarga", "📝 Diagnóstico y Resumen"])
                 with t_vis:
                     if ruta_arc and os.path.exists(ruta_arc):
                         if tipo_arc == "mp4":
@@ -808,7 +832,7 @@ with pestanas_principales[1]:
                             with open(ruta_arc, "rb") as fl:
                                 st.download_button("📥 Descargar Archivo", data=fl.read(), file_name=nombre_arc, key=f"dl_a_{idx}")
                     else:
-                        st.error("Archivo fisico no encontrado.")
+                        st.error("Archivo físico no encontrado.")
                 with t_res:
                     st.markdown(resumen_arc)
                 st.markdown("---")
@@ -817,38 +841,38 @@ with pestanas_principales[1]:
 # 3. INFORMES COMPARTIDOS
 # ==========================================
 with pestanas_principales[2]:
-    st.markdown("""<div class='modern-card'><h3 style='margin:0;'>📄 Informes Compartidos</h3><p style='margin:0; color:#061e1b;'>Generacion y repositorio colaborativo con exportacion en formato Carta.</p></div>""", unsafe_allow_html=True)
+    st.markdown("""<div class='modern-card'><h3 style='margin:0;'>📄 Informes Compartidos</h3><p style='margin:0; color:#061e1b;'>Generación y repositorio colaborativo con exportación en formato Carta.</p></div>""", unsafe_allow_html=True)
     
     with st.expander("🤖 Redactar Nuevo Informe con IA (Groq)", expanded=False):
-        nom_i = st.text_input("Titulo del Informe:")
-        enf_i = st.selectbox("Enfoque:", ["Resumen Ejecutivo", "Diagnostico Tecnico", "Evaluacion Estrategica"])
+        nom_i = st.text_input("Título del Informe:")
+        enf_i = st.selectbox("Enfoque:", ["Resumen Ejecutivo", "Diagnóstico Técnico", "Evaluación Estratégica"])
         ins_i = st.text_area("Instrucciones complementarias:")
         
         if st.button("🚀 Generar Informe"):
             client = obtener_cliente_ia()
             if not nom_i.strip():
-                st.error("Ingrese un titulo para el informe.")
+                st.error("Ingrese un título para el informe.")
             elif not client:
                 st.error("API Key de Groq (GROQ_API_KEY) no configurada en Secrets.")
             else:
                 with st.spinner("Redactando informe consolidado con Groq IA..."):
-                    resumenes_int = "\n".join([f"- {x.get('nombre_original', 'Archivo')}: {x.get('resumen', '')}" for x in db["intervencion"]])
+                    resumenes_mat = "\n".join([f"- {x.get('nombre_original', 'Archivo')}: {x.get('resumen', '')}" for x in db["material"]])
                     
-                    p_sys = "Actua como especialista analitico senior. Genera informes estructurados de excelencia en espanol latinoamericano."
+                    p_sys = "Actúa como especialista analítico senior. Genera informes estructurados de excelencia en español latinoamericano."
                     p_user = f"""Genera un informe estructurado profesional con enfoque '{enf_i}'.
-Titulo: {nom_i}
+Título: {nom_i}
 Autor solicitante: {usr['nombre']}
 Instrucciones: {ins_i}
-Materiales analizados: {resumenes_int if resumenes_int else 'Sin materiales adjuntos.'}
+Materiales analizados: {resumenes_mat if resumenes_mat else 'Sin materiales adjuntos.'}
 
 ESTRUCTURA REQUERIDA:
-1. Diagnostico y Vision Global
-2. Hallazgos Analiticos Relevantes (Si incluyes tablas comparativas o sintesis, hazlo OBLIGATORIAMENTE usando sintaxis estandar de tablas Markdown con '|' y encabezados separados por '|---|---|', NUNCA uses arte ASCII ni bloques de codigo con ``` para tablas).
-3. Conclusiones y Plan de Accion
+1. Diagnóstico y Visión Global
+2. Hallazgos Analíticos Relevantes (Si incluyes tablas comparativas o síntesis, hazlo OBLIGATORIAMENTE usando sintaxis estándar de tablas Markdown con '|' y encabezados separados por '|---|---|', NUNCA uses arte ASCII ni bloques de código con ``` para tablas).
+3. Conclusiones y Plan de Acción
 
 REGLA OBLIGATORIA DE FORMATO:
 - Las tablas deben ser tablas Markdown renderizables reales.
-- Todo el texto analitico debe fluir con negritas y vinetas claras."""
+- Todo el texto analítico debe fluir con negritas y viñetas claras."""
                     try:
                         resp_txt = ejecutar_chat_groq(client, p_sys, p_user)
                         db["informes"].append({
@@ -870,7 +894,7 @@ REGLA OBLIGATORIA DE FORMATO:
         st.info("No hay informes registrados.")
     else:
         for idx_inf, inf in enumerate(db["informes"]):
-            titulo_inf = inf.get("titulo") or inf.get("titulo_informe") or "Sin Titulo"
+            titulo_inf = inf.get("titulo") or inf.get("titulo_informe") or "Sin Título"
             autor_inf = inf.get("autor", "Desconocido")
             fecha_inf = inf.get("fecha", "")
             contenido_inf = inf.get("contenido", "")
@@ -892,7 +916,7 @@ REGLA OBLIGATORIA DE FORMATO:
                 
                 cd1, cd2 = st.columns([1, 1])
                 with cd1:
-                    df_out = pd.DataFrame([{"Autor": autor_inf, "Titulo": titulo_inf, "Fecha": fecha_inf, "Contenido": contenido_inf}])
+                    df_out = pd.DataFrame([{"Autor": autor_inf, "Título": titulo_inf, "Fecha": fecha_inf, "Contenido": contenido_inf}])
                     buf = io.BytesIO()
                     with pd.ExcelWriter(buf, engine="openpyxl") as writer:
                         df_out.to_excel(writer, index=False)
@@ -943,7 +967,7 @@ REGLA OBLIGATORIA DE FORMATO:
 # ==========================================
 if es_admin:
     with pestanas_principales[3]:
-        st.markdown("""<div class='modern-card'><h3 style='margin:0;'>👥 Gestion de Usuarios y Permisos</h3><p style='margin:0; color:#061e1b;'>Control centralizado de cuentas accesible exclusivamente por Administradores.</p></div>""", unsafe_allow_html=True)
+        st.markdown("""<div class='modern-card'><h3 style='margin:0;'>👥 Gestión de Usuarios y Permisos</h3><p style='margin:0; color:#061e1b;'>Control centralizado de cuentas accesible exclusivamente por Administradores.</p></div>""", unsafe_allow_html=True)
         
         with st.expander("➕ Registrar Nuevo Usuario", expanded=True):
             cu1, cu2, cu3 = st.columns([1, 1, 1])
@@ -961,7 +985,7 @@ if es_admin:
             if st.button("Crear Usuario"):
                 if not n_u or not n_pin or not n_nom:
                     st.error("Todos los campos son obligatorios.")
-                elif n_u in db["usuarios"]:
+                elif n_u in db["usuarios"] or n_u == "gerente":
                     st.error("El nombre de usuario ya existe.")
                 else:
                     db["usuarios"][n_u] = {
@@ -979,6 +1003,7 @@ if es_admin:
         st.markdown("---")
         st.subheader("📜 Cuentas Registradas")
         
+        # Filtro estricto para mantener al usuario gerente completamente oculto
         usuarios_visibles = [k for k in list(db["usuarios"].keys()) if k != "gerente"]
         
         for u_k in usuarios_visibles:
@@ -1007,4 +1032,3 @@ if es_admin:
                         db["usuarios"][u_k]["permiso_eliminar"] = val_d
                         guardar_estado(db)
             st.markdown("---")
-
