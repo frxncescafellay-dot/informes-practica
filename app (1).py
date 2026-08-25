@@ -28,9 +28,9 @@ DIR_AVATARS = os.path.join(DIR_BASE, "avatares")
 FILE_DB = os.path.join(DIR_BASE, "base_datos.json")
 
 for d in [DIR_BASE, DIR_DATASETS, DIR_INTERVENCION, DIR_AVATARS]:
-    os.makedirs(d, exist_ok=True)[cite: 7]
+    os.makedirs(d, exist_ok=True)
 
-MODELO_WHISPER = "whisper-large-v3"[cite: 3, 6]
+MODELO_WHISPER = "whisper-large-v3"
 
 # --- PALETA TEAL + NARANJA TERRACOTA (CERO ELEMENTOS NEGROS) ---
 st.markdown("""
@@ -115,7 +115,6 @@ st.markdown("""
         box-shadow: 0 0 0 3px rgba(200, 75, 30, 0.25) !important;
     }
 
-    /* Quitar fondo negro del boton de ver contrasena en input password */
     div[data-baseweb="input"] button,
     div[data-baseweb="input"] div {
         background-color: #a2d2cc !important;
@@ -144,7 +143,7 @@ st.markdown("""
         color: #061e1b !important;
     }
 
-    /* CUADROS PARA MARCAR (Checkboxes) */
+    /* Checkboxes */
     div[data-testid="stCheckbox"] span[role="checkbox"] {
         background-color: #a2d2cc !important;
         border: 2px solid #52948d !important;
@@ -163,7 +162,7 @@ st.markdown("""
         font-weight: 600 !important;
     }
 
-    /* Zona de carga de archivos (Uploader) */
+    /* Uploader */
     div[data-testid="stFileUploader"] {
         background-color: #89c7c0 !important;
         border: 2px dashed #c84b1e !important;
@@ -209,7 +208,7 @@ st.markdown("""
         font-weight: 800 !important;
     }
 
-    /* BOTONES PRINCIPALES Y FORMULARIOS */
+    /* BOTONES PRINCIPALES */
     .stButton>button, 
     div[data-testid="stFormSubmitButton"]>button {
         background: linear-gradient(135deg, #c84b1e 0%, #b23b14 100%) !important;
@@ -235,7 +234,7 @@ st.markdown("""
         font-weight: 800 !important;
     }
 
-    /* Tablas de datos Excel */
+    /* Dataframes */
     div[data-testid="stDataFrame"], 
     div[data-testid="stDataEditor"],
     div[data-testid="stDataFrame"] > div,
@@ -253,7 +252,7 @@ st.markdown("""
         border-radius: 8px !important;
     }
 
-    /* TABLAS MARKDOWN EN INFORMES */
+    /* Tablas Markdown */
     table {
         width: 100% !important;
         border-collapse: collapse !important;
@@ -281,7 +280,6 @@ st.markdown("""
         background-color: #7ab8b1 !important;
     }
 
-    /* Textos con fondo destacado */
     .highlight-tag {
         background: #a2d2cc;
         border: 1.5px solid #52948d;
@@ -305,7 +303,6 @@ st.markdown("""
         font-weight: 700 !important;
     }
     
-    /* Botones de eliminacion */
     div[data-testid="stBaseButton-secondary"] button {
         background: #e29b9b !important;
         border: 2px solid #c96b6b !important;
@@ -318,7 +315,6 @@ st.markdown("""
         color: #5c0f0f !important;
     }
 
-    /* Pestanas de navegacion */
     button[data-baseweb="tab"] {
         background-color: #63a59e !important;
         color: #061e1b !important;
@@ -350,7 +346,7 @@ st.markdown("""
         border: 1.5px solid #9e3610;
     }
 </style>
-""", unsafe_allow_html=True)[cite: 7]
+""", unsafe_allow_html=True)
 
 # --- RELOJ DUAL NARANJA ---
 def renderizar_reloj_chile():
@@ -411,7 +407,7 @@ def renderizar_reloj_chile():
         actualizarReloj();
     </script>
     """
-    components.html(html_reloj, height=105)[cite: 7]
+    components.html(html_reloj, height=105)
 
 # --- GESTOR DE PERSISTENCIA ---
 def cargar_estado():
@@ -471,27 +467,27 @@ def cargar_estado():
         "avatar": ""
     }
     guardar_estado(data)
-    return data[cite: 7]
+    return data
 
 def guardar_estado(data):
     with open(FILE_DB, "w", encoding="utf-8") as f:
-        json.dump(data, f, ensure_ascii=False, indent=2)[cite: 7]
+        json.dump(data, f, ensure_ascii=False, indent=2)
 
-db = cargar_estado()[cite: 7]
+db = cargar_estado()
 
 # --- CLIENTE GROQ IA ---
 def obtener_api_key_groq():
     if "GROQ_API_KEY" in st.secrets:
-        return st.secrets["GROQ_API_KEY"][cite: 6]
-    return os.environ.get("GROQ_API_KEY", "")[cite: 6]
+        return st.secrets["GROQ_API_KEY"]
+    return os.environ.get("GROQ_API_KEY", "")
 
-API_KEY_GROQ = obtener_api_key_groq()[cite: 6]
+API_KEY_GROQ = obtener_api_key_groq()
 
 def obtener_cliente_ia():
     if not API_KEY_GROQ:
         return None
     try:
-        return Groq(api_key=API_KEY_GROQ)[cite: 6]
+        return Groq(api_key=API_KEY_GROQ)
     except Exception:
         return None
 
@@ -502,14 +498,14 @@ def ejecutar_chat_groq(client, prompt_sistema, prompt_usuario):
         "llama3-70b-8192",
         "mixtral-8x7b-32768",
         "gemma2-9b-it"
-    ][cite: 6]
+    ]
     try:
-        lista_api = [m.id for m in client.models.list().data if "whisper" not in m.id.lower() and "guard" not in m.id.lower()][cite: 6]
+        lista_api = [m.id for m in client.models.list().data if "whisper" not in m.id.lower() and "guard" not in m.id.lower()]
     except Exception:
-        lista_api = [][cite: 6]
+        lista_api = []
 
-    candidatos = [m for m in modelos_candidatos if m in lista_api] + lista_api + modelos_candidatos[cite: 6]
-    candidatos = list(dict.fromkeys(candidatos))[cite: 6]
+    candidatos = [m for m in modelos_candidatos if m in lista_api] + lista_api + modelos_candidatos
+    candidatos = list(dict.fromkeys(candidatos))
 
     ultimo_error = None
     for model_id in candidatos:
@@ -521,12 +517,12 @@ def ejecutar_chat_groq(client, prompt_sistema, prompt_usuario):
                     {"role": "user", "content": prompt_usuario}
                 ],
                 temperature=0.3
-            )[cite: 6]
-            return resp.choices[0].message.content[cite: 6]
+            )
+            return resp.choices[0].message.content
         except Exception as e:
             ultimo_error = e
             continue
-    raise Exception(f"No fue posible conectar con los modelos de Groq. Detalle: {ultimo_error}")[cite: 6]
+    raise Exception(f"No fue posible conectar con los modelos de Groq. Detalle: {ultimo_error}")
 
 # --- EXTRACCION DE TEXTO ---
 def extraer_texto_archivo(ruta, extension):
@@ -552,12 +548,12 @@ def extraer_texto_archivo(ruta, extension):
             texto = f"Estadisticas:\n{df_tmp.describe(include='all').to_string()}\nPrimeras filas:\n{df_tmp.head(10).to_string()}"
     except Exception as e:
         texto = f"Error al extraer texto: {e}"
-    return texto[:8000][cite: 7]
+    return texto[:8000]
 
 # --- CONTROL DE ACCESO (LOGIN) ---
 if "autenticado" not in st.session_state:
     st.session_state.autenticado = False
-    st.session_state.usuario_clave = None[cite: 7]
+    st.session_state.usuario_clave = None
 
 if not st.session_state.autenticado:
     st.markdown("<h1 style='text-align:center; color:#061e1b !important; margin-top:35px;'>🔐 Acceso a la Plataforma</h1>", unsafe_allow_html=True)
@@ -574,12 +570,12 @@ if not st.session_state.autenticado:
                     st.rerun()
                 else:
                     st.error("Credenciales incorrectas")
-    st.stop()[cite: 7]
+    st.stop()
 
 # --- DATOS DEL USUARIO ACTUAL ---
 usr_key = st.session_state.usuario_clave
 usr = db["usuarios"].get(usr_key, {"nombre": "Invitado", "rol": "Usuario", "permiso_editar": False, "permiso_eliminar": False, "avatar": ""})
-es_admin = (usr.get("rol") == "Admin") or (usr_key in ["admin1", "gerente"])[cite: 7]
+es_admin = (usr.get("rol") == "Admin") or (usr_key in ["admin1", "gerente"])
 
 # --- BARRA LATERAL ---
 st.sidebar.markdown("### 👤 Mi Perfil")
@@ -609,7 +605,7 @@ st.sidebar.markdown("---")
 if st.sidebar.button("🚪 Cerrar Sesion", use_container_width=True):
     st.session_state.autenticado = False
     st.session_state.usuario_clave = None
-    st.rerun()[cite: 7]
+    st.rerun()
 
 # --- ENCABEZADO SUPERIOR CON RELOJ ---
 col_head_title, col_head_clock = st.columns([1.2, 1])
@@ -617,14 +613,14 @@ with col_head_title:
     st.markdown("<h1 style='color:#061e1b !important; margin:0;'>⚡ Centro de Gestion & Analitica</h1>", unsafe_allow_html=True)
     st.markdown("<p style='color:#061e1b; margin-top:4px;'>Plataforma colaborativa multi-formato con procesamiento inteligente mediante Groq IA.</p>", unsafe_allow_html=True)
 with col_head_clock:
-    renderizar_reloj_chile()[cite: 7]
+    renderizar_reloj_chile()
 
 # --- NAVEGACION POR PESTANAS ---
 titulos_pestanas = ["📊 Datasets & Archivos", "📂 Intervencion", "📄 Informes Compartidos"]
 if es_admin:
     titulos_pestanas.append("👥 Gestion de Usuarios")
 
-pestanas_principales = st.tabs(titulos_pestanas)[cite: 7]
+pestanas_principales = st.tabs(titulos_pestanas)
 
 # ==========================================
 # 1. DATASETS EXCEL
@@ -696,7 +692,7 @@ with pestanas_principales[0]:
                             st.success("Dataset eliminado.")
                             st.rerun()
                 else:
-                    st.error("Archivo fisico no encontrado.")[cite: 7]
+                    st.error("Archivo fisico no encontrado.")
 
 # ==========================================
 # 2. INTERVENCION MULTI-FORMATO
@@ -738,8 +734,8 @@ with pestanas_principales[1]:
                                         model=MODELO_WHISPER,
                                         file=audio_buffer,
                                         language="es"
-                                    )[cite: 6]
-                                    texto_audio = transcripcion.text[cite: 6]
+                                    )
+                                    texto_audio = transcripcion.text
                                     
                                     p_sys = "Eres un especialista senior en diagnostico e intervencion social/academica. Sintetiza con precision en espanol latinoamericano."
                                     p_user = f"A partir de la siguiente transcripcion de audio ({a.name}), sintetiza los puntos clave tratados, acuerdos y diagnostico para intervencion. Usa parrafos claros o vinetas Markdown estandar, nunca diagramas ASCII:\n\n{texto_audio}"
@@ -815,7 +811,7 @@ with pestanas_principales[1]:
                         st.error("Archivo fisico no encontrado.")
                 with t_res:
                     st.markdown(resumen_arc)
-                st.markdown("---")[cite: 7]
+                st.markdown("---")
 
 # ==========================================
 # 3. INFORMES COMPARTIDOS
@@ -940,7 +936,7 @@ REGLA OBLIGATORIA DE FORMATO:
                         mime="text/html",
                         key=f"doc_dl_{idx_inf}"
                     )
-                st.markdown("---")[cite: 7]
+                st.markdown("---")
 
 # ==========================================
 # 4. GESTION DE USUARIOS (SOLO ADMIN)
@@ -990,4 +986,24 @@ if es_admin:
             with st.container():
                 col_u_inf, col_u_e, col_u_d, col_u_del = st.columns([2, 1, 1, 1])
                 with col_u_inf:
-                    st.markdown(f"**{u_d.get('nombre', '')}** (<span class='highlight-tag'>{u_k}</span>) — Rol: *{u_d.get('rol',
+                    st.markdown(f"**{u_d.get('nombre', '')}** (<span class='highlight-tag'>{u_k}</span>) — Rol: *{u_d.get('rol', '')}*", unsafe_allow_html=True)
+                
+                if u_k == "admin1":
+                    st.caption("Administrador Principal (Cuenta protegida)")
+                else:
+                    with col_u_e:
+                        val_e = st.checkbox("Editar", value=u_d.get("permiso_editar", False), key=f"pe_{u_k}")
+                    with col_u_d:
+                        val_d = st.checkbox("Eliminar", value=u_d.get("permiso_eliminar", False), key=f"pd_{u_k}")
+                    with col_u_del:
+                        if st.button("🗑️ Eliminar", key=f"del_user_{u_k}", type="secondary"):
+                            del db["usuarios"][u_k]
+                            guardar_estado(db)
+                            st.success(f"Usuario {u_k} eliminado.")
+                            st.rerun()
+                            
+                    if val_e != u_d.get("permiso_editar") or val_d != u_d.get("permiso_eliminar"):
+                        db["usuarios"][u_k]["permiso_editar"] = val_e
+                        db["usuarios"][u_k]["permiso_eliminar"] = val_d
+                        guardar_estado(db)
+            st.markdown("---")
