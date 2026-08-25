@@ -1,9 +1,9 @@
 streamlit
+groq
 pandas
 openpyxl
-groq
-pillow
 pypdf
 python-docx
 python-pptx
 pytz
+Pillow
