@@ -1,7 +1,7 @@
 streamlit
 pandas
 openpyxl
-google-genai
+groq
 pillow
 pypdf
 python-docx
