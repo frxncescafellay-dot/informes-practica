@@ -820,7 +820,7 @@ st.sidebar.download_button(
     use_container_width=True
 )[cite: 16]
 
-with st.sidebar.expander("🔄 Cargar / Restaurar Backup (.zip)"):[cite: 16]
+with st.sidebar.expander("🔄 Cargar / Restaurar Backup (.zip)"):
     archivo_restore = st.file_uploader("Subir archivo .zip de respaldo:", type=["zip"], key="up_zip_restore")[cite: 16]
     if archivo_restore is not None:
         if st.button("Restaurar Todo el Sistema", use_container_width=True):[cite: 16]
