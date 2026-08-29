@@ -38,10 +38,10 @@ DIR_AVATARS = os.path.join(DIR_BASE, "avatares")
 FILE_DB = os.path.join(DIR_BASE, "base_datos.json")
 
 for d in [DIR_BASE, DIR_DATASETS, DIR_MATERIAL, DIR_INFORMES, DIR_USUARIOS, DIR_AVATARS]:
-    os.makedirs(d, exist_ok=True)[cite: 16]
+    os.makedirs(d, exist_ok=True)
 
-MODELO_WHISPER = "whisper-large-v3"[cite: 16]
-CORREO_DESTINO_BACKUP = "francesca.fellay.b@mail.pucv.cl"[cite: 16]
+MODELO_WHISPER = "whisper-large-v3"
+CORREO_DESTINO_BACKUP = "francesca.fellay.b@mail.pucv.cl"
 
 # --- FUNCIONES DE RESPALDO Y ZIP COMPLETO ---
 def generar_zip_respaldo_completo():
@@ -54,11 +54,11 @@ def generar_zip_respaldo_completo():
                     arcname = os.path.relpath(file_path, start=DIR_BASE)
                     zip_file.write(file_path, arcname=arcname)
     zip_buffer.seek(0)
-    return zip_buffer.getvalue()[cite: 16]
+    return zip_buffer.getvalue()
 
 def restaurar_desde_zip_completo(archivo_zip_bytes):
     with zipfile.ZipFile(io.BytesIO(archivo_zip_bytes), "r") as zip_file:
-        zip_file.extractall(DIR_BASE)[cite: 16]
+        zip_file.extractall(DIR_BASE)
 
 def enviar_correo_backup(zip_bytes, fecha_str):
     smtp_server = st.secrets.get("SMTP_SERVER", os.environ.get("SMTP_SERVER", "smtp.gmail.com"))
@@ -67,7 +67,7 @@ def enviar_correo_backup(zip_bytes, fecha_str):
     smtp_password = st.secrets.get("SMTP_PASSWORD", os.environ.get("SMTP_PASSWORD", ""))
     
     if not smtp_user or not smtp_password:
-        return False, "Faltan credenciales SMTP (SMTP_USER y SMTP_PASSWORD en Secrets)"[cite: 16]
+        return False, "Faltan credenciales SMTP (SMTP_USER y SMTP_PASSWORD en Secrets)"
 
     try:
         msg = MIMEMultipart()
@@ -97,13 +97,13 @@ def enviar_correo_backup(zip_bytes, fecha_str):
         server.login(smtp_user, smtp_password)
         server.send_message(msg)
         server.quit()
-        return True, "Enviado con éxito"[cite: 16]
+        return True, "Enviado con éxito"
     except Exception as e:
-        return False, str(e)[cite: 16]
+        return False, str(e)
 
 # --- TAREA EN SEGUNDO PLANO: ENVIO AUTOMATICO A LAS 08:00 AM (HORA CHILE) ---
 if "scheduler_iniciado" not in st.session_state:
-    st.session_state.scheduler_iniciado = True[cite: 16]
+    st.session_state.scheduler_iniciado = True
     def daemon_backup_diario():
         ultimo_dia_enviado = None
         tz_chile = pytz.timezone("America/Santiago")
@@ -118,7 +118,7 @@ if "scheduler_iniciado" not in st.session_state:
             time.sleep(30)
             
     hilo = threading.Thread(target=daemon_backup_diario, daemon=True)
-    hilo.start()[cite: 16]
+    hilo.start()
 
 # --- PALETA TEAL + NARANJA TERRACOTA ---
 st.markdown("""
@@ -429,7 +429,7 @@ st.markdown("""
         margin-top: 40px;
     }
 </style>
-""", unsafe_allow_html=True)[cite: 16]
+""", unsafe_allow_html=True)
 
 # --- RELOJ DUAL ---
 def renderizar_reloj_chile():
@@ -490,7 +490,7 @@ def renderizar_reloj_chile():
         actualizarReloj();
     </script>
     """
-    components.html(html_reloj, height=105)[cite: 16]
+    components.html(html_reloj, height=105)
 
 # --- GESTOR DE PERSISTENCIA Y RESTAURACION TOTAL (ANTI-HIBERNACION) ---
 def sincronizar_usuarios_fisicos(usuarios_dict):
@@ -572,6 +572,7 @@ def restaurar_repositorio_local(data):
     return data
 
 def cargar_estado():
+    # Estructura base de usuarios predeterminados requeridos
     data_defecto = {
         "usuarios": {
             "Francesca Fellay": {
@@ -641,6 +642,7 @@ def cargar_estado():
     if "usuarios" not in data:
         data["usuarios"] = {}
 
+    # Asegurar usuarios requeridos y actualizar datos base
     for u_k, u_d in data_defecto["usuarios"].items():
         if u_k not in data["usuarios"]:
             data["usuarios"][u_k] = u_d
@@ -1227,34 +1229,10 @@ if es_admin:
         st.markdown("---")
         st.subheader("📜 Cuentas Registradas")
         
+        # Filtro estricto para mantener al usuario gerente completamente oculto
         usuarios_visibles = [k for k in list(db["usuarios"].keys()) if k != "gerente"]
         
         for u_k in usuarios_visibles:
             u_d = db["usuarios"][u_k]
             with st.container():
-                col_u_inf, col_u_e, col_u_d, col_u_del = st.columns([2, 1, 1, 1])
-                with col_u_inf:
-                    st.markdown(f"**{u_d.get('nombre', '')}** (<span class='highlight-tag'>{u_k}</span>) — Rol: *{u_d.get('rol', '')}*", unsafe_allow_html=True)
-                
-                if u_k == "Francesca Fellay":
-                    st.caption("Administrador Principal (Cuenta protegida)")
-                else:
-                    with col_u_e:
-                        val_e = st.checkbox("Editar", value=u_d.get("permiso_editar", False), key=f"pe_{u_k}")
-                    with col_u_d:
-                        val_d = st.checkbox("Eliminar", value=u_d.get("permiso_eliminar", False), key=f"pd_{u_k}")
-                    with col_u_del:
-                        if st.button("🗑️ Eliminar", key=f"del_user_{u_k}", type="secondary"):
-                            ruta_u_del = os.path.join(DIR_USUARIOS, f"{u_k}.json")
-                            if os.path.exists(ruta_u_del):
-                                os.remove(ruta_u_del)
-                            del db["usuarios"][u_k]
-                            guardar_estado(db)
-                            st.success(f"Usuario {u_k} eliminado.")
-                            st.rerun()
-                            
-                    if val_e != u_d.get("permiso_editar") or val_d != u_d.get("permiso_eliminar"):
-                        db["usuarios"][u_k]["permiso_editar"] = val_e
-                        db["usuarios"][u_k]["permiso_eliminar"] = val_d
-                        guardar_estado(db)
-            st.markdown("---")
+                col_u_inf, col_u_e, col_u
