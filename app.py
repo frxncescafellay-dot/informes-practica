@@ -795,7 +795,7 @@ else:
 st.sidebar.markdown(f"**{usr.get('nombre')}**")[cite: 16]
 st.sidebar.markdown(f"<span class='badge-role'>{usr.get('rol')}</span>", unsafe_allow_html=True)[cite: 16]
 
-with st.sidebar.expander("📷 Cambiar foto de perfil"):[cite: 16]
+with st.sidebar.expander("📷 Cambiar foto de perfil"):
     nueva_foto = st.file_uploader("Subir imagen (JPG, PNG):", type=["jpg", "jpeg", "png"], key="upload_avatar")[cite: 16]
     if nueva_foto is not None:
         if st.button("Guardar Foto"):[cite: 16]
