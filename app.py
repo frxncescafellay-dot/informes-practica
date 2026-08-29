@@ -1235,4 +1235,29 @@ if es_admin:
         for u_k in usuarios_visibles:
             u_d = db["usuarios"][u_k]
             with st.container():
-                col_u_inf, col_u_e, col_u
+                col_u_inf, col_u_e, col_u_d, col_u_del = st.columns([2, 1, 1, 1])
+                with col_u_inf:
+                    st.markdown(f"**{u_d.get('nombre', '')}** (<span class='highlight-tag'>{u_k}</span>) — Rol: *{u_d.get('rol', '')}*", unsafe_allow_html=True)
+                
+                if u_k == "Francesca Fellay":
+                    st.caption("Administrador Principal (Cuenta protegida)")
+                else:
+                    with col_u_e:
+                        val_e = st.checkbox("Editar", value=u_d.get("permiso_editar", False), key=f"pe_{u_k}")
+                    with col_u_d:
+                        val_d = st.checkbox("Eliminar", value=u_d.get("permiso_eliminar", False), key=f"pd_{u_k}")
+                    with col_u_del:
+                        if st.button("🗑️ Eliminar", key=f"del_user_{u_k}", type="secondary"):
+                            ruta_u_del = os.path.join(DIR_USUARIOS, f"{u_k}.json")
+                            if os.path.exists(ruta_u_del):
+                                os.remove(ruta_u_del)
+                            del db["usuarios"][u_k]
+                            guardar_estado(db)
+                            st.success(f"Usuario {u_k} eliminado.")
+                            st.rerun()
+                            
+                    if val_e != u_d.get("permiso_editar") or val_d != u_d.get("permiso_eliminar"):
+                        db["usuarios"][u_k]["permiso_editar"] = val_e
+                        db["usuarios"][u_k]["permiso_eliminar"] = val_d
+                        guardar_estado(db)
+            st.markdown("---")
