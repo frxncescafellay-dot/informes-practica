@@ -798,7 +798,7 @@ st.sidebar.markdown(f"<span class='badge-role'>{usr.get('rol')}</span>", unsafe_
 with st.sidebar.expander("📷 Cambiar foto de perfil"):
     nueva_foto = st.file_uploader("Subir imagen (JPG, PNG):", type=["jpg", "jpeg", "png"], key="upload_avatar")[cite: 16]
     if nueva_foto is not None:
-        if st.button("Guardar Foto"):[cite: 16]
+        if st.button("Guardar Foto"):
             ruta_avatar = os.path.join(DIR_AVATARS, f"{usr_key}_avatar.png")[cite: 16]
             with open(ruta_avatar, "wb") as f_av:
                 f_av.write(nueva_foto.getbuffer())[cite: 16]
